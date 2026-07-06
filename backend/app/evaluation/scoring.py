@@ -74,3 +74,17 @@ def evaluate_with_content(account, snapshots, content_items, cfg: ScoringConfig 
 
     positioning = positioning_proxy_score(content_items)
     return evaluate_account(account, snapshots, positioning_score=positioning, cfg=cfg)
+
+
+def evaluate_with_analysis(account, snapshots, content_items, client, cfg: ScoringConfig | None = None):
+    """LLM path: use analyze_positioning's clarity as the positioning sub-score.
+
+    Returns (EvaluationResult, AnalysisResult). The AnalysisResult carries
+    positioning_label / content_direction / suggested_topics for the Loop's
+    later diagnosis + draft steps.
+    """
+    from app.analysis.llm import analyze_positioning
+
+    analysis = analyze_positioning(account, content_items, client)
+    result = evaluate_account(account, snapshots, positioning_score=analysis.positioning_clarity, cfg=cfg)
+    return result, analysis
