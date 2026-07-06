@@ -6,19 +6,21 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import ContentItem, Draft, Evaluation, LoopRun, Recommendation, Snapshot
-from app.evaluation.scoring import ScoringConfig, evaluate_with_content
+from app.evaluation.scoring import ScoringConfig, evaluate_with_content, evaluate_with_analysis
 from app.analysis.content import hit_content
 
 
 @dataclass(frozen=True)
 class LoopConfig:
-    no_progress_limit: int = 3     # 连续 N 轮复合分未提升 -> status=no_progress
+    # no_progress_limit: 需要 N 个历史轮次都已存在、且当前轮相比其中最旧一轮的复合分提升不超过
+    # min_improvement 时判定 no_progress（即 N 个历史 + 当前 = N+1 轮持平）
+    no_progress_limit: int = 3
     min_improvement: float = 0.5   # 复合分提升需 > 该值才算"改善"
 
 
 def _gather(session: Session, account_id: int):
-    snaps = session.scalars(select(Snapshot).where(Snapshot.account_id == account_id)).all()
-    content = session.scalars(select(ContentItem).where(ContentItem.account_id == account_id)).all()
+    snaps = session.scalars(select(Snapshot).where(Snapshot.account_id == account_id)).all()  # TODO(plan-8): add a date/count window for large histories
+    content = session.scalars(select(ContentItem).where(ContentItem.account_id == account_id)).all()  # TODO(plan-8): add a date/count window for large histories
     return list(snaps), list(content)
 
 
@@ -85,7 +87,7 @@ def _status(session: Session, account_id: int, current_composite: float, cfg: Lo
     prior = [e.composite_score for e in session.scalars(stmt)]
     if len(prior) >= cfg.no_progress_limit:
         oldest_in_window = prior[cfg.no_progress_limit - 1]
-        if current_composite - oldest_in_window <= cfg.min_improvement:
+        if round(current_composite - oldest_in_window, 2) <= cfg.min_improvement:
             return "no_progress"
     return "ok"
 
@@ -93,36 +95,39 @@ def _status(session: Session, account_id: int, current_composite: float, cfg: Lo
 def run_loop(session: Session, account, *, llm_client=None, cfg: LoopConfig | None = None,
              scoring_cfg: ScoringConfig | None = None) -> LoopRun:
     cfg = cfg or LoopConfig()
-    snapshots, content = _gather(session, account.id)
+    try:
+        snapshots, content = _gather(session, account.id)
 
-    analysis = None
-    if llm_client is not None:
-        from app.evaluation.scoring import evaluate_with_analysis
-        result, analysis = evaluate_with_analysis(account, snapshots, content, llm_client, cfg=scoring_cfg)
-    else:
-        result = evaluate_with_content(account, snapshots, content, cfg=scoring_cfg)
+        analysis = None
+        if llm_client is not None:
+            result, analysis = evaluate_with_analysis(account, snapshots, content, llm_client, cfg=scoring_cfg)
+        else:
+            result = evaluate_with_content(account, snapshots, content, cfg=scoring_cfg)
 
-    diagnosis, recs, drafts = _build_outputs(result, analysis, content)
+        diagnosis, recs, drafts = _build_outputs(result, analysis, content)
 
-    prev = _previous_run(session, account.id)
-    verify = _verify(prev, result.composite_score, cfg)
-    _mark_prev_recommendations(prev, verify)
-    status = _status(session, account.id, result.composite_score, cfg)
+        prev = _previous_run(session, account.id)
+        verify = _verify(prev, result.composite_score, cfg)
+        _mark_prev_recommendations(prev, verify)
+        status = _status(session, account.id, result.composite_score, cfg)
 
-    run = LoopRun(
-        account_id=account.id,
-        diagnosis=diagnosis,
-        verify_result=verify,
-        tokens_cost=0,
-        status=status,
-    )
-    run.evaluation = Evaluation(
-        account_id=account.id,
-        composite_score=result.composite_score,
-        breakdown=result.breakdown,
-    )
-    run.recommendations = recs
-    run.drafts = drafts
-    session.add(run)
-    session.commit()
-    return run
+        run = LoopRun(
+            account_id=account.id,
+            diagnosis=diagnosis,
+            verify_result=verify,
+            tokens_cost=0,  # TODO(plan-8): wire real token usage from LLMClient
+            status=status,
+        )
+        run.evaluation = Evaluation(
+            account_id=account.id,
+            composite_score=result.composite_score,
+            breakdown=result.breakdown,
+        )
+        run.recommendations = recs
+        run.drafts = drafts
+        session.add(run)
+        session.commit()
+        return run
+    except Exception:
+        session.rollback()
+        raise
