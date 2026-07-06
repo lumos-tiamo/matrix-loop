@@ -1,0 +1,56 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class ScoringConfig:
+    target_growth_rate: float = 0.10       # 期望评估窗口内涨粉比例
+    target_engagement_rate: float = 0.05   # 期望互动率
+    target_conversions: int = 10           # 期望转化/线索数
+
+
+@dataclass
+class EvaluationResult:
+    composite_score: float
+    breakdown: dict
+
+
+def _clamp(x: float, lo: float = 0.0, hi: float = 100.0) -> float:
+    return max(lo, min(hi, x))
+
+
+def growth_score(snapshots, cfg: ScoringConfig) -> float:
+    snaps = sorted((s for s in snapshots if s.followers is not None), key=lambda s: s.ts)
+    if len(snaps) < 2 or not snaps[0].followers:
+        return 0.0
+    rate = (snaps[-1].followers - snaps[0].followers) / snaps[0].followers
+    return round(_clamp(rate / cfg.target_growth_rate * 100), 2)
+
+
+def engagement_score(latest, cfg: ScoringConfig) -> float:
+    er = getattr(latest, "engagement_rate", None) or 0.0
+    return round(_clamp(er / cfg.target_engagement_rate * 100), 2)
+
+
+def commercial_score(latest, cfg: ScoringConfig) -> float:
+    conv = getattr(latest, "conversions", None) or 0
+    return round(_clamp(conv / cfg.target_conversions * 100), 2)
+
+
+def evaluate_account(account, snapshots, positioning_score: float, cfg: ScoringConfig | None = None) -> EvaluationResult:
+    cfg = cfg or ScoringConfig()
+    ordered = sorted(snapshots, key=lambda s: s.ts) if snapshots else []
+    latest = ordered[-1] if ordered else None
+
+    sub = {
+        "growth": growth_score(snapshots, cfg),
+        "engagement": engagement_score(latest, cfg),
+        "commercial": commercial_score(latest, cfg),
+        "positioning": round(_clamp(positioning_score), 2),
+    }
+
+    weights = account.objective_weights or {}
+    total_w = sum(weights.get(k, 0.0) for k in sub) or 1.0
+    composite = sum(sub[k] * weights.get(k, 0.0) for k in sub) / total_w
+    return EvaluationResult(composite_score=round(composite, 2), breakdown=sub)
