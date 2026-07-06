@@ -49,6 +49,31 @@ def _build_outputs(result, analysis, content_items):
     return diagnosis, recs, drafts
 
 
+def _previous_run(session: Session, account_id: int) -> LoopRun | None:
+    stmt = (
+        select(LoopRun)
+        .where(LoopRun.account_id == account_id)
+        .order_by(LoopRun.ts.desc(), LoopRun.id.desc())
+    )
+    return session.scalars(stmt).first()
+
+
+def _verify(prev: LoopRun | None, current_composite: float, cfg: LoopConfig) -> dict:
+    if prev is None or prev.evaluation is None:
+        return {"baseline": True, "improved": False, "delta": 0.0}
+    delta = round(current_composite - prev.evaluation.composite_score, 2)
+    return {"baseline": False, "improved": delta > cfg.min_improvement, "delta": delta}
+
+
+def _mark_prev_recommendations(prev: LoopRun | None, verify: dict) -> None:
+    if prev is None or verify.get("baseline"):
+        return
+    outcome = "worked" if verify["improved"] else "failed"
+    for rec in prev.recommendations:
+        if rec.status == "adopted":
+            rec.status = outcome
+
+
 def run_loop(session: Session, account, *, llm_client=None, cfg: LoopConfig | None = None,
              scoring_cfg: ScoringConfig | None = None) -> LoopRun:
     cfg = cfg or LoopConfig()
@@ -63,10 +88,14 @@ def run_loop(session: Session, account, *, llm_client=None, cfg: LoopConfig | No
 
     diagnosis, recs, drafts = _build_outputs(result, analysis, content)
 
+    prev = _previous_run(session, account.id)
+    verify = _verify(prev, result.composite_score, cfg)
+    _mark_prev_recommendations(prev, verify)
+
     run = LoopRun(
         account_id=account.id,
         diagnosis=diagnosis,
-        verify_result={"baseline": True, "improved": False, "delta": 0.0},
+        verify_result=verify,
         tokens_cost=0,
         status="ok",
     )
