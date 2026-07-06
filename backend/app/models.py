@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -18,6 +18,8 @@ def _default_weights() -> dict:
 
 class Account(Base):
     __tablename__ = "accounts"
+    # Fix #2: unique constraint on (platform, handle)
+    __table_args__ = (UniqueConstraint("platform", "handle", name="uq_account_platform_handle"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     platform: Mapped[str] = mapped_column(String(32), index=True)
@@ -32,6 +34,13 @@ class Account(Base):
     content_items: Mapped[list["ContentItem"]] = relationship(
         back_populates="account", cascade="all, delete-orphan"
     )
+    # Fix #7: back-reference for loop_runs
+    loop_runs: Mapped[list["LoopRun"]] = relationship(back_populates="account", cascade="all, delete-orphan")
+
+    # Fix #1: ensure JSON default is present on unsaved instances
+    def __init__(self, **kw):
+        kw.setdefault("objective_weights", _default_weights())
+        super().__init__(**kw)
 
 
 class Snapshot(Base):
@@ -49,6 +58,11 @@ class Snapshot(Base):
     extra: Mapped[dict] = mapped_column(JSON, default=dict)
 
     account: Mapped["Account"] = relationship(back_populates="snapshots")
+
+    # Fix #1: ensure extra is present on unsaved instances
+    def __init__(self, **kw):
+        kw.setdefault("extra", dict())
+        super().__init__(**kw)
 
 
 class ContentItem(Base):
@@ -68,6 +82,11 @@ class ContentItem(Base):
 
     account: Mapped["Account"] = relationship(back_populates="content_items")
 
+    # Fix #1: ensure extra is present on unsaved instances
+    def __init__(self, **kw):
+        kw.setdefault("extra", dict())
+        super().__init__(**kw)
+
 
 class LoopRun(Base):
     __tablename__ = "loop_runs"
@@ -80,13 +99,19 @@ class LoopRun(Base):
     tokens_cost: Mapped[int] = mapped_column(Integer, default=0)
     status: Mapped[str] = mapped_column(String(24), default="ok")  # ok|no_progress|error|budget_stop
 
-    evaluation: Mapped["Evaluation | None"] = relationship(
-        back_populates="loop_run", uselist=False, cascade="all, delete-orphan"
-    )
+    # Fix #4: removed delete-orphan so Evaluation survives LoopRun deletion
+    evaluation: Mapped["Evaluation | None"] = relationship(back_populates="loop_run", uselist=False)
     recommendations: Mapped[list["Recommendation"]] = relationship(
         back_populates="loop_run", cascade="all, delete-orphan"
     )
     drafts: Mapped[list["Draft"]] = relationship(back_populates="loop_run", cascade="all, delete-orphan")
+    # Fix #7: back-reference to Account
+    account: Mapped["Account"] = relationship(back_populates="loop_runs")
+
+    # Fix #1: ensure verify_result is present on unsaved instances
+    def __init__(self, **kw):
+        kw.setdefault("verify_result", dict())
+        super().__init__(**kw)
 
 
 class Evaluation(Base):
@@ -100,6 +125,11 @@ class Evaluation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     loop_run: Mapped["LoopRun | None"] = relationship(back_populates="evaluation")
+
+    # Fix #1: ensure breakdown is present on unsaved instances
+    def __init__(self, **kw):
+        kw.setdefault("breakdown", dict())
+        super().__init__(**kw)
 
 
 class Recommendation(Base):
