@@ -54,3 +54,14 @@ def evaluate_account(account, snapshots, positioning_score: float, cfg: ScoringC
     total_w = sum(weights.get(k, 0.0) for k in sub) or 1.0
     composite = sum(sub[k] * weights.get(k, 0.0) for k in sub) / total_w
     return EvaluationResult(composite_score=round(composite, 2), breakdown=sub)
+
+
+def evaluate_with_content(account, snapshots, content_items, cfg: ScoringConfig | None = None) -> EvaluationResult:
+    """便捷入口：用确定性内容分析的定位代理分，喂给 evaluate_account。
+
+    plan 3 将用 LLM 定位清晰度替换/增强这里的 positioning_score。
+    """
+    from app.analysis.content import positioning_proxy_score
+
+    positioning = positioning_proxy_score(content_items)
+    return evaluate_account(account, snapshots, positioning_score=positioning, cfg=cfg)
