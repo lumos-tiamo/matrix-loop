@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="MATRIXLOOP_", env_file=".env", extra="ignore")
 
     database_url: str = "sqlite:///./data/matrixloop.db"
+    anthropic_api_key: str | None = None
+    anthropic_base_url: str | None = None
+    llm_model: str = "claude-sonnet-4-6"
 
 
 settings = Settings()
