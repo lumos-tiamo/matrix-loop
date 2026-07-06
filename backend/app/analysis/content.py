@@ -4,7 +4,7 @@ import math
 from collections import Counter
 
 
-def _median(values: list[float]) -> float:
+def _median(values: list[int | float]) -> float:
     if not values:
         return 0.0
     s = sorted(values)
@@ -46,4 +46,6 @@ def tag_entropy(content_items) -> float:
 
 def positioning_proxy_score(content_items) -> float:
     """确定性定位清晰度代理分：(1 - 归一化熵) * 100。LLM 判定在 plan 3 增强/替换。"""
+    if not content_items:
+        return 0.0
     return round((1.0 - tag_entropy(content_items)) * 100, 2)
