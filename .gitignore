@@ -1,0 +1,16 @@
+# deps / builds
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+dist/
+frontend/dist/
+# data & secrets
+data/*.db
+data/*.sqlite*
+.env
+*.local
+# brainstorm scratch (visual companion)
+.superpowers/
+# os
+.DS_Store
