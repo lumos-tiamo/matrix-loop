@@ -74,6 +74,22 @@ def _mark_prev_recommendations(prev: LoopRun | None, verify: dict) -> None:
             rec.status = outcome
 
 
+def _status(session: Session, account_id: int, current_composite: float, cfg: LoopConfig) -> str:
+    stmt = (
+        select(Evaluation)
+        .join(LoopRun, Evaluation.loop_run_id == LoopRun.id)
+        .where(LoopRun.account_id == account_id)
+        .order_by(LoopRun.ts.desc(), LoopRun.id.desc())
+        .limit(cfg.no_progress_limit)
+    )
+    prior = [e.composite_score for e in session.scalars(stmt)]
+    if len(prior) >= cfg.no_progress_limit:
+        oldest_in_window = prior[cfg.no_progress_limit - 1]
+        if current_composite - oldest_in_window <= cfg.min_improvement:
+            return "no_progress"
+    return "ok"
+
+
 def run_loop(session: Session, account, *, llm_client=None, cfg: LoopConfig | None = None,
              scoring_cfg: ScoringConfig | None = None) -> LoopRun:
     cfg = cfg or LoopConfig()
@@ -91,13 +107,14 @@ def run_loop(session: Session, account, *, llm_client=None, cfg: LoopConfig | No
     prev = _previous_run(session, account.id)
     verify = _verify(prev, result.composite_score, cfg)
     _mark_prev_recommendations(prev, verify)
+    status = _status(session, account.id, result.composite_score, cfg)
 
     run = LoopRun(
         account_id=account.id,
         diagnosis=diagnosis,
         verify_result=verify,
         tokens_cost=0,
-        status="ok",
+        status=status,
     )
     run.evaluation = Evaluation(
         account_id=account.id,
