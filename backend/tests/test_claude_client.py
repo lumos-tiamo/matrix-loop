@@ -42,3 +42,4 @@ def test_complete_builds_request_and_returns_text(monkeypatch):
     assert captured["system"] == "SYS"
     assert captured["messages"] == [{"role": "user", "content": "PROMPT"}]
     assert captured["init"]["api_key"] == "sk-test"
+    assert captured["max_tokens"] == 2048

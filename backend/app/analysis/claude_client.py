@@ -30,7 +30,7 @@ class ClaudeClient:
     def complete(self, *, system: str, prompt: str) -> str:
         message = self._client.messages.create(
             model=self.model,
-            max_tokens=1024,
+            max_tokens=2048,
             system=system,
             messages=[{"role": "user", "content": prompt}],
         )

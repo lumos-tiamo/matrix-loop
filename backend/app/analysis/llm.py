@@ -29,6 +29,7 @@ _SYSTEM = (
 )
 
 
+# NOTE: positioning/topic values are DB-managed today; validate at ingestion if raw scraped content ever feeds these fields.
 def _build_prompt(account, content_items) -> str:
     topics = [c.topic for c in content_items if getattr(c, "topic", None)]
     return "\n".join([
@@ -45,8 +46,11 @@ def _build_prompt(account, content_items) -> str:
 
 
 def _extract_json(text: str) -> str:
-    start, end = text.find("{"), text.rfind("}")
-    if start != -1 and end != -1 and end > start:
+    end = text.rfind("}")
+    if end == -1:
+        return text.strip()
+    start = text.rfind("{", 0, end)
+    if start != -1:
         return text[start:end + 1]
     return text.strip()
 
@@ -55,7 +59,7 @@ def analyze_positioning(account, content_items, client: LLMClient) -> AnalysisRe
     system = _SYSTEM
     prompt = _build_prompt(account, content_items)
     last_err: Exception | None = None
-    for _ in range(2):  # initial attempt + one retry
+    for _ in range(2):  # retries parse/validation failures only; transport errors from complete() propagate
         raw = client.complete(system=system, prompt=prompt)
         try:
             return AnalysisResult(**json.loads(_extract_json(raw)))

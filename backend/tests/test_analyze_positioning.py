@@ -13,6 +13,8 @@ class FakeLLMClient:
 
     def complete(self, *, system: str, prompt: str) -> str:
         self.calls.append({"system": system, "prompt": prompt})
+        if not self.responses:
+            raise AssertionError("FakeLLMClient exhausted: no more canned responses")
         return self.responses.pop(0)
 
 
@@ -68,3 +70,12 @@ def test_analyze_positioning_raises_after_two_failures():
     with pytest.raises(ValueError):
         analyze_positioning(_account(), _content(), client)
     assert len(client.calls) == 2
+
+
+def test_analyze_positioning_prose_brace_before_json_no_retry():
+    """A brace in prose BEFORE the JSON object must not corrupt extraction (fix #1)."""
+    response = "Note {see below}: " + VALID
+    client = FakeLLMClient([response])
+    result = analyze_positioning(_account(), _content(), client)
+    assert result.positioning_label == "平价美妆测评"
+    assert len(client.calls) == 1  # parsed first time, no retry

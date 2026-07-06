@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.analysis.llm import AnalysisResult
 
 
 @dataclass(frozen=True)
@@ -76,7 +80,7 @@ def evaluate_with_content(account, snapshots, content_items, cfg: ScoringConfig 
     return evaluate_account(account, snapshots, positioning_score=positioning, cfg=cfg)
 
 
-def evaluate_with_analysis(account, snapshots, content_items, client, cfg: ScoringConfig | None = None):
+def evaluate_with_analysis(account, snapshots, content_items, client, cfg: ScoringConfig | None = None) -> "tuple[EvaluationResult, AnalysisResult]":
     """LLM path: use analyze_positioning's clarity as the positioning sub-score.
 
     Returns (EvaluationResult, AnalysisResult). The AnalysisResult carries
