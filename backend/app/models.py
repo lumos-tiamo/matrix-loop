@@ -29,6 +29,9 @@ class Account(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     snapshots: Mapped[list["Snapshot"]] = relationship(back_populates="account", cascade="all, delete-orphan")
+    content_items: Mapped[list["ContentItem"]] = relationship(
+        back_populates="account", cascade="all, delete-orphan"
+    )
 
 
 class Snapshot(Base):
@@ -46,3 +49,78 @@ class Snapshot(Base):
     extra: Mapped[dict] = mapped_column(JSON, default=dict)
 
     account: Mapped["Account"] = relationship(back_populates="snapshots")
+
+
+class ContentItem(Base):
+    __tablename__ = "content_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
+    platform_post_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    type: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    topic: Mapped[str | None] = mapped_column(String, nullable=True)
+    views: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    likes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    comments: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    saves: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    extra: Mapped[dict] = mapped_column(JSON, default=dict)
+
+    account: Mapped["Account"] = relationship(back_populates="content_items")
+
+
+class LoopRun(Base):
+    __tablename__ = "loop_runs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
+    ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    diagnosis: Mapped[str | None] = mapped_column(String, nullable=True)
+    verify_result: Mapped[dict] = mapped_column(JSON, default=dict)
+    tokens_cost: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String(24), default="ok")  # ok|no_progress|error|budget_stop
+
+    evaluation: Mapped["Evaluation | None"] = relationship(
+        back_populates="loop_run", uselist=False, cascade="all, delete-orphan"
+    )
+    recommendations: Mapped[list["Recommendation"]] = relationship(
+        back_populates="loop_run", cascade="all, delete-orphan"
+    )
+    drafts: Mapped[list["Draft"]] = relationship(back_populates="loop_run", cascade="all, delete-orphan")
+
+
+class Evaluation(Base):
+    __tablename__ = "evaluations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
+    loop_run_id: Mapped[int | None] = mapped_column(ForeignKey("loop_runs.id"), nullable=True)
+    composite_score: Mapped[float] = mapped_column(Float)
+    breakdown: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    loop_run: Mapped["LoopRun | None"] = relationship(back_populates="evaluation")
+
+
+class Recommendation(Base):
+    __tablename__ = "recommendations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    loop_run_id: Mapped[int] = mapped_column(ForeignKey("loop_runs.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(24))  # positioning|content_direction|cadence
+    content: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String(16), default="pending")  # pending|adopted|worked|failed|rejected
+
+    loop_run: Mapped["LoopRun"] = relationship(back_populates="recommendations")
+
+
+class Draft(Base):
+    __tablename__ = "drafts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    loop_run_id: Mapped[int] = mapped_column(ForeignKey("loop_runs.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(16))  # topic|script
+    content: Mapped[str] = mapped_column(String)
+    review_status: Mapped[str] = mapped_column(String(16), default="pending")  # pending|adopted|rejected
+
+    loop_run: Mapped["LoopRun"] = relationship(back_populates="drafts")
