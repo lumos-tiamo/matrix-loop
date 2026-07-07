@@ -37,8 +37,11 @@ def test_start_batch_records_error_status(session, monkeypatch):
     assert "boom" in BATCH_RUNS[rid]["error"]
 
 
-def test_batch_run_background_returns_202_and_status(client, session):
+def test_batch_run_background_returns_202_and_status(client, session, monkeypatch):
     _seed(session)
+    # The background task uses the app's module-level SessionLocal (correct for prod).
+    # Point it at the seeded in-memory test session so the test is hermetic regardless of CWD.
+    monkeypatch.setattr("app.api.routes.SessionLocal", lambda: session)
     resp = client.post("/batch/run?background=true&sync=false")
     assert resp.status_code == 202
     run_id = resp.json()["run_id"]
