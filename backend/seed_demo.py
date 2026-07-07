@@ -10,7 +10,9 @@ from datetime import datetime, timezone
 
 from app.db import Base, SessionLocal, engine
 import app.models  # noqa: F401  register models
-from app.models import Account, ContentItem, Snapshot
+from app.models import (
+    Account, AccountSegment, AudienceSegment, ContentItem, Endpoint, Snapshot,
+)
 from app.loop.engine import run_loop, LoopConfig
 
 
@@ -44,12 +46,61 @@ DEMO = [
 ENGAGEMENT = {"@beauty_lab": 0.061, "@tech_daily": 0.028, "@fit_coach": 0.045,
               "@money_talk": 0.038, "@travel_vlog": 0.052, "@food_wander": 0.011}
 
+# ---- 导流/转化 (flow / sankey) demo ----
+# 变现出口 (endpoint name -> bio 外链子串 for auto-match)
+DEMO_ENDPOINTS: list[tuple[str, str | None]] = [
+    ("Nina", "linktr.ee/nina"),
+    ("xaue", "xaue.com"),
+    ("私域社群", "t.me/matrixloop"),
+]
+# 人群标签 (audience segments)
+DEMO_SEGMENTS = ["crypto", "海外投资者", "宝妈", "打工人群"]
+# 账号 -> (出口名 or None=未定向, [(人群标签, 占比), ...])
+DEMO_ASSIGN: dict[str, tuple[str | None, list[tuple[str, float]]]] = {
+    "@money_talk": ("Nina", [("crypto", 0.6), ("海外投资者", 0.4)]),
+    "@tech_daily": ("xaue", [("crypto", 0.5), ("打工人群", 0.5)]),
+    "@beauty_lab": ("私域社群", [("宝妈", 0.7), ("打工人群", 0.3)]),
+    "@travel_vlog": (None, [("海外投资者", 0.4), ("打工人群", 0.6)]),
+    "@fit_coach": ("私域社群", [("打工人群", 1.0)]),
+}
+
+
+def seed_flow(db) -> None:
+    """Seed endpoints / audience segments / account compositions for the /flow sankey.
+
+    Guarded: only runs the first time (no Endpoint rows yet), so re-running the seeder
+    or running it against an already-seeded (pre-flow) DB stays idempotent and safe.
+    """
+    if db.query(Endpoint).count() > 0:
+        print("flow already seeded; skipping")
+        return
+
+    endpoints = {name: Endpoint(name=name, url_pattern=pat) for name, pat in DEMO_ENDPOINTS}
+    db.add_all(endpoints.values())
+    segments = {label: AudienceSegment(label=label) for label in DEMO_SEGMENTS}
+    db.add_all(segments.values())
+    db.commit()
+
+    accounts = {a.handle: a for a in db.query(Account).all()}
+    assigned = 0
+    for handle, (ep_name, comps) in DEMO_ASSIGN.items():
+        acc = accounts.get(handle)
+        if acc is None:
+            continue
+        acc.endpoint_id = endpoints[ep_name].id if ep_name else None
+        for label, weight in comps:
+            db.add(AccountSegment(account_id=acc.id, segment_id=segments[label].id, weight=weight))
+        assigned += 1
+    db.commit()
+    print(f"seeded flow: {len(endpoints)} endpoints, {len(segments)} segments, {assigned} accounts routed")
+
 
 def main() -> None:
     Base.metadata.create_all(engine)
     db = SessionLocal()
     if db.query(Account).count() > 0:
-        print("already seeded; skipping")
+        print("already seeded; skipping accounts")
+        seed_flow(db)  # backfill flow demo onto a pre-flow seeded DB (guarded internally)
         return
 
     for platform, handle, vertical, weights, followers, topics in DEMO:
@@ -77,6 +128,7 @@ def main() -> None:
             run_loop(db, acc, cfg=LoopConfig(no_progress_limit=3, min_improvement=0.5))
 
     print(f"seeded {db.query(Account).count()} accounts")
+    seed_flow(db)
 
 
 if __name__ == "__main__":

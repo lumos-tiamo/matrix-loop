@@ -1,6 +1,7 @@
 import type {
   AccountListItem, AccountDetail, LoopRunOut, RecommendationOut, DraftOut,
   Overview, ContentLibraryItem,
+  FlowData, SegmentOut, EndpointOut, CompositionItem,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE as string) ?? "http://localhost:8000";
@@ -44,4 +45,28 @@ export const api = {
     req<RecommendationOut>(`/recommendations/${id}/status`, { method: "POST", body: JSON.stringify({ status }) }),
   setDraftStatus: (id: number, review_status: string) =>
     req<DraftOut>(`/drafts/${id}/status`, { method: "POST", body: JSON.stringify({ review_status }) }),
+
+  // ---- Flow / 导流 ----
+  getFlow: () => req<FlowData>("/flow"),
+  createSegment: (label: string) =>
+    req<SegmentOut>("/segments", { method: "POST", body: JSON.stringify({ label }) }),
+  createEndpoint: (name: string, url_pattern?: string) =>
+    req<EndpointOut>("/endpoints", {
+      method: "POST",
+      body: JSON.stringify({ name, url_pattern: url_pattern ?? null }),
+    }),
+  setComposition: (accountId: number, segments: CompositionItem[]) =>
+    req<Record<string, unknown>>(`/accounts/${accountId}/segments`, {
+      method: "POST",
+      body: JSON.stringify({ segments }),
+    }),
+  setEndpoint: (accountId: number, endpointId: number | null) =>
+    req<Record<string, unknown>>(`/accounts/${accountId}/endpoint`, {
+      method: "POST",
+      body: JSON.stringify({ endpoint_id: endpointId }),
+    }),
+  classifyAudience: (accountId: number) =>
+    req<{ account_id: number; segments: string[] }>(`/accounts/${accountId}/classify-audience`, {
+      method: "POST",
+    }),
 };

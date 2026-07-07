@@ -118,3 +118,25 @@ class ContentLibraryItem(BaseModel):
     likes: int | None
     comments: int | None
     published_at: datetime | None
+
+
+class SegmentCreate(BaseModel):
+    label: str
+
+
+class EndpointCreate(BaseModel):
+    name: str
+    url_pattern: str | None = None
+
+
+class CompositionItem(BaseModel):
+    segment_id: int
+    weight: float = 1.0
+
+
+class SetComposition(BaseModel):
+    segments: list[CompositionItem]
+
+
+class SetEndpoint(BaseModel):
+    endpoint_id: int | None = None

@@ -29,6 +29,7 @@ class Account(Base):
     objective_weights: Mapped[dict] = mapped_column(JSON, default=_default_weights)
     acceptance_criteria: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    endpoint_id: Mapped[int | None] = mapped_column(ForeignKey("endpoints.id"), nullable=True)
 
     snapshots: Mapped[list["Snapshot"]] = relationship(back_populates="account", cascade="all, delete-orphan")
     content_items: Mapped[list["ContentItem"]] = relationship(
@@ -154,3 +155,27 @@ class Draft(Base):
     review_status: Mapped[str] = mapped_column(String(16), default="pending")  # pending|adopted|rejected
 
     loop_run: Mapped["LoopRun"] = relationship(back_populates="drafts")
+
+
+class Endpoint(Base):
+    __tablename__ = "endpoints"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(64), unique=True)          # 自定义出口，如 Nina / xaue
+    url_pattern: Mapped[str | None] = mapped_column(String, nullable=True)  # bio 外链匹配子串
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class AudienceSegment(Base):
+    __tablename__ = "audience_segments"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    label: Mapped[str] = mapped_column(String(64), unique=True)         # 自定义人群标签，如 海外投资者 / crypto
+
+
+class AccountSegment(Base):
+    __tablename__ = "account_segments"
+    __table_args__ = (UniqueConstraint("account_id", "segment_id", name="uq_account_segment"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
+    segment_id: Mapped[int] = mapped_column(ForeignKey("audience_segments.id"), index=True)
+    weight: Mapped[float] = mapped_column(Float, default=1.0)           # 该账号粉丝分到此人群的占比

@@ -6,6 +6,7 @@ import { OpsBar } from "./OpsBar";
 const NAV = [
   { to: "/", label: "总览" },
   { to: "/compare", label: "对比" },
+  { to: "/flow", label: "导流" },
   { to: "/content", label: "爆文库" },
 ];
 

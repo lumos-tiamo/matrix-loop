@@ -6,6 +6,7 @@ from dataclasses import asdict
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api import schemas
@@ -18,7 +19,10 @@ logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
 from app.api.overview import build_overview
-from app.models import Account, ContentItem, Draft, Evaluation, LoopRun, Recommendation, Snapshot
+from app.models import Account, AccountSegment, AudienceSegment, ContentItem, Draft, Endpoint, Evaluation, LoopRun, Recommendation, Snapshot
+from app.flow.build import build_flow
+from app.flow.classify import classify_audience
+from app.analysis.claude_client import ClaudeClient
 
 router = APIRouter()
 
@@ -148,6 +152,90 @@ def content_library(platform: str | None = None, account_id: int | None = None,
     # TODO(perf): push ORDER BY views DESC + LIMIT to SQL for large libraries
     items.sort(key=lambda i: (i.views or 0), reverse=True)
     return items[:limit]
+
+
+@router.get("/flow")
+def flow(db: Session = Depends(get_db)) -> dict:
+    return build_flow(db)
+
+
+@router.post("/segments", status_code=201)
+def create_segment(payload: schemas.SegmentCreate, db: Session = Depends(get_db)) -> dict:
+    seg = AudienceSegment(label=payload.label)
+    db.add(seg)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="already exists")
+    return {"id": seg.id, "label": seg.label}
+
+
+@router.post("/endpoints", status_code=201)
+def create_endpoint(payload: schemas.EndpointCreate, db: Session = Depends(get_db)) -> dict:
+    ep = Endpoint(name=payload.name, url_pattern=payload.url_pattern)
+    db.add(ep)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="already exists")
+    return {"id": ep.id, "name": ep.name, "url_pattern": ep.url_pattern}
+
+
+@router.post("/accounts/{account_id}/segments")
+def set_composition(account_id: int, payload: schemas.SetComposition, db: Session = Depends(get_db)) -> dict:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    seen_ids: set[int] = set()
+    for item in payload.segments:
+        if item.segment_id in seen_ids:
+            raise HTTPException(status_code=422, detail="duplicate segment_id in payload")
+        seen_ids.add(item.segment_id)
+    for item in payload.segments:
+        if db.get(AudienceSegment, item.segment_id) is None:
+            raise HTTPException(status_code=422, detail=f"segment {item.segment_id} not found")
+    db.query(AccountSegment).filter_by(account_id=account_id).delete()
+    for item in payload.segments:
+        db.add(AccountSegment(account_id=account_id, segment_id=item.segment_id, weight=item.weight))
+    db.commit()
+    return {"account_id": account_id, "count": len(payload.segments)}
+
+
+@router.post("/accounts/{account_id}/endpoint")
+def set_endpoint(account_id: int, payload: schemas.SetEndpoint, db: Session = Depends(get_db)) -> dict:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    if payload.endpoint_id is not None and db.get(Endpoint, payload.endpoint_id) is None:
+        raise HTTPException(status_code=422, detail="endpoint not found")
+    acc.endpoint_id = payload.endpoint_id
+    db.commit()
+    return {"account_id": account_id, "endpoint_id": acc.endpoint_id}
+
+
+@router.post("/accounts/{account_id}/classify-audience")
+def classify_audience_endpoint(account_id: int, db: Session = Depends(get_db)) -> dict:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    all_segs = list(db.scalars(select(AudienceSegment)).all())
+    labels = [s.label for s in all_segs]
+    if not labels:
+        raise HTTPException(status_code=422, detail="先创建人群标签(/segments)再归类")
+    try:
+        client = ClaudeClient()
+    except Exception as exc:  # noqa: BLE001 - no key configured
+        raise HTTPException(status_code=422, detail=f"LLM 未配置：{exc}") from exc
+    content = list(db.scalars(select(ContentItem).where(ContentItem.account_id == account_id)).all())
+    picked = classify_audience(acc, content, client, labels)
+    seg_by_label = {s.label: s for s in all_segs}
+    new_rows = [AccountSegment(account_id=account_id, segment_id=seg_by_label[lbl].id, weight=1.0) for lbl in picked]
+    db.query(AccountSegment).filter_by(account_id=account_id).delete()
+    db.add_all(new_rows)
+    db.commit()
+    return {"account_id": account_id, "segments": picked}
 
 
 @router.post("/accounts/{account_id}/sync")
