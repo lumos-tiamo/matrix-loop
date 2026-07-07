@@ -226,6 +226,18 @@ def create_endpoint(payload: schemas.EndpointCreate, db: Session = Depends(get_d
     return {"id": ep.id, "name": ep.name, "url_pattern": ep.url_pattern}
 
 
+@router.get("/segments")
+def list_segments(db: Session = Depends(get_db)) -> list[dict]:
+    rows = db.scalars(select(AudienceSegment).order_by(AudienceSegment.label)).all()
+    return [{"id": s.id, "label": s.label} for s in rows]
+
+
+@router.get("/endpoints")
+def list_endpoints(db: Session = Depends(get_db)) -> list[dict]:
+    rows = db.scalars(select(Endpoint).order_by(Endpoint.name)).all()
+    return [{"id": e.id, "name": e.name, "url_pattern": e.url_pattern} for e in rows]
+
+
 @router.post("/accounts/{account_id}/segments")
 def set_composition(account_id: int, payload: schemas.SetComposition, db: Session = Depends(get_db)) -> dict:
     acc = db.get(Account, account_id)

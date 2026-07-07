@@ -72,3 +72,22 @@ def test_set_endpoint_unknown_422(client, session):
     r = client.post(f"/accounts/{acc.id}/endpoint", json={"endpoint_id": 99999})
     assert r.status_code == 422
     assert "endpoint not found" in r.json()["detail"]
+
+
+def test_list_segments_returns_created(client):
+    client.post("/segments", json={"label": "crypto"})
+    client.post("/segments", json={"label": "宝妈"})
+    resp = client.get("/segments")
+    assert resp.status_code == 200
+    labels = {s["label"] for s in resp.json()}
+    assert {"crypto", "宝妈"} <= labels
+    assert all("id" in s and "label" in s for s in resp.json())
+
+
+def test_list_endpoints_returns_created(client):
+    client.post("/endpoints", json={"name": "Nina", "url_pattern": "linktr.ee/nina"})
+    resp = client.get("/endpoints")
+    assert resp.status_code == 200
+    rows = resp.json()
+    assert any(r["name"] == "Nina" and r["url_pattern"] == "linktr.ee/nina" for r in rows)
+    assert all({"id", "name", "url_pattern"} <= set(r) for r in rows)
