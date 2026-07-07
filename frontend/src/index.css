@@ -6,20 +6,23 @@
 
 body {
   margin: 0;
-  background-color: #0B0E14;
-  /* 微噪点 + 极淡径向光，营造深度而非纯色平板 */
+  background-color: #090C12;
+  /* dual radial glow (lime top-right + cyan top-left) + micro noise, per mockup body */
   background-image:
-    radial-gradient(1200px 600px at 80% -10%, rgba(182,255,60,0.05), transparent 60%),
+    radial-gradient(900px 500px at 88% -8%, rgba(182,255,60,0.07), transparent 60%),
+    radial-gradient(800px 500px at 5% 0%, rgba(76,212,240,0.06), transparent 55%),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
-  color: #E6E9EF;
+  background-attachment: fixed;
+  color: #EAEDF3;
   font-family: "Noto Sans SC", Archivo, sans-serif;
 }
 
-.tabnums { font-variant-numeric: tabular-nums; }
+.tabnums { font-variant-numeric: tabular-nums; font-family: "IBM Plex Mono", monospace; }
 
-@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.rise { animation: rise 0.4s ease both; }
+/* staggered load-in — one tasteful rise; children stagger via inline delay */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #232A38; border-radius: 6px; }
+::-webkit-scrollbar-thumb { background: #232B3C; border-radius: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

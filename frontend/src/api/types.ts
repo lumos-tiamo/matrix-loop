@@ -25,5 +25,66 @@ export interface LoopRunOut {
 export interface AccountDetail {
   id: number; platform: string; handle: string; vertical: string | null; positioning: string | null;
   objective_weights: Record<string, number> | null;
+  acceptance_criteria?: string | null;
   snapshots: SnapshotOut[]; content_items: ContentItemOut[]; loop_runs: LoopRunOut[];
+}
+
+// ---- Overview (GET /overview) ----
+export interface OverviewKpis {
+  total_accounts: number;
+  avg_score: number;
+  needs_attention: number;
+  platforms: number;
+  pending_review: number;
+}
+export interface PlatformHealth {
+  platform: string;
+  growth: number;
+  engagement: number;
+  commercial: number;
+  positioning: number;
+}
+export interface TrendPoint {
+  date: string;
+  followers: number;
+  engagement: number;
+}
+export interface OverviewAlert {
+  account_id: number;
+  handle: string;
+  platform: string;
+  kind: string;
+  detail: string;
+}
+export interface TopMover {
+  account_id: number;
+  handle: string;
+  platform: string;
+  delta_followers: number;
+}
+export interface PositioningDistribution {
+  clear: number;
+  ok: number;
+  scattered: number;
+}
+export interface Overview {
+  kpis: OverviewKpis;
+  platform_health: PlatformHealth[];
+  trend: TrendPoint[];
+  alerts: OverviewAlert[];
+  top_movers: TopMover[];
+  positioning_distribution: PositioningDistribution;
+}
+
+// ---- Content library (GET /content) ----
+export interface ContentLibraryItem {
+  id: number;
+  account_id: number;
+  account_handle: string;
+  platform: string;
+  topic: string | null;
+  views: number | null;
+  likes: number | null;
+  comments: number | null;
+  published_at: string | null;
 }
