@@ -20,7 +20,9 @@ class XConnector:
         return resp.json()
 
     def fetch(self, account) -> ConnectorResult:
-        handle = account.handle.lstrip("@")
+        handle = (account.handle or "").lstrip("@")
+        if not handle:
+            raise ValueError("account.handle is empty")
         url = f"https://api.twitter.com/2/users/by/username/{handle}?user.fields=public_metrics"
         data = self._http_get(url, {"Authorization": f"Bearer {self.bearer_token}"})
         metrics = ((data or {}).get("data") or {}).get("public_metrics") or {}

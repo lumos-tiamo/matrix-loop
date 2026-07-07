@@ -1,4 +1,3 @@
-import app.api.routes as routes
 from app.models import Account
 from app.connectors.base import ConnectorResult
 
@@ -21,7 +20,7 @@ def test_sync_happy_path(client, session, monkeypatch):
         def fetch(self, account):
             return ConnectorResult(tier="api", snapshots=[{"followers": 777}], content=[])
 
-    monkeypatch.setattr(routes, "resolve_connector", lambda platform, cfg=None: (FakeConnector(), "api"))
+    monkeypatch.setattr("app.connectors.sync.resolve_connector", lambda platform, cfg=None: (FakeConnector(), "api"))
     resp = client.post(f"/accounts/{acc.id}/sync")
     assert resp.status_code == 200
     assert resp.json()["snapshots_created"] == 1
@@ -30,3 +29,18 @@ def test_sync_happy_path(client, session, monkeypatch):
 
 def test_sync_404(client):
     assert client.post("/accounts/99999/sync").status_code == 404
+
+
+def test_sync_connector_error_returns_502(client, session, monkeypatch):
+    acc = Account(platform="twitter", handle="@a")
+    session.add(acc)
+    session.commit()
+
+    class BrokenConnector:
+        tier = "api"
+        def fetch(self, account):
+            raise RuntimeError("boom")
+
+    monkeypatch.setattr("app.connectors.sync.resolve_connector", lambda platform, cfg=None: (BrokenConnector(), "api"))
+    resp = client.post(f"/accounts/{acc.id}/sync")
+    assert resp.status_code == 502

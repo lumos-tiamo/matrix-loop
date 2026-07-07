@@ -21,7 +21,9 @@ class ScrapeCreatorsConnector:
         return resp.json()
 
     def fetch(self, account) -> ConnectorResult:
-        handle = account.handle.lstrip("@")
+        handle = (account.handle or "").lstrip("@")
+        if not handle:
+            raise ValueError("account.handle is empty")
         url = f"https://api.scrapecreators.com/v1/{self.platform}/profile?handle={handle}"
         data = self._http_get(url, {"x-api-key": self.api_key}) or {}
         followers = data.get("followers") if data.get("followers") is not None else data.get("follower_count")
