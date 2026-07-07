@@ -50,5 +50,5 @@ def build_flow(session: Session) -> dict:
             add(seg_node, f"ep:{ep_name}", flow)
 
     nodes = [{"name": n} for n in sorted(used)]
-    link_list = [{"source": s, "target": t, "value": round(v)} for (s, t), v in links.items()]
+    link_list = [{"source": s, "target": t, "value": round(v)} for (s, t), v in sorted(links.items())]
     return {"nodes": nodes, "links": link_list}

@@ -173,6 +173,8 @@ class AudienceSegment(Base):
 
 class AccountSegment(Base):
     __tablename__ = "account_segments"
+    __table_args__ = (UniqueConstraint("account_id", "segment_id", name="uq_account_segment"),)
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
     segment_id: Mapped[int] = mapped_column(ForeignKey("audience_segments.id"), index=True)
