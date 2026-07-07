@@ -7,6 +7,14 @@ from app.db import Base
 import app.models  # noqa: F401  确保所有模型已注册到 Base.metadata
 
 
+@pytest.fixture(autouse=True)
+def _no_live_llm(monkeypatch):
+    # Keep the whole suite offline/hermetic: the deterministic path is the default in tests.
+    # Tests that exercise the LLM path inject a FakeLLMClient explicitly.
+    from app.config import settings
+    monkeypatch.setattr(settings, "anthropic_api_key", None, raising=False)
+
+
 @pytest.fixture()
 def session():
     engine = create_engine(
