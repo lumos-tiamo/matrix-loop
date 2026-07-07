@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     anthropic_base_url: str | None = None
     llm_model: str = "claude-sonnet-4-6"
+    x_bearer_token: str | None = None
+    scrapecreators_api_key: str | None = None
 
 
 settings = Settings()

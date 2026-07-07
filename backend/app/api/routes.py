@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -8,6 +9,10 @@ from sqlalchemy.orm import Session
 
 from app.api import schemas
 from app.api.deps import get_db
+from app.connectors.base import ManualOnlyError
+from app.connectors.sync import sync_account
+
+logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
 from app.models import Account, Draft, Evaluation, LoopRun, Recommendation, Snapshot
@@ -108,3 +113,17 @@ def set_draft_status(draft_id: int, payload: schemas.SetReviewStatusIn, db: Sess
     draft.review_status = review
     db.commit()
     return draft
+
+
+@router.post("/accounts/{account_id}/sync")
+def sync_account_endpoint(account_id: int, db: Session = Depends(get_db)) -> dict:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    try:
+        return sync_account(db, acc)
+    except ManualOnlyError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("connector sync failed for account %s: %s", account_id, exc)
+        raise HTTPException(status_code=502, detail="upstream connector error") from exc
