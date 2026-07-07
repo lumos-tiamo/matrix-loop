@@ -39,7 +39,7 @@ def _list_item(db: Session, acc: Account) -> schemas.AccountListItem:
 
 @router.post("/accounts", response_model=schemas.AccountListItem, status_code=201)
 def create_account(payload: schemas.AccountCreate, db: Session = Depends(get_db)) -> schemas.AccountListItem:
-    data = {k: v for k, v in payload.model_dump().items() if v is not None}
+    data = {k: v for k, v in payload.model_dump().items() if v is not None}  # creation only - None fields fall back to ORM defaults
     acc = Account(**data)
     db.add(acc)
     db.commit()
@@ -48,6 +48,7 @@ def create_account(payload: schemas.AccountCreate, db: Session = Depends(get_db)
 
 @router.get("/accounts", response_model=list[schemas.AccountListItem])
 def list_accounts(db: Session = Depends(get_db)) -> list[schemas.AccountListItem]:
+    # TODO(perf): replace per-account _list_item queries with one aggregating query when accounts > ~200
     accounts = db.scalars(select(Account).order_by(Account.id)).all()
     return [_list_item(db, a) for a in accounts]
 
@@ -61,9 +62,11 @@ def get_account(account_id: int, db: Session = Depends(get_db)) -> Account:
 
 
 @router.post("/import/snapshots")
-def import_snapshots(payload: dict, db: Session = Depends(get_db)) -> dict:
-    csv_text = payload.get("csv", "")
-    return import_snapshots_csv(db, io.StringIO(csv_text))
+def import_snapshots(payload: schemas.ImportSnapshotsIn, db: Session = Depends(get_db)) -> dict:
+    try:
+        return import_snapshots_csv(db, io.StringIO(payload.csv))
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f"CSV import failed: {exc}") from exc
 
 
 @router.post("/accounts/{account_id}/loop", response_model=schemas.LoopRunOut)
@@ -71,7 +74,10 @@ def trigger_loop(account_id: int, db: Session = Depends(get_db)) -> LoopRun:
     acc = db.get(Account, account_id)
     if acc is None:
         raise HTTPException(status_code=404, detail="account not found")
-    return run_loop(db, acc)
+    try:
+        return run_loop(db, acc)
+    except Exception as exc:  # TODO(plan-8): categorise LLM vs data errors
+        raise HTTPException(status_code=500, detail=f"loop run failed: {exc}") from exc
 
 
 _REC_STATUSES = {"pending", "adopted", "rejected", "worked", "failed"}
@@ -79,11 +85,11 @@ _DRAFT_STATUSES = {"pending", "adopted", "rejected"}
 
 
 @router.post("/recommendations/{rec_id}/status", response_model=schemas.RecommendationOut)
-def set_recommendation_status(rec_id: int, payload: dict, db: Session = Depends(get_db)) -> Recommendation:
+def set_recommendation_status(rec_id: int, payload: schemas.SetStatusIn, db: Session = Depends(get_db)) -> Recommendation:
     rec = db.get(Recommendation, rec_id)
     if rec is None:
         raise HTTPException(status_code=404, detail="recommendation not found")
-    status = payload.get("status")
+    status = payload.status
     if status not in _REC_STATUSES:
         raise HTTPException(status_code=422, detail=f"invalid status; allowed: {sorted(_REC_STATUSES)}")
     rec.status = status
@@ -92,11 +98,11 @@ def set_recommendation_status(rec_id: int, payload: dict, db: Session = Depends(
 
 
 @router.post("/drafts/{draft_id}/status", response_model=schemas.DraftOut)
-def set_draft_status(draft_id: int, payload: dict, db: Session = Depends(get_db)) -> Draft:
+def set_draft_status(draft_id: int, payload: schemas.SetReviewStatusIn, db: Session = Depends(get_db)) -> Draft:
     draft = db.get(Draft, draft_id)
     if draft is None:
         raise HTTPException(status_code=404, detail="draft not found")
-    review = payload.get("review_status")
+    review = payload.review_status
     if review not in _DRAFT_STATUSES:
         raise HTTPException(status_code=422, detail=f"invalid review_status; allowed: {sorted(_DRAFT_STATUSES)}")
     draft.review_status = review

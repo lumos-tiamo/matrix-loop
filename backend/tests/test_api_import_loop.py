@@ -36,3 +36,13 @@ def test_trigger_loop_endpoint(client, session):
 
 def test_trigger_loop_404(client):
     assert client.post("/accounts/99999/loop").status_code == 404
+
+
+def test_import_malformed_csv_returns_422(client):
+    resp = client.post("/import/snapshots", json={"csv": "platform,handle,ts\nx,@a,NOT_A_DATE"})
+    assert resp.status_code == 422
+
+
+def test_import_missing_csv_field_returns_422(client):
+    resp = client.post("/import/snapshots", json={})
+    assert resp.status_code == 422

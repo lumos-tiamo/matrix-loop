@@ -34,3 +34,8 @@ def test_invalid_recommendation_status_422(client, session):
 
 def test_recommendation_404(client):
     assert client.post("/recommendations/99999/status", json={"status": "adopted"}).status_code == 404
+
+
+def test_status_missing_field_returns_422(client, session):
+    rec_id, _ = _seed_run(session)
+    assert client.post(f"/recommendations/{rec_id}/status", json={}).status_code == 422

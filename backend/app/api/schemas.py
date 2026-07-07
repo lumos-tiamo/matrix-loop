@@ -14,7 +14,20 @@ class AccountCreate(BaseModel):
     acceptance_criteria: str | None = None
 
 
+class ImportSnapshotsIn(BaseModel):
+    csv: str
+
+
+class SetStatusIn(BaseModel):
+    status: str
+
+
+class SetReviewStatusIn(BaseModel):
+    review_status: str
+
+
 class AccountListItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     platform: str
     handle: str
@@ -88,7 +101,7 @@ class AccountDetail(BaseModel):
     handle: str
     vertical: str | None
     positioning: str | None
-    objective_weights: dict
+    objective_weights: dict | None = None
     snapshots: list[SnapshotOut]
     content_items: list[ContentItemOut]
     loop_runs: list[LoopRunOut]
