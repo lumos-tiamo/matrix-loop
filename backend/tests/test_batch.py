@@ -61,10 +61,21 @@ def test_run_batch_collects_no_progress(session):
         Snapshot(account_id=acc.id, ts=datetime(2026, 7, 6, tzinfo=timezone.utc), followers=110000),
     ])
     session.commit()
-    # run 3 prior batches to build flat history, then the 4th flags no_progress
+    # must exceed LoopConfig.no_progress_limit (default 3) so the 4th run flags no_progress
     for _ in range(4):
         report = run_batch(session, sync=False)
     assert acc.id in report.no_progress
+
+
+def test_run_batch_offset_rotates(session):
+    accts = [_acct(session, f"@r{i}") for i in range(5)]
+    ids = [a.id for a in accts]
+    report = run_batch(session, sync=False, batch_cfg=BatchConfig(offset=2, max_accounts=2))
+    assert report.processed == 2
+    loop_runs = session.query(LoopRun).all()
+    processed_ids = {r.account_id for r in loop_runs}
+    # offset=2 skips the first two by id; the next two are ids[2] and ids[3]
+    assert processed_ids == {ids[2], ids[3]}
 
 
 def test_run_batch_circuit_breaker(session, monkeypatch):

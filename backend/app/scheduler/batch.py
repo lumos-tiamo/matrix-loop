@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class BatchConfig:
     max_accounts: int | None = None            # 每批最多处理多少账号（分批扫 500）
+    offset: int = 0                            # 公平轮转起始索引（按 id 排序后跳过前 N 个）
     stop_after_consecutive_errors: int = 5     # 连续 N 个账号出错就熔断（别烧完整批）
 
 
@@ -25,8 +26,8 @@ class BatchReport:
     processed: int = 0
     synced: int = 0
     looped: int = 0
-    no_progress: list = field(default_factory=list)
-    errors: list = field(default_factory=list)
+    no_progress: list[int] = field(default_factory=list)
+    errors: list[dict[str, str]] = field(default_factory=list)
     stopped_early: bool = False
 
 
@@ -34,6 +35,7 @@ def run_batch(session: Session, *, sync: bool = True, batch_cfg: BatchConfig | N
               loop_cfg=None, scoring_cfg=None) -> BatchReport:
     batch_cfg = batch_cfg or BatchConfig()
     accounts = list(session.scalars(select(Account).order_by(Account.id)).all())
+    accounts = accounts[batch_cfg.offset:]
     if batch_cfg.max_accounts is not None:
         accounts = accounts[: batch_cfg.max_accounts]
 

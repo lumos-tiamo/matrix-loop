@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     x_bearer_token: str | None = None
     scrapecreators_api_key: str | None = None
     schedule_interval_minutes: int = 360
+    schedule_max_accounts: int | None = None
 
 
 settings = Settings()

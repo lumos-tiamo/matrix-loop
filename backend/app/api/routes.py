@@ -12,7 +12,7 @@ from app.api import schemas
 from app.api.deps import get_db
 from app.connectors.base import ManualOnlyError
 from app.connectors.sync import sync_account
-from app.scheduler.batch import run_batch
+from app.scheduler.batch import run_batch, BatchConfig
 
 logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
@@ -118,8 +118,8 @@ def set_draft_status(draft_id: int, payload: schemas.SetReviewStatusIn, db: Sess
 
 
 @router.post("/batch/run")
-def batch_run(sync: bool = True, db: Session = Depends(get_db)) -> dict:
-    report = run_batch(db, sync=sync)
+def batch_run(sync: bool = True, max_accounts: int | None = None, db: Session = Depends(get_db)) -> dict:
+    report = run_batch(db, sync=sync, batch_cfg=BatchConfig(max_accounts=max_accounts))
     return asdict(report)
 
 
