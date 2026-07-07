@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     llm_model: str = "claude-sonnet-4-6"
     x_bearer_token: str | None = None
     scrapecreators_api_key: str | None = None
+    schedule_interval_minutes: int = 360
 
 
 settings = Settings()
