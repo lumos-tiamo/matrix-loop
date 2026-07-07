@@ -4,14 +4,18 @@ from app.connectors.base import ConnectorResult
 
 
 def _bio_url(user: dict) -> str | None:
-    """Prefer the expanded profile URL from entities; fall back to the raw url field."""
+    """Prefer the expanded profile URL from entities; fall back to the raw url field.
+
+    Only returns http(s) URLs (skips unresolved shortener/non-URL entity values).
+    """
     entities = user.get("entities") or {}
     urls = (entities.get("url") or {}).get("urls") or []
-    for u in urls:
-        expanded = u.get("expanded_url") or u.get("url")
-        if expanded:
-            return expanded
-    return user.get("url") or None
+    candidates = [u.get("expanded_url") or u.get("url") for u in urls]
+    candidates.append(user.get("url"))
+    for c in candidates:
+        if c and c.startswith(("http://", "https://")):
+            return c
+    return None
 
 
 class XConnector:

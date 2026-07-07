@@ -34,19 +34,26 @@ def sync_account(session: Session, account, *, connector=None, cfg=None) -> dict
             fields = {k: v for k, v in c.items() if k in content_cols}
             session.add(ContentItem(account_id=account.id, **fields))
             content += 1
+
+        # Auto-fill the monetization endpoint from the profile bio link, but only when the
+        # account has none yet — never override a manual/prior assignment. `endpoints` is a
+        # tiny domain table and this runs only for still-unrouted accounts, so the load is
+        # self-limiting even on the batch path. match_endpoint is imported locally: it lives
+        # in app.flow (a leaf module with no model deps), and a top-level import here would
+        # create a connectors->flow import cycle at module load.
+        matched_name = None
+        if result.bio_url and account.endpoint_id is None:
+            from app.flow.match import match_endpoint
+            endpoints = session.scalars(select(Endpoint)).all()
+            ep = match_endpoint(result.bio_url, endpoints)
+            if ep is not None:
+                account.endpoint_id = ep.id
+                matched_name = ep.name
+
         session.commit()
     except Exception:
         session.rollback()
         raise
 
-    matched_name = None
-    if result.bio_url and account.endpoint_id is None:
-        from app.flow.match import match_endpoint
-        endpoints = session.scalars(select(Endpoint)).all()
-        ep = match_endpoint(result.bio_url, endpoints)
-        if ep is not None:
-            account.endpoint_id = ep.id
-            matched_name = ep.name
-            session.commit()
     return {"snapshots_created": snaps, "content_created": content,
             "tier": result.tier, "endpoint_matched": matched_name}

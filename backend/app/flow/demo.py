@@ -6,7 +6,7 @@ and each named account's composition is fully replaced with the demo wiring.
 """
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.models import Account, AccountSegment, AudienceSegment, Endpoint
@@ -54,7 +54,7 @@ def reset_flow(session: Session) -> dict:
         if acc is None:
             continue
         acc.endpoint_id = endpoints[ep_name].id if ep_name else None
-        session.query(AccountSegment).filter_by(account_id=acc.id).delete()
+        session.execute(delete(AccountSegment).where(AccountSegment.account_id == acc.id))
         for label, weight in comps:
             session.add(AccountSegment(account_id=acc.id, segment_id=segments[label].id, weight=weight))
         routed += 1
