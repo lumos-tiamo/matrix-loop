@@ -15,6 +15,7 @@ class ClaudeClient:
         self.api_key = api_key if api_key is not None else settings.anthropic_api_key
         self.base_url = base_url if base_url is not None else settings.anthropic_base_url
         self.model = model or settings.llm_model
+        self.last_usage: dict | None = None
         if not self.api_key:
             raise ValueError(
                 "ANTHROPIC_API_KEY not configured - set MATRIXLOOP_ANTHROPIC_API_KEY "
@@ -34,6 +35,11 @@ class ClaudeClient:
             system=system,
             messages=[{"role": "user", "content": prompt}],
         )
+        usage = getattr(message, "usage", None)
+        self.last_usage = {
+            "input": getattr(usage, "input_tokens", 0) or 0,
+            "output": getattr(usage, "output_tokens", 0) or 0,
+        } if usage is not None else None
         return "".join(
             block.text for block in message.content if getattr(block, "type", None) == "text"
         )

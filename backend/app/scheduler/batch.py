@@ -19,6 +19,7 @@ class BatchConfig:
     max_accounts: int | None = None            # 每批最多处理多少账号（分批扫 500）
     offset: int = 0                            # 公平轮转起始索引（按 id 排序后跳过前 N 个）
     stop_after_consecutive_errors: int = 5     # 连续 N 个账号出错就熔断（别烧完整批）
+    token_budget: int | None = None            # 累计 token 上限；超出则 stopped_early=True
 
 
 @dataclass
@@ -29,6 +30,7 @@ class BatchReport:
     no_progress: list[int] = field(default_factory=list)
     errors: list[dict[str, str]] = field(default_factory=list)
     stopped_early: bool = False
+    total_tokens: int = 0
 
 
 def run_batch(session: Session, *, sync: bool = True, batch_cfg: BatchConfig | None = None,
@@ -54,6 +56,11 @@ def run_batch(session: Session, *, sync: bool = True, batch_cfg: BatchConfig | N
             consecutive_errors = 0
             if run.status == "no_progress":
                 report.no_progress.append(acc.id)
+            report.total_tokens += run.tokens_cost or 0
+            # `>` means stop once total EXCEEDS budget (the run that crosses is still recorded)
+            if batch_cfg.token_budget is not None and report.total_tokens > batch_cfg.token_budget:
+                report.stopped_early = True
+                break
         except Exception as exc:  # noqa: BLE001 - isolate per-account failures
             logger.warning("batch loop failed for account %s: %s", acc.id, exc)
             report.errors.append({"account_id": acc.id, "stage": "loop", "error": str(exc)})

@@ -4,7 +4,8 @@ import io
 import logging
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -13,7 +14,9 @@ from app.api import schemas
 from app.api.deps import get_db
 from app.connectors.base import ManualOnlyError
 from app.connectors.sync import sync_account
+from app.db import SessionLocal
 from app.scheduler.batch import run_batch, BatchConfig
+from app.scheduler.runs import BATCH_RUNS, new_run_id, record_run, start_batch
 
 logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
@@ -32,10 +35,15 @@ def _latest(db: Session, model, account_id: int, *order):
     return db.scalars(stmt).first()
 
 
-def _list_item(db: Session, acc: Account) -> schemas.AccountListItem:
-    snap = _latest(db, Snapshot, acc.id, Snapshot.ts.desc(), Snapshot.id.desc())
-    ev = _latest(db, Evaluation, acc.id, Evaluation.created_at.desc(), Evaluation.id.desc())
-    run = _latest(db, LoopRun, acc.id, LoopRun.ts.desc(), LoopRun.id.desc())
+def _list_item(db: Session, acc: Account,
+               snap=None, ev=None, run=None) -> schemas.AccountListItem:
+    # snap/ev/run are pre-fetched by list_accounts; single-account callers pass None → lazy fetch
+    if snap is None:
+        snap = _latest(db, Snapshot, acc.id, Snapshot.ts.desc(), Snapshot.id.desc())
+    if ev is None:
+        ev = _latest(db, Evaluation, acc.id, Evaluation.created_at.desc(), Evaluation.id.desc())
+    if run is None:
+        run = _latest(db, LoopRun, acc.id, LoopRun.ts.desc(), LoopRun.id.desc())
     return schemas.AccountListItem(
         id=acc.id,
         platform=acc.platform,
@@ -60,9 +68,25 @@ def create_account(payload: schemas.AccountCreate, db: Session = Depends(get_db)
 
 @router.get("/accounts", response_model=list[schemas.AccountListItem])
 def list_accounts(db: Session = Depends(get_db)) -> list[schemas.AccountListItem]:
-    # TODO(perf): replace per-account _list_item queries with one aggregating query when accounts > ~200
-    accounts = db.scalars(select(Account).order_by(Account.id)).all()
-    return [_list_item(db, a) for a in accounts]
+    accounts = list(db.scalars(select(Account).order_by(Account.id)).all())
+
+    # batch: latest snapshot/eval/loop per account (last write wins after ascending sort)
+    latest_snap: dict[int, object] = {}
+    for s in db.scalars(select(Snapshot).order_by(Snapshot.account_id, Snapshot.ts, Snapshot.id)).all():
+        latest_snap[s.account_id] = s
+
+    latest_ev: dict[int, object] = {}
+    for e in db.scalars(select(Evaluation).order_by(Evaluation.account_id, Evaluation.created_at, Evaluation.id)).all():
+        latest_ev[e.account_id] = e
+
+    latest_run: dict[int, object] = {}
+    for lr in db.scalars(select(LoopRun).order_by(LoopRun.account_id, LoopRun.ts, LoopRun.id)).all():
+        latest_run[lr.account_id] = lr
+
+    return [_list_item(db, a,
+                       snap=latest_snap.get(a.id),
+                       ev=latest_ev.get(a.id),
+                       run=latest_run.get(a.id)) for a in accounts]
 
 
 @router.get("/accounts/{account_id}", response_model=schemas.AccountDetail)
@@ -123,9 +147,25 @@ def set_draft_status(draft_id: int, payload: schemas.SetReviewStatusIn, db: Sess
 
 
 @router.post("/batch/run")
-def batch_run(sync: bool = True, max_accounts: int | None = None, db: Session = Depends(get_db)) -> dict:
-    report = run_batch(db, sync=sync, batch_cfg=BatchConfig(max_accounts=max_accounts))
+def batch_run(background_tasks: BackgroundTasks, sync: bool = True,
+              max_accounts: int | None = None, background: bool = False,
+              db: Session = Depends(get_db)) -> dict:
+    cfg = BatchConfig(max_accounts=max_accounts)
+    if background:
+        run_id = new_run_id()
+        record_run(run_id, {"status": "running", "report": None, "error": None})
+        background_tasks.add_task(start_batch, run_id, SessionLocal, sync=sync, batch_cfg=cfg)
+        return JSONResponse(status_code=202, content={"run_id": run_id, "status": "running"})
+    report = run_batch(db, sync=sync, batch_cfg=cfg)
     return asdict(report)
+
+
+@router.get("/batch/runs/{run_id}")
+def batch_run_status(run_id: str) -> dict:
+    entry = BATCH_RUNS.get(run_id)
+    if entry is None:
+        raise HTTPException(status_code=404, detail="run not found")
+    return {"run_id": run_id, **entry}
 
 
 @router.get("/overview")
@@ -141,17 +181,20 @@ def content_library(platform: str | None = None, account_id: int | None = None,
         stmt = stmt.where(Account.platform == platform)
     if account_id:
         stmt = stmt.where(ContentItem.account_id == account_id)
+    # nulls-last sort: use boolean expression fallback for SQLite compatibility
+    stmt = stmt.order_by(
+        (ContentItem.views == None),  # noqa: E711 - SQLAlchemy equality, not is None
+        ContentItem.views.desc(),
+        ContentItem.id,
+    ).limit(limit)
     rows = db.execute(stmt).all()
-    items = [
+    return [
         schemas.ContentLibraryItem(
             id=ci.id, account_id=ci.account_id, account_handle=acc.handle, platform=acc.platform,
             topic=ci.topic, views=ci.views, likes=ci.likes, comments=ci.comments, published_at=ci.published_at,
         )
         for ci, acc in rows
     ]
-    # TODO(perf): push ORDER BY views DESC + LIMIT to SQL for large libraries
-    items.sort(key=lambda i: (i.views or 0), reverse=True)
-    return items[:limit]
 
 
 @router.get("/flow")

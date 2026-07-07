@@ -99,8 +99,12 @@ def run_loop(session: Session, account, *, llm_client=None, cfg: LoopConfig | No
         snapshots, content = _gather(session, account.id)
 
         analysis = None
+        tokens = 0
         if llm_client is not None:
             result, analysis = evaluate_with_analysis(account, snapshots, content, llm_client, cfg=scoring_cfg)
+            usage = getattr(llm_client, "last_usage", None)
+            if usage:
+                tokens = (usage.get("input", 0) or 0) + (usage.get("output", 0) or 0)
         else:
             result = evaluate_with_content(account, snapshots, content, cfg=scoring_cfg)
 
@@ -115,7 +119,7 @@ def run_loop(session: Session, account, *, llm_client=None, cfg: LoopConfig | No
             account_id=account.id,
             diagnosis=diagnosis,
             verify_result=verify,
-            tokens_cost=0,  # TODO(plan-8): wire real token usage from LLMClient
+            tokens_cost=tokens,
             status=status,
         )
         run.evaluation = Evaluation(
