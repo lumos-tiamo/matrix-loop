@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.connectors.registry import resolve_connector
+from app.connectors.sync import sync_account
 from app.loop.engine import run_loop
 from app.models import Account
 
@@ -62,5 +64,14 @@ def run_batch(session: Session, *, sync: bool = True, batch_cfg: BatchConfig | N
 
 
 def _try_sync(session: Session, account: Account, report: BatchReport) -> None:
-    """Sync placeholder - filled in Task 2. No-op for now (loop-only batches)."""
-    return None
+    """Best-effort sync via the account's auto connector. Manual platforms are skipped
+    (not an error). A sync failure is non-fatal - the loop still runs on existing data."""
+    connector, _tier = resolve_connector(account.platform)
+    if connector is None:
+        return  # manual-only platform: nothing to auto-sync
+    try:
+        sync_account(session, account, connector=connector)
+        report.synced += 1
+    except Exception as exc:  # noqa: BLE001 - sync failure must not abort the account's loop
+        logger.warning("batch sync failed for account %s: %s", account.id, exc)
+        report.errors.append({"account_id": account.id, "stage": "sync", "error": str(exc)})
