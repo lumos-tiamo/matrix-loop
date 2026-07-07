@@ -25,6 +25,7 @@ export interface LoopRunOut {
 export interface AccountDetail {
   id: number; platform: string; handle: string; vertical: string | null; positioning: string | null;
   objective_weights: Record<string, number> | null;
+  acceptance_criteria?: string | null;
   snapshots: SnapshotOut[]; content_items: ContentItemOut[]; loop_runs: LoopRunOut[];
 }
 

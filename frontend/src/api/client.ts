@@ -30,8 +30,15 @@ export const api = {
     const q = qs.toString();
     return req<ContentLibraryItem[]>(`/content${q ? `?${q}` : ""}`);
   },
-  batchRun: (sync = true) =>
-    req<Record<string, unknown>>(`/batch/run?sync=${sync}`, { method: "POST" }),
+  batchRun: (sync = true, maxAccounts?: number) => {
+    const qs = new URLSearchParams({ sync: String(sync) });
+    if (maxAccounts != null) qs.set("max_accounts", String(maxAccounts));
+    return req<Record<string, unknown>>(`/batch/run?${qs.toString()}`, { method: "POST" });
+  },
+  importSnapshots: (csv: string) =>
+    req<Record<string, unknown>>("/import/snapshots", { method: "POST", body: JSON.stringify({ csv }) }),
+  syncAccount: (id: number) =>
+    req<Record<string, unknown>>(`/accounts/${id}/sync`, { method: "POST" }),
   triggerLoop: (id: number) => req<LoopRunOut>(`/accounts/${id}/loop`, { method: "POST" }),
   setRecommendationStatus: (id: number, status: string) =>
     req<RecommendationOut>(`/recommendations/${id}/status`, { method: "POST", body: JSON.stringify({ status }) }),
