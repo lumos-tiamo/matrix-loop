@@ -6,7 +6,8 @@ export function LoopTimeline({ runs }: { runs: LoopRunOut[] }) {
   return (
     <ul className="space-y-3">
       {ordered.map((r) => {
-        const delta = (r.verify_result?.delta as number | undefined) ?? null;
+        const raw = r.verify_result?.delta;
+        const delta = typeof raw === "number" ? raw : null;
         return (
           <li key={r.id} className="border-l-2 border-line pl-3">
             <div className="flex items-center gap-3 font-mono text-xs text-muted">

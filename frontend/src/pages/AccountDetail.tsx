@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { useAsync } from "../api/hooks";
@@ -10,6 +11,7 @@ export function AccountDetail() {
   const { id } = useParams();
   const accountId = Number(id);
   const { data, loading, error, reload } = useAsync(() => api.getAccount(accountId), [accountId]);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   if (loading) return <div className="font-mono text-muted">加载中…</div>;
   if (error || !data) return <div className="font-mono text-alert">加载失败：{error}</div>;
@@ -18,7 +20,11 @@ export function AccountDetail() {
   const latestRun = [...data.loop_runs].sort((a, b) => b.ts.localeCompare(a.ts))[0];
   const score = latestRun?.evaluation?.composite_score ?? null;
 
-  const runLoop = async () => { await api.triggerLoop(accountId); reload(); };
+  const runLoop = async () => {
+    setActionError(null);
+    try { await api.triggerLoop(accountId); reload(); }
+    catch (e) { setActionError(String(e)); }
+  };
 
   return (
     <div className="space-y-6">
@@ -32,7 +38,10 @@ export function AccountDetail() {
             <div className="font-mono text-[11px] uppercase text-muted">价值分</div>
             <div className="font-display text-4xl text-accent tabnums">{score != null ? score.toFixed(0) : "—"}</div>
           </div>
-          <button onClick={runLoop} className="font-mono text-xs border border-accent text-accent rounded px-3 py-2 hover:bg-accent hover:text-bg transition">跑一轮 Loop</button>
+          <div className="flex flex-col items-end gap-1">
+            <button onClick={runLoop} className="font-mono text-xs border border-accent text-accent rounded px-3 py-2 hover:bg-accent hover:text-bg transition">跑一轮 Loop</button>
+            {actionError && <p className="font-mono text-xs text-alert">{actionError}</p>}
+          </div>
         </div>
       </div>
 

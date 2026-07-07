@@ -1,10 +1,17 @@
+import { useState } from "react";
 import { api } from "../api/client";
 import type { LoopRunOut } from "../api/types";
 
 export function ReviewPanel({ run, onChange }: { run: LoopRunOut; onChange: () => void }) {
-  const act = async (fn: () => Promise<unknown>) => { await fn(); onChange(); };
+  const [err, setErr] = useState<string | null>(null);
+  const act = async (fn: () => Promise<unknown>) => {
+    setErr(null);
+    try { await fn(); onChange(); }
+    catch (e) { setErr(String(e)); }
+  };
   return (
     <div className="space-y-4">
+      {err && <p className="font-mono text-xs text-alert">{err}</p>}
       <div>
         <h3 className="font-mono text-xs text-muted uppercase mb-2">纠偏建议</h3>
         <ul className="space-y-2">

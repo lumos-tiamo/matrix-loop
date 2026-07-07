@@ -1,4 +1,4 @@
-import { it, expect, vi, beforeEach } from "vitest";
+import { it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { Overview } from "./Overview";
@@ -12,6 +12,7 @@ const ACCOUNTS: AccountListItem[] = [
 beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ACCOUNTS }));
 });
+afterEach(() => vi.unstubAllGlobals());
 
 it("renders stat tiles and both accounts in the table", async () => {
   render(<MemoryRouter><Overview /></MemoryRouter>);
