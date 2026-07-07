@@ -238,6 +238,12 @@ def list_endpoints(db: Session = Depends(get_db)) -> list[dict]:
     return [{"id": e.id, "name": e.name, "url_pattern": e.url_pattern} for e in rows]
 
 
+@router.post("/demo/reset")
+def demo_reset(db: Session = Depends(get_db)) -> dict:
+    from app.flow.demo import reset_flow
+    return reset_flow(db)
+
+
 @router.post("/accounts/{account_id}/segments")
 def set_composition(account_id: int, payload: schemas.SetComposition, db: Session = Depends(get_db)) -> dict:
     acc = db.get(Account, account_id)
