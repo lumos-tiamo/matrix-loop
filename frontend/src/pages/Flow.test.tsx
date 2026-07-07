@@ -61,11 +61,14 @@ it("renders the sankey chart from /flow", async () => {
   expect(chart).toBeInTheDocument();
   const opt = JSON.parse(chart.getAttribute("data-option") ?? "{}");
   expect(opt.series?.[0]?.type).toBe("sankey");
-  // prefixes stripped for display labels
+  // node identity uses full prefixed strings to avoid collisions (e.g. ep:Nina vs acct:Nina)
   const nodeNames = (opt.series?.[0]?.data ?? []).map((n: { name: string }) => n.name);
-  expect(nodeNames).toContain("@money_talk");
-  expect(nodeNames).toContain("crypto");
-  expect(nodeNames).toContain("Nina");
+  expect(nodeNames).toContain("acct:@money_talk");
+  expect(nodeNames).toContain("seg:crypto");
+  expect(nodeNames).toContain("ep:Nina");
+  // links also use full prefixed strings
+  const linkSources = (opt.series?.[0]?.links ?? []).map((l: { source: string }) => l.source);
+  expect(linkSources).toContain("acct:@money_talk");
 });
 
 it("renders summary stats (node/link/total flow counts)", async () => {
@@ -113,4 +116,72 @@ it("shows an empty state prompting to reset when flow is empty", async () => {
   // the empty state and the config panel, so assert the prompt copy directly.
   expect(await screen.findByText(/还没有导流数据/)).toBeInTheDocument();
   expect(screen.getAllByText(/重置为示例/).length).toBeGreaterThanOrEqual(1);
+});
+
+it("segment-only save does NOT call setEndpoint but DOES call setComposition", async () => {
+  // Stub: createSegment returns id=77, setComposition and getFlow/accounts all ok
+  const fetchMock = stubFetch((url, init) => {
+    const u = String(url);
+    // createSegment POST
+    if (init?.method === "POST" && u.includes("/segments") && !u.includes("/accounts/")) {
+      return { ok: true, json: async () => ({ id: 77, label: "测试人群" }) };
+    }
+    return undefined; // fallthrough to default (flow/accounts ok stubs)
+  });
+
+  render(<MemoryRouter><Flow /></MemoryRouter>);
+  // Wait for the page to load (echart rendered means flow+accounts fetched)
+  await screen.findByTestId("echart");
+
+  // Create a segment so the segment pool is populated
+  fireEvent.change(screen.getByPlaceholderText(/新建人群标签/), { target: { value: "测试人群" } });
+  fireEvent.click(screen.getByRole("button", { name: /加人群/ }));
+  // Wait for the segment chip to appear
+  await screen.findByText("测试人群");
+
+  // Pick an account (id=4) — use the first select (account picker)
+  const allSelects = document.querySelectorAll("select");
+  // First select is the account picker
+  fireEvent.change(allSelects[0], { target: { value: "4" } });
+
+  // Toggle the segment on (do NOT touch the endpoint select)
+  fireEvent.click(screen.getByRole("button", { name: "测试人群" }));
+
+  // Click 保存配置 — no endpoint select touched so epTouched=false
+  fireEvent.click(screen.getByRole("button", { name: /保存配置/ }));
+
+  await waitFor(() => {
+    const calls = fetchMock.mock.calls as [string, RequestInit][];
+    const endpointCall = calls.find(([u, i]) =>
+      String(u).includes("/accounts/") && String(u).includes("/endpoint") && i?.method === "POST"
+    );
+    const segCall = calls.find(([u, i]) =>
+      String(u).includes("/accounts/") && String(u).includes("/segments") && i?.method === "POST"
+    );
+    expect(endpointCall).toBeUndefined(); // must NOT have called setEndpoint
+    expect(segCall).toBeDefined();        // must have called setComposition
+  });
+});
+
+it("failed write op surfaces an error message", async () => {
+  // Stub: createSegment returns 422 error
+  stubFetch((url, init) => {
+    const u = String(url);
+    if (init?.method === "POST" && u.includes("/segments") && !u.includes("/accounts/")) {
+      return { ok: false, status: 422, json: async () => ({ detail: "boom" }) };
+    }
+    return undefined;
+  });
+
+  render(<MemoryRouter><Flow /></MemoryRouter>);
+  await screen.findByTestId("echart");
+
+  // Type a label and click 新建人群 button (labeled "+ 加人群")
+  fireEvent.change(screen.getByPlaceholderText(/新建人群标签/), { target: { value: "坏数据" } });
+  fireEvent.click(screen.getByRole("button", { name: /加人群/ }));
+
+  // The error from the API should surface in the UI
+  await waitFor(() => {
+    expect(screen.getByText(/boom/)).toBeInTheDocument();
+  });
 });

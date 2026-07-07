@@ -44,7 +44,7 @@ export function SankeyChart({ flow, height = 520 }: { flow: FlowData; height?: n
     const tone = toneOf(n.name);
     const dim = kind === "ep" && label === "未定向";
     return {
-      name: label, // display label (prefix stripped)
+      name: n.name, // full prefixed string — preserves unique identity (e.g. ep:Nina vs acct:Nina)
       itemStyle: {
         color: tone,
         borderColor: toRgba(tone, dim ? 0.35 : 0.9),
@@ -54,6 +54,8 @@ export function SankeyChart({ flow, height = 520 }: { flow: FlowData; height?: n
       },
       label: {
         color: dim ? "#8A93A8" : "#EAEDF3",
+        // strip prefix for display only
+        formatter: (p: { name?: string }) => splitPrefix(p.name ?? "").label,
       },
     };
   });
@@ -62,8 +64,8 @@ export function SankeyChart({ flow, height = 520 }: { flow: FlowData; height?: n
     const from = toneOf(l.source);
     const to = toneOf(l.target);
     return {
-      source: splitPrefix(l.source).label,
-      target: splitPrefix(l.target).label,
+      source: l.source, // full prefixed string — matches node identity
+      target: l.target,
       value: l.value,
       lineStyle: {
         color: {
@@ -91,9 +93,11 @@ export function SankeyChart({ flow, height = 520 }: { flow: FlowData; height?: n
       textStyle: { color: "#EAEDF3", fontFamily: "IBM Plex Mono" },
       formatter: (p: { dataType?: string; name?: string; value?: number; data?: { source?: string; target?: string } }) => {
         if (p.dataType === "edge" && p.data) {
-          return `${p.data.source} → ${p.data.target}<br/><b>${Number(p.value ?? 0).toLocaleString()}</b> 流量`;
+          const src = splitPrefix(p.data.source ?? "").label;
+          const tgt = splitPrefix(p.data.target ?? "").label;
+          return `${src} → ${tgt}<br/><b>${Number(p.value ?? 0).toLocaleString()}</b> 流量`;
         }
-        return `<b>${p.name}</b>`;
+        return `<b>${splitPrefix(p.name ?? "").label}</b>`;
       },
     },
     series: [

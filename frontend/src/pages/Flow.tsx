@@ -213,6 +213,7 @@ function FlowConfig({
   const [acctId, setAcctId] = useState<number | "">("");
   const [pickedSegs, setPickedSegs] = useState<Record<number, number>>({}); // segId -> weight
   const [pickedEp, setPickedEp] = useState<number | "">("");
+  const [epTouched, setEpTouched] = useState(false); // true only when user explicitly changed the endpoint select
 
   // labels already live in the flow (context; may lack ids so not directly assignable)
   const flowSegLabels = useMemo(
@@ -263,7 +264,7 @@ function FlowConfig({
         segment_id: Number(id), weight: w,
       }));
       if (comp.length) await api.setComposition(acctId, comp);
-      await api.setEndpoint(acctId, pickedEp === "" ? null : pickedEp);
+      if (epTouched) await api.setEndpoint(acctId, pickedEp === "" ? null : pickedEp);
       setMsg("已保存账号导流配置");
       onChanged();
     });
@@ -323,7 +324,7 @@ function FlowConfig({
           <select
             className={`${inputCls} appearance-none`}
             value={acctId}
-            onChange={(e) => { setAcctId(e.target.value === "" ? "" : Number(e.target.value)); setPickedSegs({}); setPickedEp(""); }}
+            onChange={(e) => { setAcctId(e.target.value === "" ? "" : Number(e.target.value)); setPickedSegs({}); setPickedEp(""); setEpTouched(false); }}
           >
             <option value="">选择账号…</option>
             {accounts.map((a) => (
@@ -354,7 +355,11 @@ function FlowConfig({
                         <input
                           type="number" min={0} max={1} step={0.1}
                           value={pickedSegs[s.id]}
-                          onChange={(e) => setPickedSegs((p) => ({ ...p, [s.id]: Number(e.target.value) }))}
+                          onChange={(e) => {
+                            const v = Number(e.target.value);
+                            const clamped = Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0;
+                            setPickedSegs((p) => ({ ...p, [s.id]: clamped }));
+                          }}
                           className="w-[52px] rounded-md border border-line bg-panel px-[6px] py-[3px] font-mono text-[11px] text-text tabnums focus:border-cyan focus:outline-none"
                         />
                       )}
@@ -372,7 +377,7 @@ function FlowConfig({
               <select
                 className={`${inputCls} appearance-none`}
                 value={pickedEp}
-                onChange={(e) => setPickedEp(e.target.value === "" ? "" : Number(e.target.value))}
+                onChange={(e) => { setPickedEp(e.target.value === "" ? "" : Number(e.target.value)); setEpTouched(true); }}
               >
                 <option value="">未定向</option>
                 {endpoints.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
