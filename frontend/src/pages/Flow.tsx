@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 import { useAsync } from "../api/hooks";
 import type { AccountListItem, FlowData, SegmentOut, EndpointOut, CompositionItem } from "../api/types";
@@ -20,6 +20,10 @@ function stripPrefix(name: string): { kind: string; label: string } {
   return i === -1 ? { kind: "", label: name } : { kind: name.slice(0, i), label: name.slice(i + 1) };
 }
 
+// mergeById(base, extra) applies `extra` last, so `extra` wins on id collision.
+// Callers pass the optimistic session extras as `base` and the authoritative
+// server pool as `extra`, so the server pool wins on collision while just-created
+// extras still show until the next pool reload returns them.
 function mergeById<T extends { id: number }>(base: T[], extra: T[]): T[] {
   const m = new Map<number, T>();
   for (const x of base) m.set(x.id, x);
@@ -32,6 +36,10 @@ export function Flow() {
   const accounts = useAsync(() => api.listAccounts(), []);
   const segmentsPool = useAsync(() => api.listSegments(), []);
   const endpointsPool = useAsync(() => api.listEndpoints(), []);
+
+  // Bumped on every demo reset so FlowConfig can drop its session-created extras
+  // (which now carry stale ids the rebuilt server pool no longer matches).
+  const [resetNonce, setResetNonce] = useState(0);
 
   const data: FlowData = flow.data ?? { nodes: [], links: [] };
 
@@ -52,16 +60,23 @@ export function Flow() {
 
   const hasFlow = data.nodes.length > 0;
 
-  function reloadPools() {
+  const reloadPools = useCallback(() => {
     segmentsPool.reload();
     endpointsPool.reload();
-  }
+  }, [segmentsPool, endpointsPool]);
 
-  function reload() {
+  const reload = useCallback(() => {
     flow.reload();
     accounts.reload();
     reloadPools();
-  }
+  }, [flow, accounts, reloadPools]);
+
+  // Reset path (from either the EmptyState or FlowConfig): bump the nonce so
+  // FlowConfig clears its stale session extras, then reload every pool.
+  const afterReset = useCallback(() => {
+    setResetNonce((n) => n + 1);
+    reload();
+  }, [reload]);
 
   return (
     <div>
@@ -107,7 +122,7 @@ export function Flow() {
           {hasFlow ? (
             <SankeyChart flow={data} height={520} />
           ) : (
-            <EmptyState onReset={reload} />
+            <EmptyState onReset={afterReset} />
           )}
         </ChartCard>
 
@@ -119,6 +134,7 @@ export function Flow() {
           endpointsPool={endpointsPool.data ?? []}
           reloadPools={reloadPools}
           onChanged={reload}
+          resetNonce={resetNonce}
         />
       </div>
     </div>
@@ -157,7 +173,7 @@ function EmptyState({ onReset }: { onReset: () => void }) {
 }
 
 function FlowConfig({
-  flow, accounts, segmentsPool, endpointsPool, reloadPools, onChanged,
+  flow, accounts, segmentsPool, endpointsPool, reloadPools, onChanged, resetNonce,
 }: {
   flow: FlowData;
   accounts: AccountListItem[];
@@ -165,6 +181,7 @@ function FlowConfig({
   endpointsPool: EndpointOut[];
   reloadPools: () => void;
   onChanged: () => void;
+  resetNonce: number;
 }) {
   const [segLabel, setSegLabel] = useState("");
   const [epName, setEpName] = useState("");
@@ -176,9 +193,17 @@ function FlowConfig({
   const [extraSegs, setExtraSegs] = useState<SegmentOut[]>([]);
   const [extraEps, setExtraEps] = useState<EndpointOut[]>([]);
 
-  // The assignable pool = fetched pool + session-created (session/newest wins on id collision).
-  const segments = mergeById(segmentsPool, extraSegs);
-  const endpoints = mergeById(endpointsPool, extraEps);
+  // A demo reset rebuilds the server pool with brand-new ids, so any session
+  // extras we still hold are stale — drop them so they can't shadow fresh data.
+  useEffect(() => {
+    if (resetNonce > 0) { setExtraSegs([]); setExtraEps([]); }
+  }, [resetNonce]);
+
+  // The assignable pool = optimistic session extras + fetched pool. The server
+  // pool is passed as `extra` so it wins on id collision; extras are optimistic
+  // only until the next pool reload returns them from the server.
+  const segments = mergeById(extraSegs, segmentsPool);
+  const endpoints = mergeById(extraEps, endpointsPool);
 
   const [acctId, setAcctId] = useState<number | "">("");
   const [pickedSegs, setPickedSegs] = useState<Record<number, number>>({}); // segId -> weight
@@ -252,6 +277,10 @@ function FlowConfig({
   const resetDemo = () =>
     withBusy("reset", async () => {
       await api.resetDemo();
+      // Drop session extras directly: the reset rebuilt the server pool with new
+      // ids, so the old extras are stale (this path lives inside FlowConfig, so no
+      // nonce is needed — the EmptyState reset relies on resetNonce instead).
+      setExtraSegs([]); setExtraEps([]);
       setMsg("已重置为示例流向");
       onChanged();
     });

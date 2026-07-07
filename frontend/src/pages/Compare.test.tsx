@@ -54,7 +54,9 @@ it("renders a single column for ?ids=1 without crashing", async () => {
       <Compare />
     </MemoryRouter>,
   );
-  expect(await screen.findAllByText("@a1")).toBeTruthy();
+  // @a1 also renders as a picker chip, so assert on the column's unique value
+  // score (88 comes from account 1's loop evaluation, rendered only in the column).
+  expect(await screen.findByText("88")).toBeInTheDocument();
 });
 
 it("renders both selected accounts side by side (?ids=1,2)", async () => {

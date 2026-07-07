@@ -73,7 +73,7 @@ it("跑一批 surfaces an error when POST /batch/run fails", async () => {
   });
   render(<OpsBar accounts={ACCOUNTS} />);
   fireEvent.click(screen.getByRole("button", { name: /跑一批/ }));
-  expect(await screen.findByText(/boom|失败|错误/)).toBeInTheDocument();
+  expect(await screen.findByText(/boom/)).toBeInTheDocument();
 });
 
 it("✕ button in the import modal is disabled while busy", async () => {

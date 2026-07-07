@@ -217,8 +217,25 @@ it("populates the assignable pool from GET /segments and /endpoints on mount", a
   expect(ninaOption).toBeInTheDocument();
 });
 
-it("重置为示例 calls POST /demo/reset", async () => {
-  const fetchMock = stubFetch();
+it("重置为示例 calls POST /demo/reset AND refreshes the displayed pool", async () => {
+  // Before reset the pool is empty; once /demo/reset fires, subsequent GETs return
+  // the rebuilt server pool. This proves the reset → reload chain actually
+  // re-fetches and re-renders the assignable pool (not just that the POST fired).
+  let reset = false;
+  const fetchMock = stubFetch((url, init) => {
+    const u = String(url);
+    if (u.includes("/demo/reset")) {
+      reset = true;
+      return { ok: true, json: async () => ({ endpoints: 1, segments: 1, routed: 0 }) };
+    }
+    if (u.endsWith("/segments") && init?.method !== "POST") {
+      return { ok: true, json: async () => (reset ? [{ id: 1, label: "crypto" }] : []) };
+    }
+    if (u.endsWith("/endpoints") && init?.method !== "POST") {
+      return { ok: true, json: async () => (reset ? [{ id: 9, name: "Nina", url_pattern: "linktr.ee/nina" }] : []) };
+    }
+    return undefined;
+  });
 
   render(<MemoryRouter><Flow /></MemoryRouter>);
   await screen.findByTestId("echart");
@@ -226,10 +243,18 @@ it("重置为示例 calls POST /demo/reset", async () => {
   // Reset buttons appear in the config panel; click the first one.
   fireEvent.click(screen.getAllByRole("button", { name: /重置为示例/ })[0]);
 
+  // The POST fired.
   await waitFor(() => {
     const call = (fetchMock.mock.calls as [string, RequestInit][]).find(
       ([u, i]) => String(u).includes("/demo/reset") && i?.method === "POST",
     );
     expect(call).toBeDefined();
   });
+
+  // Select an account so the segment chips + endpoint select render.
+  fireEvent.change(document.querySelectorAll("select")[0], { target: { value: "4" } });
+
+  // Post-reset pool is now displayed: 'crypto' chip + 'Nina' endpoint option.
+  expect(await screen.findByRole("button", { name: "crypto" })).toBeInTheDocument();
+  expect(await screen.findByRole("option", { name: "Nina" })).toBeInTheDocument();
 });
