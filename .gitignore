@@ -18,3 +18,5 @@ data/*.sqlite*
 .superpowers/
 # os
 .DS_Store
+.gstack/
+data/
