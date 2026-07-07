@@ -72,3 +72,60 @@ def test_set_endpoint_unknown_422(client, session):
     r = client.post(f"/accounts/{acc.id}/endpoint", json={"endpoint_id": 99999})
     assert r.status_code == 422
     assert "endpoint not found" in r.json()["detail"]
+
+
+def test_list_segments_returns_created(client):
+    client.post("/segments", json={"label": "crypto"})
+    client.post("/segments", json={"label": "宝妈"})
+    resp = client.get("/segments")
+    assert resp.status_code == 200
+    labels = {s["label"] for s in resp.json()}
+    assert {"crypto", "宝妈"} <= labels
+    assert all("id" in s and "label" in s for s in resp.json())
+
+
+def test_list_endpoints_returns_created(client):
+    client.post("/endpoints", json={"name": "Nina", "url_pattern": "linktr.ee/nina"})
+    resp = client.get("/endpoints")
+    assert resp.status_code == 200
+    rows = resp.json()
+    assert any(r["name"] == "Nina" and r["url_pattern"] == "linktr.ee/nina" for r in rows)
+    assert all({"id", "name", "url_pattern"} <= set(r) for r in rows)
+
+
+def test_demo_reset_wires_flow_for_existing_accounts(client, session):
+    from app.models import Account, Snapshot
+    from datetime import datetime, timezone
+    for h in ("@money_talk", "@tech_daily"):
+        acc = Account(platform="twitter", handle=h,
+                      objective_weights={"growth": 1.0, "engagement": 0.0, "commercial": 0.0, "positioning": 0.0})
+        session.add(acc); session.commit()
+        session.add(Snapshot(account_id=acc.id, ts=datetime(2026, 7, 1, tzinfo=timezone.utc), followers=1000))
+        session.commit()
+
+    resp = client.post("/demo/reset")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["endpoints"] >= 1 and body["segments"] >= 1
+
+    flow = client.get("/flow").json()
+    names = {n["name"] for n in flow["nodes"]}
+    assert any(n.startswith("seg:") for n in names)
+    assert any(n.startswith("ep:") for n in names)
+
+
+def test_demo_reset_is_idempotent(client, session):
+    from app.models import Account, Snapshot
+    from datetime import datetime, timezone
+    acc = Account(platform="twitter", handle="@money_talk",
+                  objective_weights={"growth": 1.0, "engagement": 0.0, "commercial": 0.0, "positioning": 0.0})
+    session.add(acc); session.commit()
+    session.add(Snapshot(account_id=acc.id, ts=datetime(2026, 7, 1, tzinfo=timezone.utc), followers=1000))
+    session.commit()
+
+    first = client.post("/demo/reset").json()
+    second = client.post("/demo/reset").json()
+    assert first["endpoints"] == second["endpoints"]
+    assert first["segments"] == second["segments"]
+    segs = client.get("/segments").json()
+    assert len({s["label"] for s in segs}) == len(segs)  # no dup labels

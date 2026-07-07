@@ -64,6 +64,18 @@ it("clicking 导入 CSV opens the import modal", async () => {
   expect(await screen.findByText(/导入快照 CSV/)).toBeInTheDocument();
 });
 
+it("跑一批 surfaces an error when POST /batch/run fails", async () => {
+  stubFetch((url, init) => {
+    if (init?.method === "POST" && String(url).includes("/batch/run")) {
+      return { ok: false, status: 500, json: async () => ({ detail: "boom" }) };
+    }
+    return undefined;
+  });
+  render(<OpsBar accounts={ACCOUNTS} />);
+  fireEvent.click(screen.getByRole("button", { name: /跑一批/ }));
+  expect(await screen.findByText(/boom/)).toBeInTheDocument();
+});
+
 it("✕ button in the import modal is disabled while busy", async () => {
   // Stub fetch to hang so busy stays set during the import
   let resolveFetch!: (v: unknown) => void;

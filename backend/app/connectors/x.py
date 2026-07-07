@@ -3,6 +3,21 @@ from __future__ import annotations
 from app.connectors.base import ConnectorResult
 
 
+def _bio_url(user: dict) -> str | None:
+    """Prefer the expanded profile URL from entities; fall back to the raw url field.
+
+    Only returns http(s) URLs (skips unresolved shortener/non-URL entity values).
+    """
+    entities = user.get("entities") or {}
+    urls = (entities.get("url") or {}).get("urls") or []
+    candidates = [u.get("expanded_url") or u.get("url") for u in urls]
+    candidates.append(user.get("url"))
+    for c in candidates:
+        if c and c.startswith(("http://", "https://")):
+            return c
+    return None
+
+
 class XConnector:
     """X (Twitter) API v2 user lookup -> follower snapshot. Injected http_get for tests."""
 
@@ -23,9 +38,11 @@ class XConnector:
         handle = (account.handle or "").lstrip("@")
         if not handle:
             raise ValueError("account.handle is empty")
-        url = f"https://api.twitter.com/2/users/by/username/{handle}?user.fields=public_metrics"
+        url = (f"https://api.twitter.com/2/users/by/username/{handle}"
+               "?user.fields=public_metrics,url,entities")
         data = self._http_get(url, {"Authorization": f"Bearer {self.bearer_token}"})
-        metrics = ((data or {}).get("data") or {}).get("public_metrics") or {}
+        user = (data or {}).get("data") or {}
+        metrics = user.get("public_metrics") or {}
         followers = metrics.get("followers_count")
         snapshots = [{"followers": followers}] if followers is not None else []
-        return ConnectorResult(tier=self.tier, snapshots=snapshots)
+        return ConnectorResult(tier=self.tier, snapshots=snapshots, bio_url=_bio_url(user))

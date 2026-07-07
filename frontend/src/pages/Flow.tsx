@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 import { useAsync } from "../api/hooks";
 import type { AccountListItem, FlowData, SegmentOut, EndpointOut, CompositionItem } from "../api/types";
@@ -20,24 +20,26 @@ function stripPrefix(name: string): { kind: string; label: string } {
   return i === -1 ? { kind: "", label: name } : { kind: name.slice(0, i), label: name.slice(i + 1) };
 }
 
-// Demo seed applied client-side (no backend reset route in scope). Idempotent-ish:
-// createSegment/createEndpoint 409 on dup are swallowed; assignments overwrite.
-const DEMO_SEGMENTS = ["crypto", "海外投资者", "宝妈", "打工人群"];
-const DEMO_ENDPOINTS: [string, string][] = [
-  ["Nina", "linktr.ee/nina"],
-  ["xaue", "xaue.com"],
-];
-const DEMO_ASSIGN: Record<string, { endpoint: string | null; segs: [string, number][] }> = {
-  "@money_talk": { endpoint: "Nina", segs: [["crypto", 0.6], ["海外投资者", 0.4]] },
-  "@tech_daily": { endpoint: "xaue", segs: [["crypto", 0.5], ["打工人群", 0.5]] },
-  "@beauty_lab": { endpoint: "xaue", segs: [["宝妈", 0.7], ["打工人群", 0.3]] },
-  "@travel_vlog": { endpoint: null, segs: [["海外投资者", 0.4], ["打工人群", 0.6]] },
-  "@fit_coach": { endpoint: null, segs: [["打工人群", 1.0]] },
-};
+// mergeById(base, extra) applies `extra` last, so `extra` wins on id collision.
+// Callers pass the optimistic session extras as `base` and the authoritative
+// server pool as `extra`, so the server pool wins on collision while just-created
+// extras still show until the next pool reload returns them.
+function mergeById<T extends { id: number }>(base: T[], extra: T[]): T[] {
+  const m = new Map<number, T>();
+  for (const x of base) m.set(x.id, x);
+  for (const x of extra) m.set(x.id, x);
+  return [...m.values()];
+}
 
 export function Flow() {
   const flow = useAsync(() => api.getFlow(), []);
   const accounts = useAsync(() => api.listAccounts(), []);
+  const segmentsPool = useAsync(() => api.listSegments(), []);
+  const endpointsPool = useAsync(() => api.listEndpoints(), []);
+
+  // Bumped on every demo reset so FlowConfig can drop its session-created extras
+  // (which now carry stale ids the rebuilt server pool no longer matches).
+  const [resetNonce, setResetNonce] = useState(0);
 
   const data: FlowData = flow.data ?? { nodes: [], links: [] };
 
@@ -58,10 +60,23 @@ export function Flow() {
 
   const hasFlow = data.nodes.length > 0;
 
-  function reload() {
+  const reloadPools = useCallback(() => {
+    segmentsPool.reload();
+    endpointsPool.reload();
+  }, [segmentsPool, endpointsPool]);
+
+  const reload = useCallback(() => {
     flow.reload();
     accounts.reload();
-  }
+    reloadPools();
+  }, [flow, accounts, reloadPools]);
+
+  // Reset path (from either the EmptyState or FlowConfig): bump the nonce so
+  // FlowConfig clears its stale session extras, then reload every pool.
+  const afterReset = useCallback(() => {
+    setResetNonce((n) => n + 1);
+    reload();
+  }, [reload]);
 
   return (
     <div>
@@ -107,7 +122,7 @@ export function Flow() {
           {hasFlow ? (
             <SankeyChart flow={data} height={520} />
           ) : (
-            <EmptyState onReset={reload} accounts={accounts.data ?? []} />
+            <EmptyState onReset={afterReset} />
           )}
         </ChartCard>
 
@@ -115,19 +130,23 @@ export function Flow() {
         <FlowConfig
           flow={data}
           accounts={accounts.data ?? []}
+          segmentsPool={segmentsPool.data ?? []}
+          endpointsPool={endpointsPool.data ?? []}
+          reloadPools={reloadPools}
           onChanged={reload}
+          resetNonce={resetNonce}
         />
       </div>
     </div>
   );
 }
 
-function EmptyState({ onReset, accounts }: { onReset: () => void; accounts: AccountListItem[] }) {
+function EmptyState({ onReset }: { onReset: () => void }) {
   const [busy, setBusy] = useState(false);
   async function reset() {
     setBusy(true);
     try {
-      await seedDemo(accounts);
+      await api.resetDemo();
       onReset();
     } finally {
       setBusy(false);
@@ -153,52 +172,16 @@ function EmptyState({ onReset, accounts }: { onReset: () => void; accounts: Acco
   );
 }
 
-/** Best-effort client-side demo seed via the write APIs (no backend reset route in scope). */
-async function seedDemo(accounts: AccountListItem[]): Promise<void> {
-  const segIds = new Map<string, number>();
-  const epIds = new Map<string, number>();
-
-  for (const label of DEMO_SEGMENTS) {
-    try {
-      const s = await api.createSegment(label);
-      segIds.set(label, s.id);
-    } catch { /* likely 409 already-exists; resolved below from flow */ }
-  }
-  for (const [name, pattern] of DEMO_ENDPOINTS) {
-    try {
-      const e = await api.createEndpoint(name, pattern);
-      epIds.set(name, e.id);
-    } catch { /* 409 */ }
-  }
-
-  // Resolve any labels/endpoints that already existed (409) by re-reading /flow node ids is not
-  // possible (flow has no ids). We can still assign the ones we just created; pre-existing ones
-  // keep their prior wiring. Assign compositions for accounts we can fully resolve.
-  const byHandle = new Map(accounts.map((a) => [a.handle, a]));
-  for (const [handle, plan] of Object.entries(DEMO_ASSIGN)) {
-    const acc = byHandle.get(handle);
-    if (!acc) continue;
-    const comp: CompositionItem[] = [];
-    for (const [label, weight] of plan.segs) {
-      const id = segIds.get(label);
-      if (id != null) comp.push({ segment_id: id, weight });
-    }
-    if (comp.length) {
-      try { await api.setComposition(acc.id, comp); } catch { /* ignore */ }
-    }
-    const epId = plan.endpoint ? epIds.get(plan.endpoint) ?? null : null;
-    if (plan.endpoint == null || epId != null) {
-      try { await api.setEndpoint(acc.id, epId); } catch { /* ignore */ }
-    }
-  }
-}
-
 function FlowConfig({
-  flow, accounts, onChanged,
+  flow, accounts, segmentsPool, endpointsPool, reloadPools, onChanged, resetNonce,
 }: {
   flow: FlowData;
   accounts: AccountListItem[];
+  segmentsPool: SegmentOut[];
+  endpointsPool: EndpointOut[];
+  reloadPools: () => void;
   onChanged: () => void;
+  resetNonce: number;
 }) {
   const [segLabel, setSegLabel] = useState("");
   const [epName, setEpName] = useState("");
@@ -206,9 +189,21 @@ function FlowConfig({
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
-  // Segments / endpoints created this session (with real ids) — the assignable pool.
-  const [segments, setSegments] = useState<SegmentOut[]>([]);
-  const [endpoints, setEndpoints] = useState<EndpointOut[]>([]);
+  // Items created this session (with real ids); merged with the fetched pool below.
+  const [extraSegs, setExtraSegs] = useState<SegmentOut[]>([]);
+  const [extraEps, setExtraEps] = useState<EndpointOut[]>([]);
+
+  // A demo reset rebuilds the server pool with brand-new ids, so any session
+  // extras we still hold are stale — drop them so they can't shadow fresh data.
+  useEffect(() => {
+    if (resetNonce > 0) { setExtraSegs([]); setExtraEps([]); }
+  }, [resetNonce]);
+
+  // The assignable pool = optimistic session extras + fetched pool. The server
+  // pool is passed as `extra` so it wins on id collision; extras are optimistic
+  // only until the next pool reload returns them from the server.
+  const segments = mergeById(extraSegs, segmentsPool);
+  const endpoints = mergeById(extraEps, endpointsPool);
 
   const [acctId, setAcctId] = useState<number | "">("");
   const [pickedSegs, setPickedSegs] = useState<Record<number, number>>({}); // segId -> weight
@@ -235,7 +230,8 @@ function FlowConfig({
       const label = segLabel.trim();
       if (!label) return;
       const s = await api.createSegment(label);
-      setSegments((prev) => [...prev.filter((p) => p.id !== s.id), s]);
+      setExtraSegs((prev) => [...prev.filter((p) => p.id !== s.id), s]);
+      reloadPools();
       setSegLabel("");
       setMsg(`已建人群「${s.label}」`);
     });
@@ -245,7 +241,8 @@ function FlowConfig({
       const name = epName.trim();
       if (!name) return;
       const e = await api.createEndpoint(name, epPattern.trim() || undefined);
-      setEndpoints((prev) => [...prev.filter((p) => p.id !== e.id), e]);
+      setExtraEps((prev) => [...prev.filter((p) => p.id !== e.id), e]);
+      reloadPools();
       setEpName(""); setEpPattern("");
       setMsg(`已建出口「${e.name}」`);
     });
@@ -279,7 +276,11 @@ function FlowConfig({
 
   const resetDemo = () =>
     withBusy("reset", async () => {
-      await seedDemo(accounts);
+      await api.resetDemo();
+      // Drop session extras directly: the reset rebuilt the server pool with new
+      // ids, so the old extras are stale (this path lives inside FlowConfig, so no
+      // nonce is needed — the EmptyState reset relies on resetNonce instead).
+      setExtraSegs([]); setExtraEps([]);
       setMsg("已重置为示例流向");
       onChanged();
     });

@@ -45,6 +45,10 @@ function stubFetch(impl?: (url: string, init?: RequestInit) => unknown) {
     }
     const u = String(url);
     if (u.includes("/flow")) return Promise.resolve({ ok: true, json: async () => FLOW });
+    if (u.includes("/demo/reset")) return Promise.resolve({ ok: true, json: async () => ({ endpoints: 2, segments: 4, routed: 5 }) });
+    // GET pool routes (POST create routes fall through to caller-provided impl or the {} default)
+    if (u.endsWith("/segments") && init?.method !== "POST") return Promise.resolve({ ok: true, json: async () => [] as unknown });
+    if (u.endsWith("/endpoints") && init?.method !== "POST") return Promise.resolve({ ok: true, json: async () => [] as unknown });
     if (u.includes("/accounts")) return Promise.resolve({ ok: true, json: async () => ACCOUNTS });
     return Promise.resolve({ ok: true, json: async () => ({}) });
   });
@@ -184,4 +188,73 @@ it("failed write op surfaces an error message", async () => {
   await waitFor(() => {
     expect(screen.getByText(/boom/)).toBeInTheDocument();
   });
+});
+
+it("populates the assignable pool from GET /segments and /endpoints on mount", async () => {
+  stubFetch((url, init) => {
+    const u = String(url);
+    if (u.endsWith("/segments") && init?.method !== "POST") {
+      return { ok: true, json: async () => [{ id: 1, label: "crypto" }] };
+    }
+    if (u.endsWith("/endpoints") && init?.method !== "POST") {
+      return { ok: true, json: async () => [{ id: 9, name: "Nina", url_pattern: "linktr.ee/nina" }] };
+    }
+    return undefined;
+  });
+
+  render(<MemoryRouter><Flow /></MemoryRouter>);
+  await screen.findByTestId("echart");
+
+  // Select an account so the segment chips + endpoint select render.
+  const accountSelect = document.querySelectorAll("select")[0];
+  fireEvent.change(accountSelect, { target: { value: "4" } });
+
+  // The 'crypto' segment chip renders WITHOUT the user creating it this session.
+  expect(await screen.findByRole("button", { name: "crypto" })).toBeInTheDocument();
+
+  // The 'Nina' endpoint appears as an <option> in the 变现出口 select.
+  const ninaOption = await screen.findByRole("option", { name: "Nina" });
+  expect(ninaOption).toBeInTheDocument();
+});
+
+it("重置为示例 calls POST /demo/reset AND refreshes the displayed pool", async () => {
+  // Before reset the pool is empty; once /demo/reset fires, subsequent GETs return
+  // the rebuilt server pool. This proves the reset → reload chain actually
+  // re-fetches and re-renders the assignable pool (not just that the POST fired).
+  let reset = false;
+  const fetchMock = stubFetch((url, init) => {
+    const u = String(url);
+    if (u.includes("/demo/reset")) {
+      reset = true;
+      return { ok: true, json: async () => ({ endpoints: 1, segments: 1, routed: 0 }) };
+    }
+    if (u.endsWith("/segments") && init?.method !== "POST") {
+      return { ok: true, json: async () => (reset ? [{ id: 1, label: "crypto" }] : []) };
+    }
+    if (u.endsWith("/endpoints") && init?.method !== "POST") {
+      return { ok: true, json: async () => (reset ? [{ id: 9, name: "Nina", url_pattern: "linktr.ee/nina" }] : []) };
+    }
+    return undefined;
+  });
+
+  render(<MemoryRouter><Flow /></MemoryRouter>);
+  await screen.findByTestId("echart");
+
+  // Reset buttons appear in the config panel; click the first one.
+  fireEvent.click(screen.getAllByRole("button", { name: /重置为示例/ })[0]);
+
+  // The POST fired.
+  await waitFor(() => {
+    const call = (fetchMock.mock.calls as [string, RequestInit][]).find(
+      ([u, i]) => String(u).includes("/demo/reset") && i?.method === "POST",
+    );
+    expect(call).toBeDefined();
+  });
+
+  // Select an account so the segment chips + endpoint select render.
+  fireEvent.change(document.querySelectorAll("select")[0], { target: { value: "4" } });
+
+  // Post-reset pool is now displayed: 'crypto' chip + 'Nina' endpoint option.
+  expect(await screen.findByRole("button", { name: "crypto" })).toBeInTheDocument();
+  expect(await screen.findByRole("option", { name: "Nina" })).toBeInTheDocument();
 });
