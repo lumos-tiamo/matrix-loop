@@ -4,7 +4,8 @@ import io
 import logging
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -13,7 +14,9 @@ from app.api import schemas
 from app.api.deps import get_db
 from app.connectors.base import ManualOnlyError
 from app.connectors.sync import sync_account
+from app.db import SessionLocal
 from app.scheduler.batch import run_batch, BatchConfig
+from app.scheduler.runs import BATCH_RUNS, new_run_id, start_batch
 
 logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
@@ -123,9 +126,25 @@ def set_draft_status(draft_id: int, payload: schemas.SetReviewStatusIn, db: Sess
 
 
 @router.post("/batch/run")
-def batch_run(sync: bool = True, max_accounts: int | None = None, db: Session = Depends(get_db)) -> dict:
-    report = run_batch(db, sync=sync, batch_cfg=BatchConfig(max_accounts=max_accounts))
+def batch_run(background_tasks: BackgroundTasks, sync: bool = True,
+              max_accounts: int | None = None, background: bool = False,
+              db: Session = Depends(get_db)) -> dict:
+    cfg = BatchConfig(max_accounts=max_accounts)
+    if background:
+        run_id = new_run_id()
+        BATCH_RUNS[run_id] = {"status": "running", "report": None, "error": None}
+        background_tasks.add_task(start_batch, run_id, SessionLocal, sync=sync, batch_cfg=cfg)
+        return JSONResponse(status_code=202, content={"run_id": run_id, "status": "running"})
+    report = run_batch(db, sync=sync, batch_cfg=cfg)
     return asdict(report)
+
+
+@router.get("/batch/runs/{run_id}")
+def batch_run_status(run_id: str) -> dict:
+    entry = BATCH_RUNS.get(run_id)
+    if entry is None:
+        raise HTTPException(status_code=404, detail="run not found")
+    return {"run_id": run_id, **entry}
 
 
 @router.get("/overview")
