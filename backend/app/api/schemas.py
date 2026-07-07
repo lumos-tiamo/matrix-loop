@@ -105,3 +105,15 @@ class AccountDetail(BaseModel):
     snapshots: list[SnapshotOut]
     content_items: list[ContentItemOut]
     loop_runs: list[LoopRunOut]
+
+
+class ContentLibraryItem(BaseModel):
+    id: int
+    account_id: int
+    account_handle: str
+    platform: str
+    topic: str | None
+    views: int | None
+    likes: int | None
+    comments: int | None
+    published_at: datetime | None
