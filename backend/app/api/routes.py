@@ -17,7 +17,8 @@ from app.scheduler.batch import run_batch, BatchConfig
 logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
-from app.models import Account, Draft, Evaluation, LoopRun, Recommendation, Snapshot
+from app.api.overview import build_overview
+from app.models import Account, ContentItem, Draft, Evaluation, LoopRun, Recommendation, Snapshot
 
 router = APIRouter()
 
@@ -121,6 +122,31 @@ def set_draft_status(draft_id: int, payload: schemas.SetReviewStatusIn, db: Sess
 def batch_run(sync: bool = True, max_accounts: int | None = None, db: Session = Depends(get_db)) -> dict:
     report = run_batch(db, sync=sync, batch_cfg=BatchConfig(max_accounts=max_accounts))
     return asdict(report)
+
+
+@router.get("/overview")
+def overview(db: Session = Depends(get_db)) -> dict:
+    return build_overview(db)
+
+
+@router.get("/content", response_model=list[schemas.ContentLibraryItem])
+def content_library(platform: str | None = None, account_id: int | None = None,
+                    limit: int = 200, db: Session = Depends(get_db)) -> list[schemas.ContentLibraryItem]:
+    stmt = select(ContentItem, Account).join(Account, ContentItem.account_id == Account.id)
+    if platform:
+        stmt = stmt.where(Account.platform == platform)
+    if account_id:
+        stmt = stmt.where(ContentItem.account_id == account_id)
+    rows = db.execute(stmt).all()
+    items = [
+        schemas.ContentLibraryItem(
+            id=ci.id, account_id=ci.account_id, account_handle=acc.handle, platform=acc.platform,
+            topic=ci.topic, views=ci.views, likes=ci.likes, comments=ci.comments, published_at=ci.published_at,
+        )
+        for ci, acc in rows
+    ]
+    items.sort(key=lambda i: (i.views or 0), reverse=True)
+    return items[:limit]
 
 
 @router.post("/accounts/{account_id}/sync")
