@@ -57,6 +57,7 @@ def run_batch(session: Session, *, sync: bool = True, batch_cfg: BatchConfig | N
             if run.status == "no_progress":
                 report.no_progress.append(acc.id)
             report.total_tokens += run.tokens_cost or 0
+            # `>` means stop once total EXCEEDS budget (the run that crosses is still recorded)
             if batch_cfg.token_budget is not None and report.total_tokens > batch_cfg.token_budget:
                 report.stopped_early = True
                 break

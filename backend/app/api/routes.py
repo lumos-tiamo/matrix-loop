@@ -16,7 +16,7 @@ from app.connectors.base import ManualOnlyError
 from app.connectors.sync import sync_account
 from app.db import SessionLocal
 from app.scheduler.batch import run_batch, BatchConfig
-from app.scheduler.runs import BATCH_RUNS, new_run_id, start_batch
+from app.scheduler.runs import BATCH_RUNS, new_run_id, record_run, start_batch
 
 logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
@@ -68,7 +68,6 @@ def create_account(payload: schemas.AccountCreate, db: Session = Depends(get_db)
 
 @router.get("/accounts", response_model=list[schemas.AccountListItem])
 def list_accounts(db: Session = Depends(get_db)) -> list[schemas.AccountListItem]:
-    from collections import defaultdict
     accounts = list(db.scalars(select(Account).order_by(Account.id)).all())
 
     # batch: latest snapshot/eval/loop per account (last write wins after ascending sort)
@@ -154,7 +153,7 @@ def batch_run(background_tasks: BackgroundTasks, sync: bool = True,
     cfg = BatchConfig(max_accounts=max_accounts)
     if background:
         run_id = new_run_id()
-        BATCH_RUNS[run_id] = {"status": "running", "report": None, "error": None}
+        record_run(run_id, {"status": "running", "report": None, "error": None})
         background_tasks.add_task(start_batch, run_id, SessionLocal, sync=sync, batch_cfg=cfg)
         return JSONResponse(status_code=202, content={"run_id": run_id, "status": "running"})
     report = run_batch(db, sync=sync, batch_cfg=cfg)
