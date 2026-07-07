@@ -9,6 +9,7 @@ class ConnectorResult:
     tier: str                                   # api | scrape | manual
     snapshots: list[dict] = field(default_factory=list)
     content: list[dict] = field(default_factory=list)
+    bio_url: str | None = None                  # profile bio link, for endpoint auto-match
 
 
 class Connector(Protocol):
