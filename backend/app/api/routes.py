@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import io
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api import schemas
 from app.api.deps import get_db
+from app.ingest.manual_import import import_snapshots_csv
+from app.loop.engine import run_loop
 from app.models import Account, Evaluation, LoopRun, Snapshot
 
 router = APIRouter()
@@ -54,3 +58,17 @@ def get_account(account_id: int, db: Session = Depends(get_db)) -> Account:
     if acc is None:
         raise HTTPException(status_code=404, detail="account not found")
     return acc
+
+
+@router.post("/import/snapshots")
+def import_snapshots(payload: dict, db: Session = Depends(get_db)) -> dict:
+    csv_text = payload.get("csv", "")
+    return import_snapshots_csv(db, io.StringIO(csv_text))
+
+
+@router.post("/accounts/{account_id}/loop", response_model=schemas.LoopRunOut)
+def trigger_loop(account_id: int, db: Session = Depends(get_db)) -> LoopRun:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    return run_loop(db, acc)
