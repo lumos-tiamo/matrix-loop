@@ -26,6 +26,7 @@ from app.models import Account, AccountSegment, AudienceSegment, ContentItem, Dr
 from app.flow.build import build_flow
 from app.flow.classify import classify_audience
 from app.analysis.claude_client import ClaudeClient
+from app.analysis.factory import resolve_llm_client
 
 router = APIRouter()
 
@@ -111,7 +112,7 @@ def trigger_loop(account_id: int, db: Session = Depends(get_db)) -> LoopRun:
     if acc is None:
         raise HTTPException(status_code=404, detail="account not found")
     try:
-        return run_loop(db, acc)
+        return run_loop(db, acc, llm_client=resolve_llm_client())
     except Exception as exc:  # TODO(plan-8): categorise LLM vs data errors
         raise HTTPException(status_code=500, detail=f"loop run failed: {exc}") from exc
 

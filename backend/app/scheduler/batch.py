@@ -13,6 +13,8 @@ from app.models import Account
 
 logger = logging.getLogger(__name__)
 
+_AUTO = object()
+
 
 @dataclass(frozen=True)
 class BatchConfig:
@@ -34,8 +36,11 @@ class BatchReport:
 
 
 def run_batch(session: Session, *, sync: bool = True, batch_cfg: BatchConfig | None = None,
-              loop_cfg=None, scoring_cfg=None) -> BatchReport:
+              loop_cfg=None, scoring_cfg=None, llm_client=_AUTO) -> BatchReport:
     batch_cfg = batch_cfg or BatchConfig()
+    if llm_client is _AUTO:
+        from app.analysis.factory import resolve_llm_client
+        llm_client = resolve_llm_client()
     accounts = list(session.scalars(select(Account).order_by(Account.id)).all())
     accounts = accounts[batch_cfg.offset:]
     if batch_cfg.max_accounts is not None:
@@ -51,7 +56,7 @@ def run_batch(session: Session, *, sync: bool = True, batch_cfg: BatchConfig | N
             _try_sync(session, acc, report)
 
         try:
-            run = run_loop(session, acc, cfg=loop_cfg, scoring_cfg=scoring_cfg)
+            run = run_loop(session, acc, llm_client=llm_client, cfg=loop_cfg, scoring_cfg=scoring_cfg)
             report.looped += 1
             consecutive_errors = 0
             if run.status == "no_progress":
