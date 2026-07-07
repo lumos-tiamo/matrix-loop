@@ -10,7 +10,7 @@ from app.api import schemas
 from app.api.deps import get_db
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
-from app.models import Account, Evaluation, LoopRun, Snapshot
+from app.models import Account, Draft, Evaluation, LoopRun, Recommendation, Snapshot
 
 router = APIRouter()
 
@@ -72,3 +72,33 @@ def trigger_loop(account_id: int, db: Session = Depends(get_db)) -> LoopRun:
     if acc is None:
         raise HTTPException(status_code=404, detail="account not found")
     return run_loop(db, acc)
+
+
+_REC_STATUSES = {"pending", "adopted", "rejected", "worked", "failed"}
+_DRAFT_STATUSES = {"pending", "adopted", "rejected"}
+
+
+@router.post("/recommendations/{rec_id}/status", response_model=schemas.RecommendationOut)
+def set_recommendation_status(rec_id: int, payload: dict, db: Session = Depends(get_db)) -> Recommendation:
+    rec = db.get(Recommendation, rec_id)
+    if rec is None:
+        raise HTTPException(status_code=404, detail="recommendation not found")
+    status = payload.get("status")
+    if status not in _REC_STATUSES:
+        raise HTTPException(status_code=422, detail=f"invalid status; allowed: {sorted(_REC_STATUSES)}")
+    rec.status = status
+    db.commit()
+    return rec
+
+
+@router.post("/drafts/{draft_id}/status", response_model=schemas.DraftOut)
+def set_draft_status(draft_id: int, payload: dict, db: Session = Depends(get_db)) -> Draft:
+    draft = db.get(Draft, draft_id)
+    if draft is None:
+        raise HTTPException(status_code=404, detail="draft not found")
+    review = payload.get("review_status")
+    if review not in _DRAFT_STATUSES:
+        raise HTTPException(status_code=422, detail=f"invalid review_status; allowed: {sorted(_DRAFT_STATUSES)}")
+    draft.review_status = review
+    db.commit()
+    return draft
