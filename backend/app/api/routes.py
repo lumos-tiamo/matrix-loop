@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
 from app.api.overview import build_overview
-from app.models import Account, ContentItem, Draft, Evaluation, LoopRun, Recommendation, Snapshot
+from app.models import Account, AccountSegment, AudienceSegment, ContentItem, Draft, Endpoint, Evaluation, LoopRun, Recommendation, Snapshot
 from app.flow.build import build_flow
 
 router = APIRouter()
@@ -154,6 +154,42 @@ def content_library(platform: str | None = None, account_id: int | None = None,
 @router.get("/flow")
 def flow(db: Session = Depends(get_db)) -> dict:
     return build_flow(db)
+
+
+@router.post("/segments", status_code=201)
+def create_segment(payload: schemas.SegmentCreate, db: Session = Depends(get_db)) -> dict:
+    seg = AudienceSegment(label=payload.label)
+    db.add(seg); db.commit()
+    return {"id": seg.id, "label": seg.label}
+
+
+@router.post("/endpoints", status_code=201)
+def create_endpoint(payload: schemas.EndpointCreate, db: Session = Depends(get_db)) -> dict:
+    ep = Endpoint(name=payload.name, url_pattern=payload.url_pattern)
+    db.add(ep); db.commit()
+    return {"id": ep.id, "name": ep.name, "url_pattern": ep.url_pattern}
+
+
+@router.post("/accounts/{account_id}/segments")
+def set_composition(account_id: int, payload: schemas.SetComposition, db: Session = Depends(get_db)) -> dict:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    db.query(AccountSegment).filter_by(account_id=account_id).delete()
+    for item in payload.segments:
+        db.add(AccountSegment(account_id=account_id, segment_id=item.segment_id, weight=item.weight))
+    db.commit()
+    return {"account_id": account_id, "count": len(payload.segments)}
+
+
+@router.post("/accounts/{account_id}/endpoint")
+def set_endpoint(account_id: int, payload: schemas.SetEndpoint, db: Session = Depends(get_db)) -> dict:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    acc.endpoint_id = payload.endpoint_id
+    db.commit()
+    return {"account_id": account_id, "endpoint_id": acc.endpoint_id}
 
 
 @router.post("/accounts/{account_id}/sync")
