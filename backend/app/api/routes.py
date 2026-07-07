@@ -4,7 +4,7 @@ import io
 import logging
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -131,7 +131,7 @@ def overview(db: Session = Depends(get_db)) -> dict:
 
 @router.get("/content", response_model=list[schemas.ContentLibraryItem])
 def content_library(platform: str | None = None, account_id: int | None = None,
-                    limit: int = 200, db: Session = Depends(get_db)) -> list[schemas.ContentLibraryItem]:
+                    limit: int = Query(default=200, ge=1, le=1000), db: Session = Depends(get_db)) -> list[schemas.ContentLibraryItem]:
     stmt = select(ContentItem, Account).join(Account, ContentItem.account_id == Account.id)
     if platform:
         stmt = stmt.where(Account.platform == platform)
@@ -145,6 +145,7 @@ def content_library(platform: str | None = None, account_id: int | None = None,
         )
         for ci, acc in rows
     ]
+    # TODO(perf): push ORDER BY views DESC + LIMIT to SQL for large libraries
     items.sort(key=lambda i: (i.views or 0), reverse=True)
     return items[:limit]
 

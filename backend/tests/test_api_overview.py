@@ -53,3 +53,15 @@ def test_overview_kpis_and_sections(client, session):
 
     dist = body["positioning_distribution"]
     assert dist["clear"] == 1 and dist["scattered"] == 1   # a1 pos 92 clear, a2 pos 30 scattered
+
+    # pending-drafts alert exists for a1
+    assert any(al["account_id"] == a1.id and al["kind"] == "pending_drafts" for al in body["alerts"])
+
+
+def test_overview_empty_db(client):
+    body = client.get("/overview").json()
+    assert body["kpis"]["total_accounts"] == 0
+    assert body["kpis"]["avg_score"] == 0.0
+    assert body["platform_health"] == []
+    assert body["trend"] == []
+    assert body["positioning_distribution"] == {"clear": 0, "ok": 0, "scattered": 0}

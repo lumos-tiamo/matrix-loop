@@ -27,10 +27,12 @@ def _ordered_snaps(session, account_id):
 
 
 def build_overview(session: Session) -> dict:
+    # TODO(perf): N+1 per-account queries; batch/aggregate when accounts > ~200
     accounts = list(session.scalars(select(Account).order_by(Account.id)).all())
 
     evals = {a.id: _latest_eval(session, a.id) for a in accounts}
     loops = {a.id: _latest_loop(session, a.id) for a in accounts}
+    snaps_by_account = {a.id: _ordered_snaps(session, a.id) for a in accounts}
 
     scored = [evals[a.id].composite_score for a in accounts if evals[a.id]]
     avg_score = round(sum(scored) / len(scored), 1) if scored else 0.0
@@ -56,7 +58,7 @@ def build_overview(session: Session) -> dict:
     # matrix-wide trend: aggregate followers + avg engagement by snapshot date
     trend_acc: dict[str, dict] = {}
     for a in accounts:
-        for s in _ordered_snaps(session, a.id):
+        for s in snaps_by_account[a.id]:
             day = s.ts.date().isoformat()
             t = trend_acc.setdefault(day, {"date": day, "followers": 0, "_er": []})
             t["followers"] += s.followers or 0
@@ -91,7 +93,7 @@ def build_overview(session: Session) -> dict:
     # top movers: latest followers - previous followers
     movers = []
     for a in accounts:
-        snaps = _ordered_snaps(session, a.id)
+        snaps = snaps_by_account[a.id]
         if len(snaps) >= 2 and snaps[-1].followers is not None and snaps[-2].followers is not None:
             movers.append({"account_id": a.id, "handle": a.handle, "platform": a.platform,
                            "delta_followers": snaps[-1].followers - snaps[-2].followers})

@@ -108,6 +108,7 @@ class AccountDetail(BaseModel):
 
 
 class ContentLibraryItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     account_id: int
     account_handle: str
