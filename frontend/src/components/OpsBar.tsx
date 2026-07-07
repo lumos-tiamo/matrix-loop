@@ -140,7 +140,8 @@ export function OpsBar({
             <div className="mb-2 flex items-center justify-between">
               <h2 className="font-display text-sm font-bold text-text">📥 导入快照 CSV</h2>
               <button
-                onClick={() => setShowImport(false)}
+                onClick={() => busy === null && setShowImport(false)}
+                disabled={busy !== null}
                 className="font-mono text-xs text-muted hover:text-text"
               >
                 ✕

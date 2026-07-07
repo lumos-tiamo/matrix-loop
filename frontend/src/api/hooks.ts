@@ -7,6 +7,7 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]) {
 
   const run = useCallback(() => {
     setLoading(true);
+    setError(null);
     fn().then(setData).catch((e) => setError(String(e))).finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);

@@ -52,7 +52,7 @@ export function ContentLibrary() {
       .sort((a, b) => (b.views ?? 0) - (a.views ?? 0));
   }, [content.data, search]);
 
-  const maxViews = Math.max(1, ...items.map((i) => i.views ?? 0));
+  const maxViews = items.reduce((m, i) => Math.max(m, i.views ?? 0), 1);
 
   return (
     <div>
