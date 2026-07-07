@@ -89,6 +89,7 @@ class LoopRunOut(BaseModel):
     diagnosis: str | None
     verify_result: dict
     status: str
+    tokens_cost: int | None = None
     evaluation: EvaluationOut | None
     recommendations: list[RecommendationOut]
     drafts: list[DraftOut]
