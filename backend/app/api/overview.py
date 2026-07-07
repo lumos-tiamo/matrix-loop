@@ -1,42 +1,40 @@
 from __future__ import annotations
 
+from collections import defaultdict
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Account, ContentItem, Draft, Evaluation, LoopRun, Recommendation, Snapshot
 
 
-def _latest_eval(session, account_id):
-    return session.scalars(
-        select(Evaluation).where(Evaluation.account_id == account_id)
-        .order_by(Evaluation.created_at.desc(), Evaluation.id.desc())
-    ).first()
-
-
-def _latest_loop(session, account_id):
-    return session.scalars(
-        select(LoopRun).where(LoopRun.account_id == account_id)
-        .order_by(LoopRun.ts.desc(), LoopRun.id.desc())
-    ).first()
-
-
-def _ordered_snaps(session, account_id):
-    return session.scalars(
-        select(Snapshot).where(Snapshot.account_id == account_id).order_by(Snapshot.ts)
-    ).all()
-
-
 def build_overview(session: Session) -> dict:
-    # TODO(perf): N+1 per-account queries; batch/aggregate when accounts > ~200
     accounts = list(session.scalars(select(Account).order_by(Account.id)).all())
 
-    evals = {a.id: _latest_eval(session, a.id) for a in accounts}
-    loops = {a.id: _latest_loop(session, a.id) for a in accounts}
-    snaps_by_account = {a.id: _ordered_snaps(session, a.id) for a in accounts}
+    # batch: all snapshots grouped by account, ordered by ts/id (ascending → latest is [-1])
+    snaps_by_account: dict[int, list] = defaultdict(list)
+    for s in session.scalars(
+        select(Snapshot).order_by(Snapshot.account_id, Snapshot.ts, Snapshot.id)
+    ).all():
+        snaps_by_account[s.account_id].append(s)
 
-    scored = [evals[a.id].composite_score for a in accounts if evals[a.id]]
+    # batch: latest evaluation per account (last write wins after ascending order)
+    evals: dict[int, object] = {}
+    for e in session.scalars(
+        select(Evaluation).order_by(Evaluation.account_id, Evaluation.created_at, Evaluation.id)
+    ).all():
+        evals[e.account_id] = e
+
+    # batch: latest loop run per account
+    loops: dict[int, object] = {}
+    for lr in session.scalars(
+        select(LoopRun).order_by(LoopRun.account_id, LoopRun.ts, LoopRun.id)
+    ).all():
+        loops[lr.account_id] = lr
+
+    scored = [evals[a.id].composite_score for a in accounts if evals.get(a.id)]
     avg_score = round(sum(scored) / len(scored), 1) if scored else 0.0
-    needs_attention = sum(1 for a in accounts if loops[a.id] and loops[a.id].status == "no_progress")
+    needs_attention = sum(1 for a in accounts if loops.get(a.id) and loops[a.id].status == "no_progress")
     pending_recs = session.scalars(select(Recommendation).where(Recommendation.status == "pending")).all()
     pending_drafts = session.scalars(select(Draft).where(Draft.review_status == "pending")).all()
 
@@ -44,7 +42,7 @@ def build_overview(session: Session) -> dict:
     dims = ["growth", "engagement", "commercial", "positioning"]
     by_platform: dict[str, list] = {}
     for a in accounts:
-        ev = evals[a.id]
+        ev = evals.get(a.id)
         if ev:
             by_platform.setdefault(a.platform, []).append(ev.breakdown or {})
     platform_health = []
@@ -58,7 +56,7 @@ def build_overview(session: Session) -> dict:
     # matrix-wide trend: aggregate followers + avg engagement by snapshot date
     trend_acc: dict[str, dict] = {}
     for a in accounts:
-        for s in snaps_by_account[a.id]:
+        for s in snaps_by_account.get(a.id, []):
             day = s.ts.date().isoformat()
             t = trend_acc.setdefault(day, {"date": day, "followers": 0, "_er": []})
             t["followers"] += s.followers or 0
@@ -74,7 +72,7 @@ def build_overview(session: Session) -> dict:
     # alerts
     alerts = []
     for a in accounts:
-        lp = loops[a.id]
+        lp = loops.get(a.id)
         if lp and lp.status == "no_progress":
             alerts.append({"account_id": a.id, "handle": a.handle, "platform": a.platform,
                            "kind": "no_progress", "detail": "连续无进展，需介入"})
@@ -93,7 +91,7 @@ def build_overview(session: Session) -> dict:
     # top movers: latest followers - previous followers
     movers = []
     for a in accounts:
-        snaps = snaps_by_account[a.id]
+        snaps = snaps_by_account.get(a.id, [])
         if len(snaps) >= 2 and snaps[-1].followers is not None and snaps[-2].followers is not None:
             movers.append({"account_id": a.id, "handle": a.handle, "platform": a.platform,
                            "delta_followers": snaps[-1].followers - snaps[-2].followers})
@@ -102,7 +100,7 @@ def build_overview(session: Session) -> dict:
     # positioning distribution from latest eval positioning subscore
     dist = {"clear": 0, "ok": 0, "scattered": 0}
     for a in accounts:
-        ev = evals[a.id]
+        ev = evals.get(a.id)
         if ev:
             p = (ev.breakdown or {}).get("positioning", 0)
             dist["clear" if p >= 70 else "scattered" if p < 40 else "ok"] += 1
