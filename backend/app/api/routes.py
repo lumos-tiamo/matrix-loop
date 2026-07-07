@@ -20,6 +20,8 @@ from app.loop.engine import run_loop
 from app.api.overview import build_overview
 from app.models import Account, AccountSegment, AudienceSegment, ContentItem, Draft, Endpoint, Evaluation, LoopRun, Recommendation, Snapshot
 from app.flow.build import build_flow
+from app.flow.classify import classify_audience
+from app.analysis.claude_client import ClaudeClient
 
 router = APIRouter()
 
@@ -190,6 +192,28 @@ def set_endpoint(account_id: int, payload: schemas.SetEndpoint, db: Session = De
     acc.endpoint_id = payload.endpoint_id
     db.commit()
     return {"account_id": account_id, "endpoint_id": acc.endpoint_id}
+
+
+@router.post("/accounts/{account_id}/classify-audience")
+def classify_audience_endpoint(account_id: int, db: Session = Depends(get_db)) -> dict:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    labels = [s.label for s in db.scalars(select(AudienceSegment)).all()]
+    if not labels:
+        raise HTTPException(status_code=422, detail="先创建人群标签(/segments)再归类")
+    try:
+        client = ClaudeClient()
+    except Exception as exc:  # noqa: BLE001 - no key configured
+        raise HTTPException(status_code=422, detail=f"LLM 未配置：{exc}") from exc
+    content = list(db.scalars(select(ContentItem).where(ContentItem.account_id == account_id)).all())
+    picked = classify_audience(acc, content, client, labels)
+    seg_by_label = {s.label: s for s in db.scalars(select(AudienceSegment)).all()}
+    db.query(AccountSegment).filter_by(account_id=account_id).delete()
+    for lbl in picked:
+        db.add(AccountSegment(account_id=account_id, segment_id=seg_by_label[lbl].id, weight=1.0))
+    db.commit()
+    return {"account_id": account_id, "segments": picked}
 
 
 @router.post("/accounts/{account_id}/sync")
