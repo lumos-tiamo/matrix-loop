@@ -46,3 +46,11 @@ def create_account(payload: schemas.AccountCreate, db: Session = Depends(get_db)
 def list_accounts(db: Session = Depends(get_db)) -> list[schemas.AccountListItem]:
     accounts = db.scalars(select(Account).order_by(Account.id)).all()
     return [_list_item(db, a) for a in accounts]
+
+
+@router.get("/accounts/{account_id}", response_model=schemas.AccountDetail)
+def get_account(account_id: int, db: Session = Depends(get_db)) -> Account:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    return acc
