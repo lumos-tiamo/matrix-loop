@@ -76,6 +76,34 @@ export interface Overview {
   positioning_distribution: PositioningDistribution;
 }
 
+// ---- Flow / Sankey (GET /flow) ----
+export interface FlowNode {
+  name: string;
+}
+export interface FlowLink {
+  source: string;
+  target: string;
+  value: number;
+}
+export interface FlowData {
+  nodes: FlowNode[];
+  links: FlowLink[];
+}
+
+export interface SegmentOut {
+  id: number;
+  label: string;
+}
+export interface EndpointOut {
+  id: number;
+  name: string;
+  url_pattern: string | null;
+}
+export interface CompositionItem {
+  segment_id: number;
+  weight: number;
+}
+
 // ---- Content library (GET /content) ----
 export interface ContentLibraryItem {
   id: number;
