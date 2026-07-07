@@ -38,6 +38,25 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
+it("renders a prompt/empty state when no ids are given", async () => {
+  render(
+    <MemoryRouter initialEntries={["/compare"]}>
+      <Compare />
+    </MemoryRouter>,
+  );
+  // No selection: Compare must not crash and shows the pick-accounts prompt.
+  expect(await screen.findByText(/选 2-3 个账号开始对比/)).toBeInTheDocument();
+});
+
+it("renders a single column for ?ids=1 without crashing", async () => {
+  render(
+    <MemoryRouter initialEntries={["/compare?ids=1"]}>
+      <Compare />
+    </MemoryRouter>,
+  );
+  expect(await screen.findAllByText("@a1")).toBeTruthy();
+});
+
 it("renders both selected accounts side by side (?ids=1,2)", async () => {
   render(
     <MemoryRouter initialEntries={["/compare?ids=1,2"]}>
