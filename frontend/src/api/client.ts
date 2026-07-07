@@ -48,6 +48,10 @@ export const api = {
 
   // ---- Flow / 导流 ----
   getFlow: () => req<FlowData>("/flow"),
+  listSegments: () => req<SegmentOut[]>("/segments"),
+  listEndpoints: () => req<EndpointOut[]>("/endpoints"),
+  resetDemo: () => req<{ endpoints: number; segments: number; routed: number }>(
+    "/demo/reset", { method: "POST" }),
   createSegment: (label: string) =>
     req<SegmentOut>("/segments", { method: "POST", body: JSON.stringify({ label }) }),
   createEndpoint: (name: string, url_pattern?: string) =>
