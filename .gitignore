@@ -5,6 +5,10 @@ __pycache__/
 *.pyc
 dist/
 frontend/dist/
+# tsc -b incremental build artifacts
+*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
 # data & secrets
 data/*.db
 data/*.sqlite*
@@ -14,3 +18,5 @@ data/*.sqlite*
 .superpowers/
 # os
 .DS_Store
+.gstack/
+data/
