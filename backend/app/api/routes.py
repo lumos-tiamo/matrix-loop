@@ -19,6 +19,7 @@ from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
 from app.api.overview import build_overview
 from app.models import Account, ContentItem, Draft, Evaluation, LoopRun, Recommendation, Snapshot
+from app.flow.build import build_flow
 
 router = APIRouter()
 
@@ -148,6 +149,11 @@ def content_library(platform: str | None = None, account_id: int | None = None,
     # TODO(perf): push ORDER BY views DESC + LIMIT to SQL for large libraries
     items.sort(key=lambda i: (i.views or 0), reverse=True)
     return items[:limit]
+
+
+@router.get("/flow")
+def flow(db: Session = Depends(get_db)) -> dict:
+    return build_flow(db)
 
 
 @router.post("/accounts/{account_id}/sync")
