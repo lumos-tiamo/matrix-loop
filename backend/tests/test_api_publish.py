@@ -66,3 +66,21 @@ def test_list_dispatches(client, session, monkeypatch):
     client.post(f"/accounts/{acc.id}/publish", json={"video_asset_id": v.id})
     rows = client.get(f"/publish/dispatches?account_id={acc.id}").json()
     assert len(rows) == 1 and rows[0]["video_asset_id"] == v.id
+
+
+def test_publish_rejects_double_publish(client, session, monkeypatch):
+    acc, v = _approved(session)
+    from app.config import settings
+    monkeypatch.setattr(settings, "aitoearn_base_url", "http://x/api/v2", raising=False)
+    monkeypatch.setattr(settings, "aitoearn_api_key", "k", raising=False)
+    class _FakeClient:
+        def __init__(self, *a, **k): pass
+        def publish_flow(self, payload):
+            return {"flowId": "f1", "tasks": [{"id": "t1", "status": "WaitingForPublish"}]}
+        def flow_status(self, fid):
+            return {"tasks": [{"id": "t1", "status": "WaitingForPublish"}]}
+    monkeypatch.setattr("app.api.routes.AiToEarnClient", _FakeClient)
+    r1 = client.post(f"/accounts/{acc.id}/publish", json={"video_asset_id": v.id, "caption": "first"})
+    assert r1.status_code == 201
+    r2 = client.post(f"/accounts/{acc.id}/publish", json={"video_asset_id": v.id, "caption": "second"})
+    assert r2.status_code == 422

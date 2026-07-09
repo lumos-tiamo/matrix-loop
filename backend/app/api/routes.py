@@ -468,6 +468,7 @@ def publish_account(account_id: int, payload: schemas.PublishIn, db: Session = D
     except PublishNotReady as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001 - upstream connector error
+        db.rollback()
         logger.warning("publish failed for account %s: %s", account_id, exc)
         raise HTTPException(status_code=502, detail="upstream publish error") from exc
 
@@ -487,6 +488,7 @@ def get_dispatch(dispatch_id: int, db: Session = Depends(get_db)) -> PublishDisp
         raise HTTPException(status_code=404, detail="dispatch not found")
     from app.publish.dispatch import refresh_dispatch
     try:
-        return refresh_dispatch(db, d, client=_aitoearn_client_or_422())
+        client = _aitoearn_client_or_422()
     except HTTPException:
         return d   # AiToEarn not configured -> return stored state without polling
+    return refresh_dispatch(db, d, client=client)

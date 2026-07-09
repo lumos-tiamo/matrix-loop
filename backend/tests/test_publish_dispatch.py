@@ -63,3 +63,22 @@ def test_refresh_dispatch_updates_work_id_and_status(session):
     refreshed = refresh_dispatch(session, d, client=client)
     assert refreshed.platform_work_id == "w9"
     assert refreshed.status == "published"    # Published -> published
+
+
+def test_refresh_dispatch_empty_tasks_does_not_clobber(session):
+    acc, v = _approved_asset(session)
+    client = _FakeClient()
+    d = create_dispatch(session, acc, v, client=client, caption="x")
+    d.status = "published"; d.platform_work_id = "w9"; session.commit()
+    class _EmptyClient:
+        def flow_status(self, fid): return {"tasks": []}
+    refresh_dispatch(session, d, client=_EmptyClient())
+    assert d.status == "published" and d.platform_work_id == "w9"   # unchanged
+
+
+def test_create_dispatch_refuses_double_publish(session):
+    acc, v = _approved_asset(session)
+    client = _FakeClient()
+    create_dispatch(session, acc, v, client=client, caption="x")
+    with pytest.raises(PublishNotReady):
+        create_dispatch(session, acc, v, client=client, caption="x again")

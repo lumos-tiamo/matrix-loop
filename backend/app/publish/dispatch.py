@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.connectors.aitoearn_client import to_aitoearn_platform
-from app.models import PublishDispatch, VideoAsset
+from app.models import Account, PublishDispatch, VideoAsset
 
 
 class PublishNotReady(RuntimeError):
@@ -25,7 +25,7 @@ def _map_status(task_status: str | None) -> str:
     return _STATUS_MAP.get(task_status or "", "queued")
 
 
-def create_dispatch(session: Session, account, asset: VideoAsset, *, client,
+def create_dispatch(session: Session, account: Account, asset: VideoAsset, *, client,
                     caption: str | None = None, publish_at: datetime | None = None) -> PublishDispatch:
     """Publish an APPROVED video asset via AiToEarn and record a PublishDispatch.
     Human-gated: the asset must already be human-approved; this call is the explicit publish action."""
@@ -36,7 +36,21 @@ def create_dispatch(session: Session, account, asset: VideoAsset, *, client,
     if not asset.media_url:
         raise PublishNotReady("video asset has no media_url")
 
+    from sqlalchemy import select
+    existing = session.scalar(
+        select(PublishDispatch).where(
+            PublishDispatch.video_asset_id == asset.id,
+            PublishDispatch.status != "failed",
+        )
+    )
+    if existing is not None:
+        raise PublishNotReady(
+            f"video asset {asset.id} already dispatched (dispatch #{existing.id}); refusing to double-publish"
+        )
+
     when = publish_at or datetime.now(timezone.utc)
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
     payload = {
         "content": {
             "title": caption or "",
@@ -74,10 +88,12 @@ def refresh_dispatch(session: Session, dispatch: PublishDispatch, *, client) -> 
         return dispatch
     resp = client.flow_status(dispatch.aitoearn_flow_id) or {}
     tasks = resp.get("tasks") or []
-    # prefer the task we recorded; else the first
-    task = next((t for t in tasks if t.get("id") == dispatch.aitoearn_task_id), tasks[0] if tasks else {})
+    if not tasks:
+        return dispatch   # transient empty poll -> do not clobber existing status/work id
+    task = next((t for t in tasks if t.get("id") == dispatch.aitoearn_task_id), tasks[0])
     if task.get("platformWorkId"):
         dispatch.platform_work_id = task["platformWorkId"]
-    dispatch.status = _map_status(task.get("status"))
+    if task.get("status"):
+        dispatch.status = _map_status(task["status"])
     session.commit()
     return dispatch
