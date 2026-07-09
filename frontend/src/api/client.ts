@@ -2,6 +2,7 @@ import type {
   AccountListItem, AccountDetail, LoopRunOut, RecommendationOut, DraftOut,
   Overview, ContentLibraryItem,
   FlowData, SegmentOut, EndpointOut, CompositionItem,
+  ChannelBriefOut, VideoAssetOut, VideoUsage, SetBriefIn,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE as string) ?? "http://localhost:8000";
@@ -73,4 +74,30 @@ export const api = {
     req<{ account_id: number; segments: string[] }>(`/accounts/${accountId}/classify-audience`, {
       method: "POST",
     }),
+
+  // ---- Video workbench ----
+  getBrief: (accountId: number) => req<ChannelBriefOut>(`/accounts/${accountId}/brief`),
+  setBrief: (accountId: number, body: SetBriefIn) =>
+    req<{ account_id: number; id: number }>(`/accounts/${accountId}/brief`, {
+      method: "POST", body: JSON.stringify(body),
+    }),
+  generateScript: (draftId: number) =>
+    req<DraftOut>(`/drafts/${draftId}/generate-script`, { method: "POST" }),
+  generateVideo: (accountId: number, scriptDraftId: number) =>
+    req<VideoAssetOut>(`/accounts/${accountId}/generate-video`, {
+      method: "POST", body: JSON.stringify({ script_draft_id: scriptDraftId }),
+    }),
+  listVideoAssets: (params?: { account_id?: number; review_status?: string; status?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.account_id != null) qs.set("account_id", String(params.account_id));
+    if (params?.review_status) qs.set("review_status", params.review_status);
+    if (params?.status) qs.set("status", params.status);
+    const q = qs.toString();
+    return req<VideoAssetOut[]>(`/video-assets${q ? `?${q}` : ""}`);
+  },
+  setVideoReview: (id: number, review_status: string) =>
+    req<VideoAssetOut>(`/video-assets/${id}/status`, {
+      method: "POST", body: JSON.stringify({ review_status }),
+    }),
+  getVideoUsage: () => req<VideoUsage>("/video/usage"),
 };
