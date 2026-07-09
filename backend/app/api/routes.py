@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
 from app.api.overview import build_overview
-from app.models import Account, AccountSegment, AudienceSegment, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, PublishDispatch, Recommendation, Snapshot, VideoAsset
+from app.models import Account, AccountSegment, AudienceSegment, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, PublishDispatch, Recommendation, Snapshot, Trend, VideoAsset
 from app.flow.build import build_flow
 from app.flow.classify import classify_audience
 from app.analysis.claude_client import ClaudeClient
@@ -512,6 +512,33 @@ def set_autopilot(account_id: int, payload: schemas.SetAutopilot, db: Session = 
     acc.autopilot = payload.enabled
     db.commit()
     return {"account_id": account_id, "autopilot": acc.autopilot}
+
+
+@router.post("/trends/ingest", status_code=201)
+def ingest_trends(payload: schemas.TrendIngest, db: Session = Depends(get_db)) -> dict:
+    ingested = skipped = 0
+    for t in payload.trends:
+        existing = db.scalar(select(Trend).where(Trend.source == t.source, Trend.title == t.title))
+        if existing is not None:
+            skipped += 1
+            continue
+        db.add(Trend(source=t.source, title=t.title, url=t.url, niche=t.niche,
+                     engagement=t.engagement, distilled_topic=t.distilled_topic, score=t.score))
+        ingested += 1
+    db.commit()
+    return {"ingested": ingested, "skipped": skipped}
+
+
+@router.get("/trends")
+def list_trends(niche: str | None = None, limit: int = 50, db: Session = Depends(get_db)) -> list[dict]:
+    stmt = select(Trend).order_by(Trend.captured_at.desc(), Trend.id.desc())
+    if niche:
+        stmt = stmt.where(Trend.niche == niche)
+    stmt = stmt.limit(limit)
+    return [{"id": t.id, "source": t.source, "title": t.title, "url": t.url, "niche": t.niche,
+             "engagement": t.engagement, "distilled_topic": t.distilled_topic, "score": t.score,
+             "captured_at": t.captured_at.isoformat() if t.captured_at else None}
+            for t in db.scalars(stmt).all()]
 
 
 # NOTE: register /flywheel/status|pause|resume BEFORE GET /flywheel (static prefixes; order is load-bearing).

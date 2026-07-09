@@ -203,3 +203,17 @@ class PublishDispatchOut(BaseModel):
     media_urls: list[str]
     caption: str | None
     created_at: datetime
+
+
+class TrendIn(BaseModel):
+    source: str
+    title: str
+    url: str | None = None
+    niche: str | None = None
+    engagement: int | None = None
+    distilled_topic: str | None = None
+    score: float = 0.0
+
+
+class TrendIngest(BaseModel):
+    trends: list[TrendIn]
