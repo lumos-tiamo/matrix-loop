@@ -52,7 +52,7 @@ def _build_outputs(result, analysis, content_items):
     if scored:
         scored.sort(key=lambda c: c.views or 0, reverse=True)
         top, low = scored[0], scored[-1]
-        if (top.views or 0) > 0 and top is not low:
+        if len(scored) >= 2 and (top.views or 0) > 0:
             recs.append(Recommendation(
                 kind="content_performance",
                 content=(f"表现反馈：最高「{(top.topic or '?')[:40]}」{top.views} views —— 多做此类角度；"

@@ -70,6 +70,7 @@ class Snapshot(Base):
 
 class ContentItem(Base):
     __tablename__ = "content_items"
+    __table_args__ = (UniqueConstraint("account_id", "platform_post_id", name="uq_content_item_account_post"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
@@ -142,7 +143,7 @@ class Recommendation(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     loop_run_id: Mapped[int] = mapped_column(ForeignKey("loop_runs.id"), index=True)
-    kind: Mapped[str] = mapped_column(String(24))  # positioning|content_direction|cadence
+    kind: Mapped[str] = mapped_column(String(24))  # positioning|content_direction|cadence|content_performance
     content: Mapped[str] = mapped_column(String)
     status: Mapped[str] = mapped_column(String(16), default="pending")  # pending|adopted|worked|failed|rejected
 

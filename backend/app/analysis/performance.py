@@ -12,6 +12,7 @@ def content_performance(session: Session, account_id: int, *, top: int = 3) -> d
         select(ContentItem)
         .where(ContentItem.account_id == account_id, ContentItem.views.is_not(None))
         .order_by(ContentItem.views.desc())
+        .limit(200)
     ).all()
     if not items:
         return {"winners": [], "losers": [], "median_views": 0.0, "count": 0}
@@ -23,7 +24,7 @@ def content_performance(session: Session, account_id: int, *, top: int = 3) -> d
         return {"topic": (i.topic or "")[:80], "views": i.views, "likes": i.likes}
 
     winners = [_row(i) for i in items[:top]]
-    losers = [_row(i) for i in items[-top:]]
+    losers = [_row(i) for i in items[top:][-top:]]   # exclude winners; empty when count <= top
     return {"winners": winners, "losers": losers, "median_views": median, "count": n}
 
 
@@ -32,6 +33,7 @@ def performance_prompt_block(perf: dict) -> str:
         return ""
     def _fmt(rows):
         return "; ".join(f'"{r["topic"]}" ({r["views"]} views)' for r in rows) or "(none)"
+
     return (
         "Past content performance on this account — lean into what worked:\n"
         f"Top performers: {_fmt(perf['winners'])}\n"
