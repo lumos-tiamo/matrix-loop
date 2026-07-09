@@ -1,5 +1,5 @@
 import { it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { Video } from "./Video";
 
@@ -8,7 +8,7 @@ const ACCOUNTS = [
     latest_followers: 1000, latest_composite_score: 60, latest_loop_status: "ok", source_tier: "api" },
 ];
 const USAGE = {
-  today_count: 3, today_cost: 3.5, total_count: 12, total_cost: 11.5,
+  today_count: 7, today_cost: 3.5, total_count: 12, total_cost: 11.5,
   caps: { max_videos_per_day: 20, per_account_per_day: 2, per_channel_per_day: 10, video_budget: 20 },
 };
 
@@ -33,7 +33,7 @@ afterEach(() => vi.unstubAllGlobals());
 it("renders the usage panel from GET /video/usage", async () => {
   render(<MemoryRouter><Video /></MemoryRouter>);
   expect(await screen.findByText(/视频用量/)).toBeInTheDocument();
-  await waitFor(() => expect(screen.getByText("3")).toBeInTheDocument());   // today_count
+  await waitFor(() => expect(screen.getByText("7")).toBeInTheDocument());   // today_count
 });
 
 it("lets the user pick an account", async () => {
@@ -60,7 +60,6 @@ it("loads an existing brief into the editor", async () => {
   render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
   // select account 4
   const select = await screen.findByLabelText(/选择账号/);
-  const { fireEvent } = await import("@testing-library/react");
   fireEvent.change(select, { target: { value: "4" } });
   // brief main_direction shows up in the editor input
   await waitFor(() => {
@@ -83,7 +82,6 @@ it("saves the brief via POST /accounts/{id}/brief", async () => {
     if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => ({ id: 4, platform: "youtube", handle: "@nina", vertical: "crypto", positioning: null, objective_weights: {}, snapshots: [], content_items: [], loop_runs: [] }) };
     return undefined;
   });
-  const { fireEvent } = await import("@testing-library/react");
   render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
   fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
   const mainInput = await screen.findByPlaceholderText(/主方向/);
@@ -113,7 +111,6 @@ it("adopts a topic then generates a script", async () => {
     if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([{ id: 1, kind: "topic", content: "Airdrop 101", review_status: "adopted" }]) };
     return undefined;
   });
-  const { fireEvent } = await import("@testing-library/react");
   render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
   fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
   // adopted topic -> 生成脚本 button present
@@ -132,7 +129,6 @@ it("generates a video from an adopted script", async () => {
     if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([{ id: 2, kind: "script", content: "Hook...", review_status: "adopted" }]) };
     return undefined;
   });
-  const { fireEvent } = await import("@testing-library/react");
   render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
   fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
   fireEvent.click(await screen.findByRole("button", { name: /生成视频/ }));
@@ -158,7 +154,6 @@ it("lists video assets and approves one", async () => {
     if (url.includes("/video-assets")) return { ok: true, json: async () => [ASSET] };
     return undefined;
   });
-  const { fireEvent } = await import("@testing-library/react");
   render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
   fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
   // asset row shows provider + a link to the media

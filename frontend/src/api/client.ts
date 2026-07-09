@@ -15,7 +15,9 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     let detail = res.status.toString();
     try { detail = (await res.json())?.detail ?? detail; } catch { /* ignore */ }
-    throw new Error(`API ${path} failed: ${detail}`);
+    const err = new Error(`API ${path} failed: ${detail}`) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
   return res.json() as Promise<T>;
 }

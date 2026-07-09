@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 import { useAsync } from "../api/hooks";
 import type { DraftOut, VideoAssetOut } from "../api/types";
@@ -14,6 +14,7 @@ export function Video() {
   const accounts = useAsync(() => api.listAccounts(), []);
   const usage = useAsync(() => api.getVideoUsage(), []);
   const [acctId, setAcctId] = useState<number | "">("");
+  const [genNonce, setGenNonce] = useState(0);
 
   const u = usage.data;
 
@@ -51,9 +52,9 @@ export function Video() {
       <ChartCard title="📊 视频用量" pill={u ? `预算 ${u.caps.video_budget}` : "—"} className="mb-[14px]">
         <div className="grid grid-cols-2 gap-[14px] md:grid-cols-4">
           <StatTile label="今日条数" value={String(u?.today_count ?? 0)} accent />
-          <StatTile label="今日成本" value={String(u?.today_cost ?? 0)} />
+          <StatTile label="今日成本" value={String((u?.today_cost ?? 0).toFixed(2))} />
           <StatTile label="累计条数" value={String(u?.total_count ?? 0)} />
-          <StatTile label="累计成本" value={String(u?.total_cost ?? 0)} />
+          <StatTile label="累计成本" value={String((u?.total_cost ?? 0).toFixed(2))} />
         </div>
         <p className="mt-[10px] font-mono text-[10px] leading-relaxed text-dim">
           日上限:全局 {u?.caps.max_videos_per_day ?? "—"} · 单号 {u?.caps.per_account_per_day ?? "—"} · 单垂类 {u?.caps.per_channel_per_day ?? "—"}
@@ -67,8 +68,8 @@ export function Video() {
       ) : (
         <div className="grid gap-[14px] lg:grid-cols-2">
           <BriefEditor accountId={acctId} />
-          <DraftWorkflow accountId={acctId} onGenerated={() => usage.reload()} />
-          <ReviewQueue accountId={acctId} className="lg:col-span-2" />
+          <DraftWorkflow accountId={acctId} onGenerated={() => { usage.reload(); setGenNonce((n) => n + 1); }} />
+          <ReviewQueue accountId={acctId} genNonce={genNonce} className="lg:col-span-2" />
         </div>
       )}
     </div>
@@ -77,7 +78,13 @@ export function Video() {
 
 // Placeholder sub-components — implemented in Tasks 3-5.
 function BriefEditor({ accountId }: { accountId: number }) {
-  const brief = useAsync(() => api.getBrief(accountId).catch(() => null), [accountId]);
+  const brief = useAsync(
+    () => api.getBrief(accountId).catch((e: Error & { status?: number }) => {
+      if (e.status === 404) return null;
+      throw e;
+    }),
+    [accountId],
+  );
   const [main, setMain] = useState("");
   const [niches, setNiches] = useState("");
   const [tone, setTone] = useState("");
@@ -86,10 +93,10 @@ function BriefEditor({ accountId }: { accountId: number }) {
   const [format, setFormat] = useState("faceless");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [loadedFor, setLoadedFor] = useState<number | null>(null);
 
   // hydrate the form once the brief for this account arrives
-  if (!brief.loading && loadedFor !== accountId) {
+  useEffect(() => {
+    if (brief.loading) return;
     const b = brief.data;
     setMain(b?.main_direction ?? "");
     setNiches((b?.sub_niches ?? []).join("、"));
@@ -97,8 +104,8 @@ function BriefEditor({ accountId }: { accountId: number }) {
     setPersona(b?.persona ?? "");
     setLanguage(b?.language ?? "en");
     setFormat(b?.format ?? "faceless");
-    setLoadedFor(accountId);
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId, brief.loading]);
 
   async function save() {
     setBusy(true); setMsg(null);
@@ -112,6 +119,7 @@ function BriefEditor({ accountId }: { accountId: number }) {
         format,
       });
       setMsg("已保存定调");
+      brief.reload();
     } catch (e) {
       setMsg(String(e));
     } finally {
@@ -124,18 +132,19 @@ function BriefEditor({ accountId }: { accountId: number }) {
   return (
     <ChartCard title="🎯 频道定调">
       <div className="space-y-[10px]">
-        <input className={inputCls} placeholder="主方向,如 web3" value={main} onChange={(e) => setMain(e.target.value)} />
-        <input className={inputCls} placeholder="子垂类(顿号分隔),如 加密交易者、空投猎人、DeFi" value={niches} onChange={(e) => setNiches(e.target.value)} />
+        {brief.error && <p className="mb-2 font-mono text-[11px] text-alert">定调加载失败：{brief.error}</p>}
+        <input aria-label="主方向" className={inputCls} placeholder="主方向,如 web3" value={main} onChange={(e) => setMain(e.target.value)} />
+        <input aria-label="子垂类" className={inputCls} placeholder="子垂类(顿号分隔),如 加密交易者、空投猎人、DeFi" value={niches} onChange={(e) => setNiches(e.target.value)} />
         <div className="flex gap-2">
-          <input className={inputCls} placeholder="人设,如 Nina" value={persona} onChange={(e) => setPersona(e.target.value)} />
-          <input className={inputCls} placeholder="语气,如 punchy" value={tone} onChange={(e) => setTone(e.target.value)} />
+          <input aria-label="人设" className={inputCls} placeholder="人设,如 Nina" value={persona} onChange={(e) => setPersona(e.target.value)} />
+          <input aria-label="语气" className={inputCls} placeholder="语气,如 punchy" value={tone} onChange={(e) => setTone(e.target.value)} />
         </div>
         <div className="flex gap-2">
-          <select className={inputCls} value={language} onChange={(e) => setLanguage(e.target.value)}>
+          <select aria-label="语言" className={inputCls} value={language} onChange={(e) => setLanguage(e.target.value)}>
             <option value="en">English</option>
             <option value="zh">中文</option>
           </select>
-          <select className={inputCls} value={format} onChange={(e) => setFormat(e.target.value)}>
+          <select aria-label="形态" className={inputCls} value={format} onChange={(e) => setFormat(e.target.value)}>
             <option value="faceless">faceless 口播</option>
             <option value="avatar">数字人</option>
           </select>
@@ -156,6 +165,7 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
   const detail = useAsync(() => api.getAccount(accountId), [accountId]);
   const [busy, setBusy] = useState<number | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [isErr, setIsErr] = useState(false);
 
   const drafts: DraftOut[] = useMemo(() => {
     const runs = detail.data?.loop_runs ?? [];
@@ -164,9 +174,9 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
   }, [detail.data]);
 
   async function act(key: number, fn: () => Promise<unknown>, done: string) {
-    setBusy(key); setMsg(null);
-    try { await fn(); setMsg(done); detail.reload(); onGenerated(); }
-    catch (e) { setMsg(String(e)); }
+    setBusy(key);
+    try { await fn(); setIsErr(false); setMsg(done); detail.reload(); onGenerated(); }
+    catch (e) { setIsErr(true); setMsg(String(e)); }
     finally { setBusy(null); }
   }
 
@@ -214,17 +224,19 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
           );
         })}
       </div>
-      {msg && <p className="mt-2 font-mono text-[11px] text-muted">{msg}</p>}
+      {msg && <p className={isErr ? "mt-2 font-mono text-[11px] text-alert" : "mt-2 font-mono text-[11px] text-muted"}>{msg}</p>}
     </ChartCard>
   );
 }
-function ReviewQueue({ accountId, className }: { accountId: number; className?: string }) {
-  const assets = useAsync(() => api.listVideoAssets({ account_id: accountId }), [accountId]);
+function ReviewQueue({ accountId, genNonce, className }: { accountId: number; genNonce: number; className?: string }) {
+  const assets = useAsync(() => api.listVideoAssets({ account_id: accountId }), [accountId, genNonce]);
   const [busy, setBusy] = useState<number | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
 
   async function review(id: number, status: string) {
     setBusy(id);
     try { await api.setVideoReview(id, status); assets.reload(); }
+    catch (e) { setMsg(String(e)); }
     finally { setBusy(null); }
   }
 
@@ -246,7 +258,7 @@ function ReviewQueue({ accountId, className }: { accountId: number; className?: 
             <span className="font-mono text-[11px] text-muted">{v.provider}</span>
             <span className={`font-mono text-[11px] ${badge[v.review_status] ?? "text-muted"}`}>{v.review_status}</span>
             <span className="font-mono text-[10px] text-dim">成本 {v.cost}</span>
-            {v.media_url && (
+            {v.media_url && /^https?:\/\//.test(v.media_url) && (
               <a href={v.media_url} target="_blank" rel="noreferrer"
                 className="font-mono text-[11px] text-cyan underline decoration-dotted hover:text-cyan/80">看成片</a>
             )}
@@ -262,6 +274,7 @@ function ReviewQueue({ accountId, className }: { accountId: number; className?: 
           </div>
         ))}
       </div>
+      {msg && <p className="mt-2 font-mono text-[11px] text-alert">{msg}</p>}
     </ChartCard>
   );
 }
