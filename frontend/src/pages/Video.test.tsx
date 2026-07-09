@@ -46,6 +46,7 @@ const BRIEF = {
   account_id: 4, id: 1, main_direction: "web3",
   sub_niches: ["空投猎人", "DeFi"], tone: "punchy", language: "en",
   persona: "Nina", format: "faceless", compliance_stance: "info_education",
+  target_seconds: 90,
 };
 
 it("loads an existing brief into the editor", async () => {
@@ -67,6 +68,23 @@ it("loads an existing brief into the editor", async () => {
     expect(input).toBeInTheDocument();
   });
   expect(screen.getByDisplayValue("Nina")).toBeInTheDocument();
+});
+
+it("brief editor shows the target-seconds field from the loaded brief", async () => {
+  stub((url) => {
+    if (url.endsWith("/accounts")) return { ok: true, json: async () => ACCOUNTS };
+    if (url.endsWith("/video/usage")) return { ok: true, json: async () => USAGE };
+    if (url.includes("/video-assets")) return { ok: true, json: async () => [] };
+    if (url.match(/\/accounts\/4\/brief$/)) return { ok: true, json: async () => BRIEF };
+    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => ({ id: 4, platform: "youtube", handle: "@nina", vertical: "crypto", positioning: null, objective_weights: {}, snapshots: [], content_items: [], loop_runs: [] }) };
+    return undefined;
+  });
+  render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
+  fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
+  await waitFor(() => {
+    const input = screen.getByLabelText(/视频时长/) as HTMLInputElement;
+    expect(input.value).toBe("90");
+  });
 });
 
 it("saves the brief via POST /accounts/{id}/brief", async () => {
@@ -116,6 +134,26 @@ it("adopts a topic then generates a script", async () => {
   // adopted topic -> 生成脚本 button present
   fireEvent.click(await screen.findByRole("button", { name: /生成脚本/ }));
   await waitFor(() => expect(calls).toContain("gen-script"));
+});
+
+it("a topic/script draft card expands to show full content", async () => {
+  const LONG = "A".repeat(220) + " HOOKLINE_HIDDEN_TAIL " + "B".repeat(50);
+  stub((url) => {
+    if (url.endsWith("/accounts")) return { ok: true, json: async () => ACCOUNTS };
+    if (url.endsWith("/video/usage")) return { ok: true, json: async () => USAGE };
+    if (url.includes("/video-assets")) return { ok: true, json: async () => [] };
+    if (url.match(/\/accounts\/4\/brief$/)) return { ok: false, status: 404, json: async () => ({}) };
+    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([{ id: 1, kind: "script", content: LONG, review_status: "pending" }]) };
+    return undefined;
+  });
+  render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
+  fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
+  // preview shown (200-char slice), full tail hidden
+  const toggle = await screen.findByRole("button", { name: /展开全文/ });
+  expect(screen.queryByText(/HOOKLINE_HIDDEN_TAIL/)).not.toBeInTheDocument();
+  // expand -> full content present
+  fireEvent.click(toggle);
+  await waitFor(() => expect(screen.getByText(/HOOKLINE_HIDDEN_TAIL/)).toBeInTheDocument());
 });
 
 it("generates a video from an adopted script", async () => {

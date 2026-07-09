@@ -91,6 +91,7 @@ function BriefEditor({ accountId }: { accountId: number }) {
   const [persona, setPersona] = useState("");
   const [language, setLanguage] = useState("en");
   const [format, setFormat] = useState("faceless");
+  const [targetSeconds, setTargetSeconds] = useState(50);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -104,6 +105,7 @@ function BriefEditor({ accountId }: { accountId: number }) {
     setPersona(b?.persona ?? "");
     setLanguage(b?.language ?? "en");
     setFormat(b?.format ?? "faceless");
+    setTargetSeconds(b?.target_seconds ?? 50);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountId, brief.loading]);
 
@@ -117,6 +119,7 @@ function BriefEditor({ accountId }: { accountId: number }) {
         persona: persona.trim() || null,
         language,
         format,
+        target_seconds: targetSeconds,
       });
       setMsg("已保存定调");
       brief.reload();
@@ -149,6 +152,9 @@ function BriefEditor({ accountId }: { accountId: number }) {
             <option value="avatar">数字人</option>
           </select>
         </div>
+        <input aria-label="视频时长" type="number" min={15} max={180} className={inputCls}
+          placeholder="视频时长(秒)" value={targetSeconds}
+          onChange={(e) => setTargetSeconds(Number(e.target.value) || 50)} />
         <button
           onClick={save}
           disabled={busy}
@@ -166,6 +172,7 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
   const [busy, setBusy] = useState<number | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [isErr, setIsErr] = useState(false);
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
   const drafts: DraftOut[] = useMemo(() => {
     const runs = detail.data?.loop_runs ?? [];
@@ -199,7 +206,15 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
                 <span className="text-dim">#{d.id}</span>
                 <span className="text-muted">{d.review_status}</span>
               </div>
-              <p className="mb-2 font-mono text-[11px] leading-relaxed text-text">{d.content.slice(0, 200)}</p>
+              <p className="mb-2 whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-text">
+                {expanded.has(d.id) ? d.content : d.content.slice(0, 200)}
+                {d.content.length > 200 && (
+                  <button className="ml-1 text-cyan hover:underline"
+                    onClick={() => setExpanded((s) => { const n = new Set(s); if (n.has(d.id)) n.delete(d.id); else n.add(d.id); return n; })}>
+                    {expanded.has(d.id) ? " 收起" : " …展开全文"}
+                  </button>
+                )}
+              </p>
               <div className="flex gap-2">
                 {!adopted && (
                   <button className={`${btn} border-muted/40 text-muted hover:text-text`} disabled={busy === d.id}
