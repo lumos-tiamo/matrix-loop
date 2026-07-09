@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.analysis.performance import content_performance, performance_prompt_block
 from app.analysis.script import generate_script
+from app.analysis.trends import trend_prompt_block
 from app.connectors.base import ManualOnlyError
 from app.connectors.sync import sync_account
 from app.loop.engine import run_loop
@@ -96,8 +97,9 @@ def advance_account(session: Session, account, *, llm=None, video=None, aitoearn
         return {"account_id": account.id, "reached_step": reached, "actions": actions, "errors": []}
     brief = session.scalar(select(ChannelBrief).where(ChannelBrief.account_id == account.id))
     perf = performance_prompt_block(content_performance(session, account.id))
+    trends = trend_prompt_block(session, brief.sub_niches) if brief else ""
     try:
-        text = generate_script(topic.content, brief, llm, performance=perf or None)
+        text = generate_script(topic.content, brief, llm, performance=perf or None, trends=trends or None)
     except Exception as exc:  # noqa: BLE001
         mark("script", "error", str(exc)); session.commit()
         return {"account_id": account.id, "reached_step": reached, "actions": actions, "errors": [str(exc)]}

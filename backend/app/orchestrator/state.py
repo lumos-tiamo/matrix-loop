@@ -23,12 +23,13 @@ def set_paused(session: Session, paused: bool) -> None:
 
 def flywheel_state(session: Session, *, event_limit: int = 20) -> dict:
     """Aggregate live per-step counts + per-account autopilot state + recent audit events for the UI."""
-    from app.models import (Account, ContentItem, Draft, FlywheelEvent, PublishDispatch, VideoAsset)
+    from app.models import (Account, ContentItem, Draft, FlywheelEvent, PublishDispatch, Trend, VideoAsset)
     from sqlalchemy import func, select as _select
 
     def _count(stmt) -> int:
         return int(session.scalar(stmt) or 0)
 
+    trends_n = _count(_select(func.count(Trend.id)))
     topics = _count(_select(func.count(Draft.id)).where(Draft.kind == "topic"))
     scripts = _count(_select(func.count(Draft.id)).where(Draft.kind == "script"))
     videos = _count(_select(func.count(VideoAsset.id)))
@@ -40,7 +41,7 @@ def flywheel_state(session: Session, *, event_limit: int = 20) -> dict:
     autopilot_n = _count(_select(func.count(Account.id)).where(Account.autopilot.is_(True)))
 
     steps = [
-        {"key": "crawl",    "label": "爬爆款",   "count": 0,           "status": "pending"},
+        {"key": "crawl",    "label": "爬爆款",   "count": trends_n,    "status": "ok" if trends_n else "pending"},
         {"key": "brief",    "label": "定调",     "count": accounts_total, "status": "ok"},
         {"key": "script",   "label": "脚本",     "count": scripts,     "status": "ok" if scripts else "pending"},
         {"key": "video",    "label": "视频",     "count": videos,      "status": "ok" if videos else "pending"},

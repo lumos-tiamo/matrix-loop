@@ -258,3 +258,17 @@ class FlywheelEvent(Base):
     step: Mapped[str] = mapped_column(String(16))                 # sync|evaluate|topic|script|video|publish|track
     status: Mapped[str] = mapped_column(String(12))               # ok|skipped|blocked|error
     detail: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+class Trend(Base):
+    __tablename__ = "trends"
+    __table_args__ = (UniqueConstraint("source", "title", name="uq_trend_source_title"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    source: Mapped[str] = mapped_column(String(24))                       # tiktok|youtube|x|web
+    title: Mapped[str] = mapped_column(String)                           # the viral piece / headline
+    url: Mapped[str | None] = mapped_column(String, nullable=True)
+    niche: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    engagement: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    distilled_topic: Mapped[str | None] = mapped_column(String, nullable=True)  # LLM-distilled angle to make
+    score: Mapped[float] = mapped_column(Float, default=0.0)
+    captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, index=True)

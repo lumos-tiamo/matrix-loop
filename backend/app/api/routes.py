@@ -6,7 +6,7 @@ from dataclasses import asdict
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
+from sqlalchemy import select, tuple_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
 from app.api.overview import build_overview
-from app.models import Account, AccountSegment, AudienceSegment, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, PublishDispatch, Recommendation, Snapshot, VideoAsset
+from app.models import Account, AccountSegment, AudienceSegment, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, PublishDispatch, Recommendation, Snapshot, Trend, VideoAsset
 from app.flow.build import build_flow
 from app.flow.classify import classify_audience
 from app.analysis.claude_client import ClaudeClient
@@ -35,7 +35,9 @@ from app.video.base import VideoQuotaExceeded, NearDuplicateScript
 from app.connectors.aitoearn_client import AiToEarnClient
 from app.connectors.linking import link_aitoearn_accounts
 from app.analysis.performance import content_performance, performance_prompt_block
+from app.analysis.trends import trend_prompt_block
 from app.orchestrator.state import is_paused, set_paused, flywheel_state
+from app.scheduler.control import start_scheduler, stop_scheduler, scheduler_running
 
 router = APIRouter()
 
@@ -391,7 +393,8 @@ def generate_script_route(draft_id: int, db: Session = Depends(get_db)) -> Draft
         raise HTTPException(status_code=422, detail="loop run not found")
     brief = db.scalar(select(ChannelBrief).where(ChannelBrief.account_id == lr.account_id))
     perf_block = performance_prompt_block(content_performance(db, lr.account_id))
-    text = generate_script(topic.content, brief, client, performance=perf_block)
+    trend_block = trend_prompt_block(db, brief.sub_niches) if brief else ""
+    text = generate_script(topic.content, brief, client, performance=perf_block, trends=trend_block or None)
     script = Draft(loop_run_id=topic.loop_run_id, kind="script", content=text, review_status="pending")
     db.add(script)
     db.commit()
@@ -514,10 +517,48 @@ def set_autopilot(account_id: int, payload: schemas.SetAutopilot, db: Session = 
     return {"account_id": account_id, "autopilot": acc.autopilot}
 
 
-# NOTE: register /flywheel/status|pause|resume BEFORE GET /flywheel (static prefixes; order is load-bearing).
+@router.post("/trends/ingest", status_code=201)
+def ingest_trends(payload: schemas.TrendIngest, db: Session = Depends(get_db)) -> dict:
+    incoming = [(t.source.strip().lower(), t.title) for t in payload.trends]
+    existing = set(db.execute(
+        select(Trend.source, Trend.title).where(
+            tuple_(Trend.source, Trend.title).in_(incoming))
+    ).all()) if incoming else set()
+    ingested = skipped = 0
+    seen: set = set()
+    for t in payload.trends:
+        key = (t.source.strip().lower(), t.title)
+        if key in existing or key in seen:
+            skipped += 1
+            continue
+        seen.add(key)
+        db.add(Trend(source=key[0], title=t.title, url=t.url, niche=t.niche,
+                     engagement=t.engagement, distilled_topic=t.distilled_topic, score=t.score))
+        ingested += 1
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="concurrent duplicate trend")
+    return {"ingested": ingested, "skipped": skipped}
+
+
+@router.get("/trends")
+def list_trends(niche: str | None = None, limit: int = Query(default=50, le=500), db: Session = Depends(get_db)) -> list[dict]:
+    stmt = select(Trend).order_by(Trend.captured_at.desc(), Trend.id.desc())
+    if niche:
+        stmt = stmt.where(Trend.niche == niche)
+    stmt = stmt.limit(limit)
+    return [{"id": t.id, "source": t.source, "title": t.title, "url": t.url, "niche": t.niche,
+             "engagement": t.engagement, "distilled_topic": t.distilled_topic, "score": t.score,
+             "captured_at": t.captured_at.isoformat() if t.captured_at else None}
+            for t in db.scalars(stmt).all()]
+
+
+# NOTE: /flywheel is a static path (no {param}), so the ordering below is stylistic, not load-bearing.
 @router.get("/flywheel/status")
 def flywheel_status(db: Session = Depends(get_db)) -> dict:
-    return {"paused": is_paused(db)}
+    return {"paused": is_paused(db), "scheduler_running": scheduler_running()}
 
 
 @router.post("/flywheel/pause")
@@ -532,6 +573,18 @@ def flywheel_resume(db: Session = Depends(get_db)) -> dict:
     return {"paused": False}
 
 
+@router.post("/flywheel/scheduler/start")
+def scheduler_start() -> dict:
+    start_scheduler(SessionLocal)
+    return {"scheduler_running": scheduler_running()}
+
+
+@router.post("/flywheel/scheduler/stop")
+def scheduler_stop() -> dict:
+    stop_scheduler()
+    return {"scheduler_running": scheduler_running()}
+
+
 @router.get("/flywheel")
 def flywheel(db: Session = Depends(get_db)) -> dict:
-    return flywheel_state(db)
+    return {**flywheel_state(db), "scheduler_running": scheduler_running()}

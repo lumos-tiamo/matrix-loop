@@ -21,6 +21,15 @@ os.makedirs(_media_dir, exist_ok=True)
 app.mount("/media", StaticFiles(directory=_media_dir), name="media")
 
 
+@app.on_event("startup")
+def _maybe_autostart_scheduler() -> None:
+    from app.config import settings
+    if settings.scheduler_autostart:
+        from app.scheduler.control import start_scheduler
+        from app.db import SessionLocal
+        start_scheduler(SessionLocal)
+
+
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "service": "matrixloop"}
