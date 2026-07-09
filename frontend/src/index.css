@@ -26,3 +26,18 @@ body {
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: #232B3C; border-radius: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* ---- Flywheel animations ---- */
+@keyframes fw-spin { to { transform: rotate(360deg); } }
+@keyframes fw-dash { to { stroke-dashoffset: -44; } }
+@keyframes fw-pop {
+  0%, 100% { box-shadow: 0 0 12px color-mix(in oklab, var(--nc) 14%, transparent); }
+  50% { box-shadow: 0 0 30px color-mix(in oklab, var(--nc) 38%, transparent); }
+}
+.fw-sweep { transform-origin: center; animation: fw-spin 14s linear infinite; }
+.fw-flow { animation: fw-dash 2.4s linear infinite; }
+.fw-core-glow { animation: fw-spin 8s linear infinite; }
+.fw-node-on { animation: fw-pop 3.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .fw-sweep, .fw-flow, .fw-core-glow, .fw-node-on { animation: none; }
+}
