@@ -4,6 +4,7 @@ import type {
   FlowData, SegmentOut, EndpointOut, CompositionItem,
   ChannelBriefOut, VideoAssetOut, VideoUsage, SetBriefIn,
   PublishDispatchOut,
+  FlywheelState,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE as string) ?? "http://localhost:8000";
@@ -110,4 +111,14 @@ export const api = {
   listDispatches: (accountId: number) =>
     req<PublishDispatchOut[]>(`/publish/dispatches?account_id=${accountId}`),
   refreshDispatch: (id: number) => req<PublishDispatchOut>(`/publish/dispatches/${id}`),
+
+  // ---- Flywheel ----
+  getFlywheel: () => req<FlywheelState>("/flywheel"),
+  flywheelStatus: () => req<{ paused: boolean }>("/flywheel/status"),
+  pauseFlywheel: () => req<{ paused: boolean }>("/flywheel/pause", { method: "POST" }),
+  resumeFlywheel: () => req<{ paused: boolean }>("/flywheel/resume", { method: "POST" }),
+  setAutopilot: (accountId: number, enabled: boolean) =>
+    req<{ account_id: number; autopilot: boolean }>(`/accounts/${accountId}/autopilot`, {
+      method: "POST", body: JSON.stringify({ enabled }),
+    }),
 };
