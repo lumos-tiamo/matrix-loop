@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def _run_autopilot(session_factory: Callable) -> None:
-    from app.orchestrator.engine import run_autopilot_cycle
+    from app.orchestrator.engine import run_autopilot_cycle, OrchestratorConfig
     from app.analysis.factory import resolve_llm_client
     from app.video.factory import resolve_video_provider
     from app.config import settings as cfg
@@ -21,8 +21,13 @@ def _run_autopilot(session_factory: Callable) -> None:
         if cfg.aitoearn_base_url and cfg.aitoearn_api_key:
             from app.connectors.aitoearn_client import AiToEarnClient
             aitoearn = AiToEarnClient(cfg.aitoearn_base_url, cfg.aitoearn_api_key)
+        orchestrator_cfg = OrchestratorConfig(
+            allow_fake_publish=cfg.orchestrator_allow_fake_publish,
+            max_accounts=cfg.schedule_max_accounts,
+        )
         rep = run_autopilot_cycle(session, llm=resolve_llm_client(),
-                                  video=resolve_video_provider(), aitoearn=aitoearn, sync=True)
+                                  video=resolve_video_provider(), aitoearn=aitoearn, sync=True,
+                                  cfg=orchestrator_cfg)
         logger.info("autopilot cycle: paused=%s processed=%s errors=%s",
                     rep.get("paused"), rep.get("processed"), len(rep.get("errors", [])))
         if aitoearn is not None:

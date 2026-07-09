@@ -39,3 +39,10 @@ def test_cycle_respects_global_pause(session):
     set_paused(session, True)
     rep = run_autopilot_cycle(session, llm=_LLM2(), video=None, aitoearn=None, sync=False)
     assert rep["paused"] is True and rep["processed"] == 0
+
+
+def test_cycle_honors_max_accounts(session):
+    _acct(session, "@a", True); _acct(session, "@b", False); _acct(session, "@c", True)
+    rep = run_autopilot_cycle(session, llm=_LLM2(), video=None, aitoearn=None, sync=False,
+                              cfg=OrchestratorConfig(max_accounts=2))
+    assert rep["processed"] == 2

@@ -514,6 +514,7 @@ def set_autopilot(account_id: int, payload: schemas.SetAutopilot, db: Session = 
     return {"account_id": account_id, "autopilot": acc.autopilot}
 
 
+# NOTE: register /flywheel/status|pause|resume BEFORE GET /flywheel (static prefixes; order is load-bearing).
 @router.get("/flywheel/status")
 def flywheel_status(db: Session = Depends(get_db)) -> dict:
     return {"paused": is_paused(db)}

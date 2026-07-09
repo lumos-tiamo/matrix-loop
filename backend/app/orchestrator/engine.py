@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+import uuid
+from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from sqlalchemy import select
@@ -12,7 +13,7 @@ from app.analysis.script import generate_script
 from app.connectors.base import ManualOnlyError
 from app.connectors.sync import sync_account
 from app.loop.engine import run_loop
-from app.models import Account, ChannelBrief, Draft, LoopRun, VideoAsset
+from app.models import Account, ChannelBrief, Draft
 from app.orchestrator.state import is_paused
 from app.publish.dispatch import PublishNotReady, create_dispatch
 from app.video.base import NearDuplicateScript, VideoQuotaExceeded
@@ -27,6 +28,7 @@ STEPS = ["sync", "evaluate", "topic", "script", "video", "approve", "publish", "
 class OrchestratorConfig:
     allow_fake_publish: bool = False           # never publish a fake-provider video as real
     stop_after_consecutive_errors: int = 5
+    max_accounts: int | None = None            # cap accounts processed per cycle (None = unlimited)
 
 
 def _event(session, account_id, cycle_id, step, status, detail=""):
@@ -74,10 +76,11 @@ def advance_account(session: Session, account, *, llm=None, video=None, aitoearn
     topic = next((d for d in reversed(run.drafts) if d.kind == "topic"), None)
     if topic is not None:
         mark("topic", "ok", topic.content[:60])
+    else:
+        mark("topic", "skipped", "no topic produced")
 
     # non-autopilot: stop here (review queue)
     if not account.autopilot:
-        mark("topic", "skipped", "not autopilot: queued for human review")
         session.commit()
         return {"account_id": account.id, "reached_step": reached, "actions": actions, "errors": []}
 
@@ -85,9 +88,8 @@ def advance_account(session: Session, account, *, llm=None, video=None, aitoearn
     if topic is None:
         session.commit()
         return {"account_id": account.id, "reached_step": reached, "actions": actions, "errors": []}
-    topic.review_status = "adopted"
 
-    # ③ script
+    # ③ script — do NOT adopt the topic until the script is successfully generated
     if llm is None:
         mark("script", "blocked", "no LLM configured")
         session.commit()
@@ -99,6 +101,7 @@ def advance_account(session: Session, account, *, llm=None, video=None, aitoearn
     except Exception as exc:  # noqa: BLE001
         mark("script", "error", str(exc)); session.commit()
         return {"account_id": account.id, "reached_step": reached, "actions": actions, "errors": [str(exc)]}
+    topic.review_status = "adopted"          # script succeeded -> now consume the topic
     script = Draft(loop_run_id=topic.loop_run_id, kind="script", content=text, review_status="adopted")
     session.add(script); session.commit()
     mark("script", "ok")
@@ -151,9 +154,11 @@ def run_autopilot_cycle(session: Session, *, llm=None, video=None, aitoearn=None
     cfg = cfg or OrchestratorConfig()
     if is_paused(session):
         return {"paused": True, "processed": 0, "results": [], "errors": []}
-    import uuid
     cycle_id = uuid.uuid4().hex[:12]
-    accounts = list(session.scalars(select(Account)).all())
+    stmt = select(Account).order_by(Account.id)
+    if cfg.max_accounts is not None:
+        stmt = stmt.limit(cfg.max_accounts)
+    accounts = list(session.scalars(stmt).all())
     processed = 0
     results = []
     errors = []

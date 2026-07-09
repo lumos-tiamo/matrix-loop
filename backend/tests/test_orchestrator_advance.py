@@ -103,3 +103,21 @@ def test_autopilot_without_llm_stops_at_topic(session):
     rep = advance_account(session, a, llm=None, video=_Video(), aitoearn=_AiToEarn(), sync=False)
     assert rep["reached_step"] in ("evaluate", "topic")   # no LLM -> no script -> no video/publish
     assert session.query(VideoAsset).count() == 0
+
+
+def test_autopilot_script_failure_leaves_topic_unadopted(monkeypatch, session):
+    a = _acct(session, autopilot=True, external_ref="ae_1")
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("script gen failed")
+
+    monkeypatch.setattr("app.orchestrator.engine.generate_script", boom)
+    rep = advance_account(session, a, llm=_LLM(), video=_Video(), aitoearn=_AiToEarn(), sync=False)
+
+    # topic stays un-adopted (not consumed from review queue), no script/video/publish
+    topics = session.query(Draft).filter_by(kind="topic").all()
+    assert all(d.review_status != "adopted" for d in topics)
+    scripts = session.query(Draft).filter_by(kind="script").all()
+    assert scripts == []
+    from app.models import VideoAsset
+    assert session.query(VideoAsset).count() == 0

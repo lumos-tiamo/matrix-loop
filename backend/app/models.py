@@ -32,7 +32,7 @@ class Account(Base):
     endpoint_id: Mapped[int | None] = mapped_column(ForeignKey("endpoints.id"), nullable=True)
     external_ref: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
     external_source: Mapped[str | None] = mapped_column(String(32), nullable=True)
-    autopilot: Mapped[bool] = mapped_column(default=False)
+    autopilot: Mapped[bool] = mapped_column(default=False, server_default="false", nullable=False)
 
     snapshots: Mapped[list["Snapshot"]] = relationship(back_populates="account", cascade="all, delete-orphan")
     content_items: Mapped[list["ContentItem"]] = relationship(
