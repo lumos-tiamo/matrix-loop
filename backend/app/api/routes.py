@@ -28,6 +28,9 @@ from app.flow.classify import classify_audience
 from app.analysis.claude_client import ClaudeClient
 from app.analysis.factory import resolve_llm_client
 from app.config import settings
+from app.video.factory import resolve_video_provider
+from app.video.governor import generate_video, usage_summary, VideoConfig
+from app.video.base import VideoQuotaExceeded, NearDuplicateScript
 from app.connectors.aitoearn_client import AiToEarnClient
 from app.connectors.linking import link_aitoearn_accounts
 
@@ -386,3 +389,54 @@ def generate_script_route(draft_id: int, db: Session = Depends(get_db)) -> Draft
     db.add(script)
     db.commit()
     return script
+
+
+_VIDEO_REVIEW_STATUSES = {"pending", "approved", "rejected"}
+
+
+@router.get("/video/usage")
+def video_usage(db: Session = Depends(get_db)) -> dict:
+    return usage_summary(db, cfg=VideoConfig())
+
+
+@router.get("/video-assets", response_model=list[schemas.VideoAssetOut])
+def list_video_assets(account_id: int | None = None, status: str | None = None,
+                      review_status: str | None = None, db: Session = Depends(get_db)) -> list[VideoAsset]:
+    stmt = select(VideoAsset).order_by(VideoAsset.id.desc())
+    if account_id is not None:
+        stmt = stmt.where(VideoAsset.account_id == account_id)
+    if status is not None:
+        stmt = stmt.where(VideoAsset.status == status)
+    if review_status is not None:
+        stmt = stmt.where(VideoAsset.review_status == review_status)
+    return list(db.scalars(stmt).all())
+
+
+@router.post("/video-assets/{asset_id}/status", response_model=schemas.VideoAssetOut)
+def set_video_review(asset_id: int, payload: schemas.SetVideoReview, db: Session = Depends(get_db)) -> VideoAsset:
+    asset = db.get(VideoAsset, asset_id)
+    if asset is None:
+        raise HTTPException(status_code=404, detail="video asset not found")
+    if payload.review_status not in _VIDEO_REVIEW_STATUSES:
+        raise HTTPException(status_code=422, detail=f"invalid review_status; allowed: {sorted(_VIDEO_REVIEW_STATUSES)}")
+    asset.review_status = payload.review_status
+    db.commit()
+    return asset
+
+
+@router.post("/accounts/{account_id}/generate-video", response_model=schemas.VideoAssetOut, status_code=201)
+def generate_video_route(account_id: int, payload: schemas.GenerateVideoIn, db: Session = Depends(get_db)) -> VideoAsset:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    draft = db.get(Draft, payload.script_draft_id)
+    if draft is None or draft.kind != "script":
+        raise HTTPException(status_code=404, detail="script draft not found")
+    try:
+        return generate_video(db, acc, draft, provider=resolve_video_provider())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except NearDuplicateScript as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except VideoQuotaExceeded as exc:
+        raise HTTPException(status_code=429, detail=str(exc)) from exc

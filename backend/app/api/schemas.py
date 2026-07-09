@@ -156,3 +156,25 @@ class SetBrief(BaseModel):
     persona: str | None = None
     format: str = "faceless"
     compliance_stance: str = "info_education"
+
+
+class GenerateVideoIn(BaseModel):
+    script_draft_id: int
+
+
+class VideoAssetOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    account_id: int
+    script_draft_id: int | None
+    provider: str
+    media_url: str | None
+    duration: float | None
+    cost: float
+    status: str
+    review_status: str
+    created_at: datetime
+
+
+class SetVideoReview(BaseModel):
+    review_status: str

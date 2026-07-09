@@ -57,3 +57,47 @@ def test_generate_script_without_llm_is_422(client, session, monkeypatch):
     session.add(topic); session.commit()
     monkeypatch.setattr("app.api.routes.resolve_llm_client", lambda: None)
     assert client.post(f"/drafts/{topic.id}/generate-script").status_code == 422
+
+
+def _adopted_script(session, account_id, content="unique defi yield explainer"):
+    lr = LoopRun(account_id=account_id); session.add(lr); session.commit()
+    d = Draft(loop_run_id=lr.id, kind="script", content=content, review_status="adopted")
+    session.add(d); session.commit()
+    return d
+
+
+def test_generate_video_gated_on_adopted_script(client, session):
+    acc = _seed_account(session)
+    lr = LoopRun(account_id=acc.id); session.add(lr); session.commit()
+    d = Draft(loop_run_id=lr.id, kind="script", content="x", review_status="pending")
+    session.add(d); session.commit()
+    r = client.post(f"/accounts/{acc.id}/generate-video", json={"script_draft_id": d.id})
+    assert r.status_code == 422
+
+
+def test_generate_video_creates_asset(client, session):
+    acc = _seed_account(session)
+    d = _adopted_script(session, acc.id)
+    r = client.post(f"/accounts/{acc.id}/generate-video", json={"script_draft_id": d.id})
+    assert r.status_code == 201
+    body = r.json()
+    assert body["status"] == "ready" and body["review_status"] == "pending" and body["provider"] == "fake"
+
+
+def test_list_and_review_video_assets(client, session):
+    acc = _seed_account(session)
+    d = _adopted_script(session, acc.id)
+    vid = client.post(f"/accounts/{acc.id}/generate-video", json={"script_draft_id": d.id}).json()
+    listing = client.get(f"/video-assets?account_id={acc.id}").json()
+    assert any(v["id"] == vid["id"] for v in listing)
+    r = client.post(f"/video-assets/{vid['id']}/status", json={"review_status": "approved"})
+    assert r.status_code == 200 and r.json()["review_status"] == "approved"
+    assert client.post(f"/video-assets/{vid['id']}/status", json={"review_status": "bogus"}).status_code == 422
+
+
+def test_video_usage_endpoint(client, session):
+    acc = _seed_account(session)
+    client.post(f"/accounts/{acc.id}/generate-video",
+                json={"script_draft_id": _adopted_script(session, acc.id).id})
+    usage = client.get("/video/usage").json()
+    assert usage["today_count"] >= 1 and usage["caps"]["per_account_per_day"] == 2
