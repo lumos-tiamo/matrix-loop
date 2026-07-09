@@ -128,7 +128,7 @@ def run_video_batch(session: Session, pairs, *, provider, cfg: VideoConfig | Non
             asset = generate_video(session, account, draft, provider=provider, cfg=cfg)
             generated += 1
             total_cost += asset.cost or 0.0
-            if total_cost > cfg.video_budget:
+            if total_cost >= cfg.video_budget:
                 stopped_early = True
                 break
         except Exception as exc:  # noqa: BLE001 - isolate per-item failures
