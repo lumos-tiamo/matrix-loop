@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { api } from "../api/client";
 import { useAsync } from "../api/hooks";
-import type { DraftOut } from "../api/types";
+import type { DraftOut, VideoAssetOut } from "../api/types";
 import { ChartCard } from "../components/ChartCard";
 import { StatTile } from "../components/StatTile";
 
@@ -219,6 +219,49 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
   );
 }
 function ReviewQueue({ accountId, className }: { accountId: number; className?: string }) {
-  void accountId;
-  return <ChartCard title="🎬 成片审核" className={className}><div data-testid="review-queue" /></ChartCard>;
+  const assets = useAsync(() => api.listVideoAssets({ account_id: accountId }), [accountId]);
+  const [busy, setBusy] = useState<number | null>(null);
+
+  async function review(id: number, status: string) {
+    setBusy(id);
+    try { await api.setVideoReview(id, status); assets.reload(); }
+    finally { setBusy(null); }
+  }
+
+  const rows: VideoAssetOut[] = assets.data ?? [];
+  const badge: Record<string, string> = {
+    pending: "text-warn", approved: "text-good", rejected: "text-alert",
+  };
+  const btn = "rounded-md border px-[10px] py-[4px] font-mono text-[11px] transition-colors disabled:opacity-50";
+
+  return (
+    <ChartCard title="🎬 成片审核" pill={`${rows.length} 条`} className={className}>
+      {rows.length === 0 && (
+        <p className="py-6 text-center font-mono text-[11px] text-muted">该账号还没有成片。生成后在这里审核。</p>
+      )}
+      <div className="space-y-[8px]">
+        {rows.map((v) => (
+          <div key={v.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-panel px-3 py-2">
+            <span className="font-mono text-[11px] text-dim">#{v.id}</span>
+            <span className="font-mono text-[11px] text-muted">{v.provider}</span>
+            <span className={`font-mono text-[11px] ${badge[v.review_status] ?? "text-muted"}`}>{v.review_status}</span>
+            <span className="font-mono text-[10px] text-dim">成本 {v.cost}</span>
+            {v.media_url && (
+              <a href={v.media_url} target="_blank" rel="noreferrer"
+                className="font-mono text-[11px] text-cyan underline decoration-dotted hover:text-cyan/80">看成片</a>
+            )}
+            <div className="flex-1" />
+            {v.review_status === "pending" && (
+              <>
+                <button className={`${btn} border-good/50 bg-good/[.08] text-good`} disabled={busy === v.id}
+                  onClick={() => review(v.id, "approved")}>通过</button>
+                <button className={`${btn} border-alert/50 bg-alert/[.08] text-alert`} disabled={busy === v.id}
+                  onClick={() => review(v.id, "rejected")}>否决</button>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </ChartCard>
+  );
 }
