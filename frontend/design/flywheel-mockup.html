@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MatrixLoop · 自转飞轮</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#090C12; --panel:#11151F; --panel2:#151A26; --line:#232B3C;
+    --text:#E8EDF6; --muted:#8A97AC; --dim:#5B6678;
+    --lime:#B6FF3C; --cyan:#4CD4F0; --violet:#A78BFA; --pink:#FF6FB5;
+    --good:#38E08A; --warn:#FFB020; --alert:#FF5C7A;
+    --disp:'Archivo',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace; --sc:'Noto Sans SC',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:var(--sc),var(--disp); -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(1200px 620px at 78% -8%, rgba(167,139,250,.10), transparent 60%),
+      radial-gradient(900px 520px at 6% 108%, rgba(76,212,240,.08), transparent 60%);
+    background-attachment:fixed;
+    position:relative; overflow-x:hidden;
+  }
+  /* grain */
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:9; opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .mono{font-family:var(--mono)}
+  .disp{font-family:var(--disp)}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:26px;
+    padding:14px 26px; border-bottom:1px solid var(--line);
+    background:rgba(9,12,18,.72); backdrop-filter:blur(12px);
+  }
+  .logo{font-family:var(--disp); font-weight:900; font-size:19px; letter-spacing:-.02em}
+  .logo b{color:var(--lime)}
+  nav{display:flex; gap:4px}
+  nav a{
+    font-family:var(--mono); font-size:12px; color:var(--muted); text-decoration:none;
+    padding:6px 12px; border-radius:9px; transition:.15s;
+  }
+  nav a.active{background:rgba(182,255,60,.10); color:var(--lime)}
+  nav a:hover{color:var(--text)}
+  .sys{margin-left:auto; display:flex; align-items:center; gap:14px}
+  .status{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px; color:var(--good)}
+  .status .dot{width:8px;height:8px;border-radius:50%;background:var(--good); box-shadow:0 0 0 0 rgba(56,224,138,.5); animation:beat 2s infinite}
+  @keyframes beat{0%{box-shadow:0 0 0 0 rgba(56,224,138,.45)}70%{box-shadow:0 0 0 9px rgba(56,224,138,0)}100%{box-shadow:0 0 0 0 rgba(56,224,138,0)}}
+  .kill{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); background:var(--panel);
+    padding:6px 12px; border-radius:9px; cursor:pointer; transition:.15s}
+  .kill:hover{border-color:var(--alert); color:var(--alert)}
+
+  main{max-width:1480px; margin:0 auto; padding:22px 26px 60px}
+
+  /* ---------- kpi strip ---------- */
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px}
+  .kpi{border:1px solid var(--line); background:linear-gradient(180deg,var(--panel),#0d1119);
+    border-radius:16px; padding:16px 18px; position:relative; overflow:hidden}
+  .kpi .k-lab{font-family:var(--mono); font-size:11px; letter-spacing:.04em; color:var(--muted); text-transform:uppercase}
+  .kpi .k-val{font-family:var(--disp); font-weight:800; font-size:30px; margin-top:6px; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+  .kpi .k-sub{font-family:var(--mono); font-size:11px; margin-top:2px}
+  .kpi.accent .k-val{color:var(--lime)} .kpi .k-sub.up{color:var(--good)} .kpi .k-sub.warn{color:var(--warn)}
+  .kpi::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;
+    background:radial-gradient(circle,rgba(182,255,60,.10),transparent 70%)}
+
+  /* ---------- layout ---------- */
+  .grid{display:grid; grid-template-columns:1.55fr .95fr; gap:20px; align-items:start}
+  .card{border:1px solid var(--line); background:linear-gradient(180deg,var(--panel),#0d1119); border-radius:18px}
+  .card > .c-head{display:flex; align-items:center; gap:10px; padding:15px 18px 0}
+  .c-head h2{font-family:var(--disp); font-weight:800; font-size:15px; letter-spacing:-.01em}
+  .c-head .pill{margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--cyan);
+    border:1px solid rgba(76,212,240,.3); background:rgba(76,212,240,.07); padding:3px 9px; border-radius:999px}
+
+  /* ---------- FLYWHEEL ---------- */
+  .wheel-card{min-height:660px; position:relative; overflow:hidden}
+  .wheel-wrap{position:relative; width:600px; height:600px; margin:14px auto 6px}
+  .wheel-svg{position:absolute; inset:0; width:100%; height:100%}
+  .sweep{transform-origin:center; animation:spin 14s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .track{fill:none; stroke:var(--line); stroke-width:1.5}
+  .flow{fill:none; stroke:url(#flowgrad); stroke-width:2.5; stroke-linecap:round;
+    stroke-dasharray:6 16; animation:dash 2.4s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-44}}
+
+  /* core */
+  .core{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); text-align:center;
+    width:230px; height:230px; border-radius:50%;
+    background:radial-gradient(circle at 50% 40%, rgba(182,255,60,.10), rgba(17,21,31,.9) 68%);
+    border:1px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    box-shadow:inset 0 0 40px rgba(182,255,60,.06)}
+  .core .glow{position:absolute; inset:-2px; border-radius:50%; border:1px solid transparent;
+    background:conic-gradient(from 0deg,var(--lime),var(--cyan),var(--violet),var(--lime)) border-box;
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; opacity:.55; animation:spin 8s linear infinite}
+  .core .rpm{font-family:var(--disp); font-weight:900; font-size:44px; line-height:1; letter-spacing:-.03em; color:var(--lime); font-variant-numeric:tabular-nums}
+  .core .rpm small{font-size:14px; color:var(--muted); font-weight:600}
+  .core .cl{font-family:var(--mono); font-size:11px; color:var(--muted)}
+  .core .cd{font-family:var(--mono); font-size:12px; color:var(--text); margin-top:6px}
+  .core .cd b{color:var(--cyan)}
+  .core .spinning{font-family:var(--mono); font-size:10px; letter-spacing:.22em; color:var(--good); margin-top:8px; text-transform:uppercase}
+
+  /* nodes */
+  .node{position:absolute; left:50%; top:50%; width:118px; margin-left:-59px; margin-top:-34px;
+    text-align:center;}
+  .node .bubble{width:58px; height:58px; margin:0 auto; border-radius:17px; display:flex; align-items:center; justify-content:center;
+    color:var(--nc,var(--lime)); background:var(--panel2); border:1px solid var(--line); position:relative; transition:.2s}
+  .node .bubble svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .node .num{position:absolute; top:-7px; left:-7px; width:19px; height:19px; border-radius:50%; background:var(--bg);
+    border:1px solid var(--line); font-family:var(--mono); font-size:10px; color:var(--muted); display:flex; align-items:center; justify-content:center}
+  .node .nl{font-family:var(--sc); font-weight:700; font-size:12px; margin-top:7px}
+  .node .ns{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:1px}
+  .node.on .bubble{border-color:var(--nc); background:color-mix(in oklab,var(--nc) 13%,transparent);
+    box-shadow:0 0 22px color-mix(in oklab,var(--nc) 28%,transparent); animation:pop 3.8s ease-in-out infinite}
+  .node.on .ns{color:var(--nc)}
+  @keyframes pop{0%,100%{box-shadow:0 0 12px color-mix(in oklab,var(--nc) 14%,transparent)}
+    50%{box-shadow:0 0 30px color-mix(in oklab,var(--nc) 38%,transparent)}}
+
+  /* position the 9 nodes: -90deg + i*40, radius 250 */
+  .n1{transform:rotate(-90deg) translateY(-250px) rotate(90deg)}
+  .n2{transform:rotate(-50deg) translateY(-250px) rotate(50deg)}
+  .n3{transform:rotate(-10deg) translateY(-250px) rotate(10deg)}
+  .n4{transform:rotate(30deg) translateY(-250px) rotate(-30deg)}
+  .n5{transform:rotate(70deg) translateY(-250px) rotate(-70deg)}
+  .n6{transform:rotate(110deg) translateY(-250px) rotate(-110deg)}
+  .n7{transform:rotate(150deg) translateY(-250px) rotate(-150deg)}
+  .n8{transform:rotate(190deg) translateY(-250px) rotate(-190deg)}
+  .n9{transform:rotate(230deg) translateY(-250px) rotate(-230deg)}
+  .wheel-foot{text-align:center; font-family:var(--mono); font-size:11px; color:var(--dim); padding:0 0 16px}
+  .wheel-foot b{color:var(--muted)}
+
+  /* ---------- autopilot rail ---------- */
+  .rail{display:flex; flex-direction:column; gap:20px}
+  .acct{display:flex; align-items:center; gap:12px; padding:12px 14px; border-top:1px solid var(--line)}
+  .acct:first-of-type{border-top:none}
+  .acct .av{width:34px;height:34px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:15px}
+  .acct .meta{min-width:0;flex:1}
+  .acct .h{font-family:var(--disp);font-weight:700;font-size:13px}
+  .acct .st{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .acct .st b{color:var(--cyan)}
+  .stepdots{display:flex;gap:3px;margin-top:4px}
+  .stepdots i{width:11px;height:3px;border-radius:2px;background:var(--line)}
+  .stepdots i.done{background:var(--good)} .stepdots i.cur{background:var(--lime);box-shadow:0 0 6px var(--lime)}
+  /* toggle */
+  .tg{position:relative;width:44px;height:24px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);cursor:pointer;flex:none;transition:.2s}
+  .tg::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.2s}
+  .tg.on{background:rgba(182,255,60,.18);border-color:var(--lime)}
+  .tg.on::after{left:22px;background:var(--lime);box-shadow:0 0 10px var(--lime)}
+  .tg-lab{font-family:var(--mono);font-size:9px;color:var(--dim);text-align:center;margin-top:2px}
+
+  /* activity feed */
+  .feed{padding:6px 4px 12px}
+  .ev{display:flex;gap:10px;padding:9px 14px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11.5px;align-items:baseline}
+  .ev:first-child{border-top:none}
+  .ev .t{color:var(--dim);flex:none;width:38px}
+  .ev .s{flex:none} .ev.pub .s{color:var(--violet)} .ev.win .s{color:var(--good)} .ev.gen .s{color:var(--cyan)} .ev.rev .s{color:var(--warn)} .ev.crawl .s{color:var(--pink)}
+  .ev .x{color:var(--muted)} .ev .x b{color:var(--text)}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;padding:2px 0 14px;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .legend i{width:8px;height:8px;border-radius:2px}
+  @media(max-width:1080px){.grid{grid-template-columns:1fr}.wheel-wrap{transform:scale(.82);margin:-30px auto}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Matrix<b>Loop</b></div>
+  <nav>
+    <a class="active" href="#">飞轮</a>
+    <a href="#">账号</a>
+    <a href="#">内容</a>
+    <a href="#">导流</a>
+    <a href="#">复盘</a>
+  </nav>
+  <div class="sys">
+    <div class="status"><span class="dot"></span>自转中 · 下班无人值守</div>
+    <button class="kill">⏸ 暂停飞轮</button>
+  </div>
+</header>
+
+<main>
+  <!-- KPI strip -->
+  <section class="kpis">
+    <div class="kpi accent">
+      <div class="k-lab">今日自动交付</div>
+      <div class="k-val">14</div>
+      <div class="k-sub up">↑ 全自动发布 9 · 排队待审 5</div>
+    </div>
+    <div class="kpi">
+      <div class="k-lab">自动驾驶账号</div>
+      <div class="k-val">9<span style="font-size:16px;color:var(--muted)"> / 15</span></div>
+      <div class="k-sub" style="color:var(--muted)">6 个仍人工审核</div>
+    </div>
+    <div class="kpi">
+      <div class="k-lab">飞轮转速</div>
+      <div class="k-val" style="color:var(--cyan)">3.2<span style="font-size:16px;color:var(--muted)"> 圈/日</span></div>
+      <div class="k-sub up">较昨日 ↑ 12%</div>
+    </div>
+    <div class="kpi">
+      <div class="k-lab">今日额度 / 预算</div>
+      <div class="k-val">128<span style="font-size:16px;color:var(--muted)"> / 400</span></div>
+      <div class="k-sub warn">视频 42 · LLM 86 · 未触顶</div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <!-- FLYWHEEL -->
+    <div class="card wheel-card">
+      <div class="c-head"><h2>🌀 内容自转飞轮</h2><span class="pill">9 步 · 实时</span></div>
+      <div class="wheel-wrap">
+        <svg class="wheel-svg" viewBox="0 0 600 600">
+          <defs>
+            <linearGradient id="flowgrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#B6FF3C"/><stop offset=".5" stop-color="#4CD4F0"/><stop offset="1" stop-color="#A78BFA"/>
+            </linearGradient>
+            <radialGradient id="sweepgrad"><stop offset="0" stop-color="rgba(182,255,60,0)"/><stop offset="1" stop-color="rgba(182,255,60,.5)"/></radialGradient>
+          </defs>
+          <circle class="track" cx="300" cy="300" r="250"/>
+          <circle class="flow" cx="300" cy="300" r="250"/>
+          <g class="sweep">
+            <path d="M300 300 L300 50 A250 250 0 0 1 476 124 Z" fill="url(#sweepgrad)" opacity=".18"/>
+          </g>
+        </svg>
+
+        <!-- core -->
+        <div class="core">
+          <div class="glow"></div>
+          <div class="rpm">14<small> 条/日</small></div>
+          <div class="cl">今日已交付</div>
+          <div class="cd">在跑 <b>9</b> 个自动驾驶账号</div>
+          <div class="spinning">● SELF-SPINNING</div>
+        </div>
+
+        <!-- 9 nodes · 自定义线性图标 -->
+        <div class="node n1 on" style="--nc:var(--pink)"><div class="bubble" style="animation-delay:0s">
+          <svg viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-3-2-5.2-3.6-7.6C14 5.2 13 3.6 12 2c-.6 3-2 4.6-3.4 6.1C7 10.2 5 12 5 15a7 7 0 0 0 7 7z"/><path d="M12 22a3.3 3.3 0 0 0 3.3-3.3c0-1.8-1.7-3.1-3.3-5-1.6 1.9-3.3 3.2-3.3 5A3.3 3.3 0 0 0 12 22z"/></svg>
+          <span class="num">1</span></div><div class="nl">爬爆款</div><div class="ns">38 热榜</div></div>
+
+        <div class="node n2 on" style="--nc:var(--violet)"><div class="bubble" style="animation-delay:.4s">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.1"/></svg>
+          <span class="num">2</span></div><div class="nl">定调</div><div class="ns">15 号</div></div>
+
+        <div class="node n3 on" style="--nc:var(--cyan)"><div class="bubble" style="animation-delay:.8s">
+          <svg viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4"/><path d="M10 8.5h3M10 12h6M10 15.5h6"/></svg>
+          <span class="num">3</span></div><div class="nl">脚本</div><div class="ns">真 LLM · 21</div></div>
+
+        <div class="node n4 on" style="--nc:var(--cyan)"><div class="bubble" style="animation-delay:1.2s">
+          <svg viewBox="0 0 24 24"><rect x="3" y="6" width="12.5" height="12" rx="2.5"/><path d="M15.5 10.2l5.5-2.7v9l-5.5-2.7z"/></svg>
+          <span class="num">4</span></div><div class="nl">视频</div><div class="ns">3 生成中</div></div>
+
+        <div class="node n5 on" style="--nc:var(--lime)"><div class="bubble" style="animation-delay:1.6s">
+          <svg viewBox="0 0 24 24"><path d="M21.5 3L2.6 10.2l7.3 2.9 2.9 7.3z"/><path d="M21.5 3L9.9 13.1"/></svg>
+          <span class="num">5</span></div><div class="nl">发布</div><div class="ns">9 自动 · 5 待审</div></div>
+
+        <div class="node n6 on" style="--nc:var(--cyan)"><div class="bubble" style="animation-delay:2s">
+          <svg viewBox="0 0 24 24"><path d="M3 12h3.4l2.4-6 4 13 2.5-7H21"/></svg>
+          <span class="num">6</span></div><div class="nl">追踪流量</div><div class="ns">回流 12 帖</div></div>
+
+        <div class="node n7 on" style="--nc:var(--violet)"><div class="bubble" style="animation-delay:2.4s">
+          <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-13.7 5.6"/><path d="M4 12A8 8 0 0 1 17.7 6.4"/><path d="M17.7 2.6v3.8h-3.8"/><path d="M6.3 21.4v-3.8h3.8"/></svg>
+          <span class="num">7</span></div><div class="nl">复盘</div><div class="ns">赢家 ×3</div></div>
+
+        <div class="node n8 on" style="--nc:var(--violet)"><div class="bubble" style="animation-delay:2.8s">
+          <svg viewBox="0 0 24 24"><path d="M4 20h16"/><rect x="5.4" y="12" width="3.2" height="6" rx="1"/><rect x="10.4" y="7" width="3.2" height="11" rx="1"/><rect x="15.4" y="10" width="3.2" height="8" rx="1"/></svg>
+          <span class="num">8</span></div><div class="nl">账号评估</div><div class="ns">均分 71</div></div>
+
+        <div class="node n9 on" style="--nc:var(--lime)"><div class="bubble" style="animation-delay:3.2s">
+          <svg viewBox="0 0 24 24"><path d="M9.6 18.5h4.8M10.1 21.5h3.8"/><path d="M12 2.5A6.2 6.2 0 0 0 8.2 13.6c.9.7 1.3 1.4 1.3 2.4h5c0-1 .4-1.7 1.3-2.4A6.2 6.2 0 0 0 12 2.5z"/></svg>
+          <span class="num">9</span></div><div class="nl">改进建议</div><div class="ns">9 条纠偏</div></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--good)"></i>已完成</span>
+        <span><i style="background:var(--lime)"></i>进行中</span>
+        <span><i style="background:var(--line)"></i>待启动</span>
+        <span style="color:var(--dim)">· 箭头方向 = 数据流,回到 ①闭环</span>
+      </div>
+      <div class="wheel-foot"><b>闭环:</b> 爆款趋势喂定调 → 真数据回流复盘 → 改进建议自动改定调 → 下一圈更准</div>
+    </div>
+
+    <!-- RAIL: autopilot + activity -->
+    <div class="rail">
+      <div class="card">
+        <div class="c-head"><h2>🛩 自动驾驶账号</h2><span class="pill">9 开 · 6 审核</span></div>
+        <div style="padding:8px 4px 6px">
+          <div class="acct">
+            <div class="av">💰</div>
+            <div class="meta"><div class="h">@money_talk · X</div>
+              <div class="st">第 ⑤步 <b>发布中</b> ·《Fed 降息》</div>
+              <div class="stepdots"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="cur"></i><i></i><i></i><i></i><i></i></div>
+            </div>
+            <div><div class="tg on"></div><div class="tg-lab">自动</div></div>
+          </div>
+          <div class="acct">
+            <div class="av">📈</div>
+            <div class="meta"><div class="h">@tech_daily · 抖音</div>
+              <div class="st">第 ④步 <b>生成视频</b> · seedance</div>
+              <div class="stepdots"><i class="done"></i><i class="done"></i><i class="done"></i><i class="cur"></i><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+            <div><div class="tg on"></div><div class="tg-lab">自动</div></div>
+          </div>
+          <div class="acct">
+            <div class="av">🧴</div>
+            <div class="meta"><div class="h">@beauty_lab · 小红书</div>
+              <div class="st">第 ③步 脚本 <b style="color:var(--warn)">待人工审</b></div>
+              <div class="stepdots"><i class="done"></i><i class="done"></i><i class="cur"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+            <div><div class="tg"></div><div class="tg-lab">审核</div></div>
+          </div>
+          <div class="acct">
+            <div class="av">🎮</div>
+            <div class="meta"><div class="h">@fit_coach · TikTok</div>
+              <div class="st">第 ⑧步 <b>评估</b> · 均分 68 ↑</div>
+              <div class="stepdots"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="cur"></i><i></i></div>
+            </div>
+            <div><div class="tg on"></div><div class="tg-lab">自动</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="c-head"><h2>⚡ 今日飞轮流水</h2><span class="pill">实时</span></div>
+        <div class="feed">
+          <div class="ev crawl"><span class="t">21:04</span><span class="s">爬爆款</span><span class="x">抓到 <b>#Airdrop</b> 热榜 12 条,提炼 4 个选题</span></div>
+          <div class="ev gen"><span class="t">21:02</span><span class="s">脚本</span><span class="x"><b>@money_talk</b> 生成《Fed 降息对 crypto》</span></div>
+          <div class="ev pub"><span class="t">20:58</span><span class="s">发布</span><span class="x"><b>@tech_daily</b> 自动发布至抖音 · 已排期</span></div>
+          <div class="ev win"><span class="t">20:41</span><span class="s">复盘</span><span class="x"><b>@money_talk</b>《DXY×BTC》<b>12.4k</b> views → 赢家</span></div>
+          <div class="ev rev"><span class="t">20:30</span><span class="s">待审</span><span class="x"><b>@beauty_lab</b> 成片待人工放行</span></div>
+          <div class="ev win"><span class="t">20:12</span><span class="s">改进</span><span class="x">飞轮自动把 <b>@fit_coach</b> 定调偏向"实测"角度</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>
