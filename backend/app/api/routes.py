@@ -492,3 +492,10 @@ def get_dispatch(dispatch_id: int, db: Session = Depends(get_db)) -> PublishDisp
     except HTTPException:
         return d   # AiToEarn not configured -> return stored state without polling
     return refresh_dispatch(db, d, client=client)
+
+
+@router.post("/publish/refresh-analytics")
+def refresh_publish_analytics(db: Session = Depends(get_db)) -> dict:
+    client = _aitoearn_client_or_422()
+    from app.publish.analytics import refresh_published_analytics
+    return refresh_published_analytics(db, client=client)
