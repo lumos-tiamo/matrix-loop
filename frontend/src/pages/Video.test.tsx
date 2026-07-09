@@ -162,3 +162,25 @@ it("lists video assets and approves one", async () => {
   await waitFor(() => expect(calls.length).toBe(1));
   expect(calls[0].body).toContain("approved");
 });
+
+it("publishes an approved asset via 发布", async () => {
+  const calls: string[] = [];
+  const approved = { ...ASSET, review_status: "approved" };
+  stub((url, init) => {
+    if (url.endsWith("/accounts")) return { ok: true, json: async () => ACCOUNTS };
+    if (url.endsWith("/video/usage")) return { ok: true, json: async () => USAGE };
+    if (url.match(/\/accounts\/4\/brief$/)) return { ok: false, status: 404, json: async () => ({}) };
+    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([]) };
+    if (url.match(/\/accounts\/4\/publish$/) && init?.method === "POST") {
+      calls.push("publish");
+      return { ok: true, json: async () => ({ id: 1, account_id: 4, video_asset_id: 9, aitoearn_flow_id: "f1", aitoearn_task_id: "t1", platform_work_id: null, status: "queued", publish_at: null, media_urls: [], caption: "x", created_at: "2026-07-09T00:00:00Z" }) };
+    }
+    if (url.includes("/publish/dispatches")) return { ok: true, json: async () => [] };
+    if (url.includes("/video-assets")) return { ok: true, json: async () => [approved] };
+    return undefined;
+  });
+  render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
+  fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
+  fireEvent.click(await screen.findByRole("button", { name: /发布/ }));
+  await waitFor(() => expect(calls).toContain("publish"));
+});

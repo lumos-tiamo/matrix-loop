@@ -165,3 +165,17 @@ export interface SetBriefIn {
   format?: string;
   compliance_stance?: string;
 }
+
+export interface PublishDispatchOut {
+  id: number;
+  account_id: number;
+  video_asset_id: number | null;
+  aitoearn_flow_id: string | null;
+  aitoearn_task_id: string | null;
+  platform_work_id: string | null;
+  status: string;
+  publish_at: string | null;
+  media_urls: string[];
+  caption: string | null;
+  created_at: string;
+}

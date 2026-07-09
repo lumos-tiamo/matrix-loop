@@ -3,6 +3,7 @@ import type {
   Overview, ContentLibraryItem,
   FlowData, SegmentOut, EndpointOut, CompositionItem,
   ChannelBriefOut, VideoAssetOut, VideoUsage, SetBriefIn,
+  PublishDispatchOut,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE as string) ?? "http://localhost:8000";
@@ -102,4 +103,11 @@ export const api = {
       method: "POST", body: JSON.stringify({ review_status }),
     }),
   getVideoUsage: () => req<VideoUsage>("/video/usage"),
+  publish: (accountId: number, videoAssetId: number, caption?: string) =>
+    req<PublishDispatchOut>(`/accounts/${accountId}/publish`, {
+      method: "POST", body: JSON.stringify({ video_asset_id: videoAssetId, caption: caption ?? null }),
+    }),
+  listDispatches: (accountId: number) =>
+    req<PublishDispatchOut[]>(`/publish/dispatches?account_id=${accountId}`),
+  refreshDispatch: (id: number) => req<PublishDispatchOut>(`/publish/dispatches/${id}`),
 };
