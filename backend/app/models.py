@@ -181,3 +181,38 @@ class AccountSegment(Base):
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
     segment_id: Mapped[int] = mapped_column(ForeignKey("audience_segments.id"), index=True)
     weight: Mapped[float] = mapped_column(Float, default=1.0)           # 该账号粉丝分到此人群的占比
+
+
+class ChannelBrief(Base):
+    __tablename__ = "channel_briefs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), unique=True, index=True)
+    main_direction: Mapped[str] = mapped_column(String(128))          # e.g. web3
+    sub_niches: Mapped[list] = mapped_column(JSON, default=list)      # ["加密交易者", ...]
+    tone: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    language: Mapped[str] = mapped_column(String(16), default="en")
+    persona: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    format: Mapped[str] = mapped_column(String(16), default="faceless")           # faceless|avatar
+    compliance_stance: Mapped[str] = mapped_column(String(24), default="info_education")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    def __init__(self, **kw):
+        kw.setdefault("sub_niches", list())
+        super().__init__(**kw)
+
+
+class VideoAsset(Base):
+    __tablename__ = "video_assets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
+    script_draft_id: Mapped[int | None] = mapped_column(ForeignKey("drafts.id"), nullable=True, index=True)
+    provider: Mapped[str] = mapped_column(String(32))
+    media_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    duration: Mapped[float | None] = mapped_column(Float, nullable=True)
+    cost: Mapped[float] = mapped_column(Float, default=0.0)
+    dedup_key: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)  # account-scoped sha256[:32]; a real provider's job id would need its own column
+    status: Mapped[str] = mapped_column(String(16), default="ready")              # generating|ready|failed
+    review_status: Mapped[str] = mapped_column(String(16), default="pending")     # pending|approved|rejected
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
