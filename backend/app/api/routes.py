@@ -35,6 +35,7 @@ from app.video.base import VideoQuotaExceeded, NearDuplicateScript
 from app.connectors.aitoearn_client import AiToEarnClient
 from app.connectors.linking import link_aitoearn_accounts
 from app.analysis.performance import content_performance, performance_prompt_block
+from app.orchestrator.state import is_paused, set_paused, flywheel_state
 
 router = APIRouter()
 
@@ -501,3 +502,35 @@ def refresh_publish_analytics(db: Session = Depends(get_db)) -> dict:
     client = _aitoearn_client_or_422()
     from app.publish.analytics import refresh_published_analytics
     return refresh_published_analytics(db, client=client)
+
+
+@router.post("/accounts/{account_id}/autopilot")
+def set_autopilot(account_id: int, payload: schemas.SetAutopilot, db: Session = Depends(get_db)) -> dict:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    acc.autopilot = payload.enabled
+    db.commit()
+    return {"account_id": account_id, "autopilot": acc.autopilot}
+
+
+@router.get("/flywheel/status")
+def flywheel_status(db: Session = Depends(get_db)) -> dict:
+    return {"paused": is_paused(db)}
+
+
+@router.post("/flywheel/pause")
+def flywheel_pause(db: Session = Depends(get_db)) -> dict:
+    set_paused(db, True)
+    return {"paused": True}
+
+
+@router.post("/flywheel/resume")
+def flywheel_resume(db: Session = Depends(get_db)) -> dict:
+    set_paused(db, False)
+    return {"paused": False}
+
+
+@router.get("/flywheel")
+def flywheel(db: Session = Depends(get_db)) -> dict:
+    return flywheel_state(db)
