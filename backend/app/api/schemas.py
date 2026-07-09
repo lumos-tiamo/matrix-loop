@@ -141,3 +141,8 @@ class SetComposition(BaseModel):
 
 class SetEndpoint(BaseModel):
     endpoint_id: int | None = None
+
+
+class SetExternalRef(BaseModel):
+    external_ref: str
+    external_source: str | None = "aitoearn"

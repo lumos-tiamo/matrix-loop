@@ -30,6 +30,8 @@ class Account(Base):
     acceptance_criteria: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     endpoint_id: Mapped[int | None] = mapped_column(ForeignKey("endpoints.id"), nullable=True)
+    external_ref: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    external_source: Mapped[str | None] = mapped_column(String(32), nullable=True)
 
     snapshots: Mapped[list["Snapshot"]] = relationship(back_populates="account", cascade="all, delete-orphan")
     content_items: Mapped[list["ContentItem"]] = relationship(

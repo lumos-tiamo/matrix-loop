@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     llm_model: str = "claude-sonnet-4-6"
     x_bearer_token: str | None = None
     scrapecreators_api_key: str | None = None
+    aitoearn_base_url: str | None = None
+    aitoearn_api_key: str | None = None
+    youtube_api_key: str | None = None
+    instagram_token: str | None = None
+    instagram_business_id: str | None = None
     schedule_interval_minutes: int = 360
     schedule_max_accounts: int | None = None
 
