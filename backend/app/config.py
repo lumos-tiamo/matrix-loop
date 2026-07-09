@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     orchestrator_interval_minutes: int = 180
     orchestrator_allow_fake_publish: bool = False
 
+    scheduler_autostart: bool = False
+
     # Video generation
     video_provider: str = "fake"                      # fake | seedance
     seedance_model: str = "seedance2.0fast"
