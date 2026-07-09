@@ -35,3 +35,9 @@ def test_build_script_prompt_includes_performance_when_given():
     perf_block = "Past content performance ... Top performers: \"airdrop guide\" (9000 views)"
     p = build_script_prompt("New topic", _Brief(), performance=perf_block)
     assert "airdrop guide" in p
+
+
+def test_build_script_prompt_includes_trends_when_given():
+    from app.analysis.script import build_script_prompt
+    p = build_script_prompt("Topic", _Brief(), trends="Trending now: \"Farm 3 airdrops\" (tiktok)")
+    assert "Farm 3 airdrops" in p

@@ -35,6 +35,7 @@ from app.video.base import VideoQuotaExceeded, NearDuplicateScript
 from app.connectors.aitoearn_client import AiToEarnClient
 from app.connectors.linking import link_aitoearn_accounts
 from app.analysis.performance import content_performance, performance_prompt_block
+from app.analysis.trends import trend_prompt_block
 from app.orchestrator.state import is_paused, set_paused, flywheel_state
 
 router = APIRouter()
@@ -391,7 +392,9 @@ def generate_script_route(draft_id: int, db: Session = Depends(get_db)) -> Draft
         raise HTTPException(status_code=422, detail="loop run not found")
     brief = db.scalar(select(ChannelBrief).where(ChannelBrief.account_id == lr.account_id))
     perf_block = performance_prompt_block(content_performance(db, lr.account_id))
-    text = generate_script(topic.content, brief, client, performance=perf_block)
+    niches = brief.sub_niches if brief else None
+    trend_block = trend_prompt_block(db, niches)
+    text = generate_script(topic.content, brief, client, performance=perf_block, trends=trend_block or None)
     script = Draft(loop_run_id=topic.loop_run_id, kind="script", content=text, review_status="pending")
     db.add(script)
     db.commit()
