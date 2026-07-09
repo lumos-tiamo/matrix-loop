@@ -63,3 +63,11 @@ class AiToEarnClient:
             if v:
                 url += f"&{k}={v}"
         return self._http_get(url, self._headers()) or {}
+
+    def publish_flow(self, payload: dict) -> dict:
+        url = f"{self.base_url}/channels/publish/flows"
+        return self._http_post(url, self._headers(), payload) or {}
+
+    def flow_status(self, flow_id: str) -> dict:
+        url = f"{self.base_url}/channels/publish/flows/{flow_id}"
+        return self._http_get(url, self._headers()) or {}

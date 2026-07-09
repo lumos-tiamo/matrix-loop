@@ -178,3 +178,24 @@ class VideoAssetOut(BaseModel):
 
 class SetVideoReview(BaseModel):
     review_status: str
+
+
+class PublishIn(BaseModel):
+    video_asset_id: int
+    caption: str | None = None
+    publish_at: datetime | None = None
+
+
+class PublishDispatchOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    account_id: int
+    video_asset_id: int | None
+    aitoearn_flow_id: str | None
+    aitoearn_task_id: str | None
+    platform_work_id: str | None
+    status: str
+    publish_at: datetime | None
+    media_urls: list[str]
+    caption: str | None
+    created_at: datetime

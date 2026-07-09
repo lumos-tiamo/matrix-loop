@@ -240,6 +240,13 @@ function ReviewQueue({ accountId, genNonce, className }: { accountId: number; ge
     finally { setBusy(null); }
   }
 
+  async function publish(assetId: number) {
+    setBusy(assetId); setMsg(null);
+    try { await api.publish(accountId, assetId); setMsg("已提交发布(见 AiToEarn)"); assets.reload(); }
+    catch (e) { setMsg(String(e)); }
+    finally { setBusy(null); }
+  }
+
   const rows: VideoAssetOut[] = assets.data ?? [];
   const badge: Record<string, string> = {
     pending: "text-warn", approved: "text-good", rejected: "text-alert",
@@ -270,6 +277,10 @@ function ReviewQueue({ accountId, genNonce, className }: { accountId: number; ge
                 <button className={`${btn} border-alert/50 bg-alert/[.08] text-alert`} disabled={busy === v.id}
                   onClick={() => review(v.id, "rejected")}>否决</button>
               </>
+            )}
+            {v.review_status === "approved" && (
+              <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet`} disabled={busy === v.id}
+                onClick={() => publish(v.id)}>{busy === v.id ? "发布中…" : "发布/排期"}</button>
             )}
           </div>
         ))}

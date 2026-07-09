@@ -216,3 +216,24 @@ class VideoAsset(Base):
     status: Mapped[str] = mapped_column(String(16), default="ready")              # generating|ready|failed
     review_status: Mapped[str] = mapped_column(String(16), default="pending")     # pending|approved|rejected
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class PublishDispatch(Base):
+    __tablename__ = "publish_dispatches"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
+    video_asset_id: Mapped[int | None] = mapped_column(ForeignKey("video_assets.id"), nullable=True, index=True)
+    draft_id: Mapped[int | None] = mapped_column(ForeignKey("drafts.id"), nullable=True)
+    aitoearn_flow_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    aitoearn_task_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    platform_work_id: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(16), default="pending")   # pending|queued|published|failed
+    publish_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    media_urls: Mapped[list] = mapped_column(JSON, default=list)
+    caption: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    def __init__(self, **kw):
+        kw.setdefault("media_urls", list())
+        super().__init__(**kw)
