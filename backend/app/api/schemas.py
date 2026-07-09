@@ -156,6 +156,7 @@ class SetBrief(BaseModel):
     persona: str | None = None
     format: str = "faceless"
     compliance_stance: str = "info_education"
+    target_seconds: int = 50
 
 
 class GenerateVideoIn(BaseModel):

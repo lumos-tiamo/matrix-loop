@@ -41,3 +41,22 @@ def test_build_script_prompt_includes_trends_when_given():
     from app.analysis.script import build_script_prompt
     p = build_script_prompt("Topic", _Brief(), trends="Trending now: \"Farm 3 airdrops\" (tiktok)")
     assert "Farm 3 airdrops" in p
+
+
+def test_build_script_prompt_uses_target_seconds():
+    from app.analysis.script import build_script_prompt
+    class B:
+        main_direction="web3"; sub_niches=["defi"]; tone="punchy"; language="en"
+        persona="Nina"; compliance_stance="info_education"; target_seconds=90
+    p = build_script_prompt("Topic", B())
+    assert "90" in p                      # target seconds surfaced
+    # word budget roughly target_seconds * ~2.7
+    assert "word" in p.lower()
+
+
+def test_build_script_prompt_defaults_when_no_target():
+    from app.analysis.script import build_script_prompt
+    class B:
+        main_direction="web3"; sub_niches=[]; tone=None; language="en"; persona=None; compliance_stance="info_education"
+    p = build_script_prompt("Topic", B())   # no target_seconds attr -> default 50
+    assert "50" in p
