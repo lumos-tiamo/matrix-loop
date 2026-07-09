@@ -29,6 +29,7 @@ class YouTubeConnector:
         handle = (account.handle or "").lstrip("@")
         if not handle:
             raise ValueError("account.handle is empty")
+        # NOTE: API key/token is in the URL per the API contract — do not log this URL at INFO.
         url = (
             "https://www.googleapis.com/youtube/v3/channels"
             f"?part=statistics&forHandle={handle}&key={self.api_key}"

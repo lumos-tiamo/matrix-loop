@@ -45,7 +45,8 @@ class AiToEarnClient:
     def list_accounts(self, types: list[str] | None = None) -> dict:
         url = f"{self.base_url}/channels/accounts"
         if types:
-            url += "?" + "&".join(f"types[]={t}" for t in types)
+            from urllib.parse import urlencode
+            url += "?" + urlencode([("types[]", t) for t in types])
         return self._http_get(url, self._headers()) or {}
 
     def account_analytics(self, account_id: str, since: str | None = None, until: str | None = None) -> dict:

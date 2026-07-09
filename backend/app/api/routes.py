@@ -27,6 +27,9 @@ from app.flow.build import build_flow
 from app.flow.classify import classify_audience
 from app.analysis.claude_client import ClaudeClient
 from app.analysis.factory import resolve_llm_client
+from app.config import settings
+from app.connectors.aitoearn_client import AiToEarnClient
+from app.connectors.linking import link_aitoearn_accounts
 
 router = APIRouter()
 
@@ -313,11 +316,8 @@ def set_external_ref(account_id: int, payload: schemas.SetExternalRef, db: Sessi
 
 @router.post("/accounts/link-aitoearn")
 def link_aitoearn(db: Session = Depends(get_db)) -> dict:
-    from app.config import settings
     if not (settings.aitoearn_base_url and settings.aitoearn_api_key):
         raise HTTPException(status_code=422, detail="AiToEarn 未配置(MATRIXLOOP_AITOEARN_BASE_URL/API_KEY)")
-    from app.connectors.aitoearn_client import AiToEarnClient
-    from app.connectors.linking import link_aitoearn_accounts
     client = AiToEarnClient(settings.aitoearn_base_url, settings.aitoearn_api_key)
     return link_aitoearn_accounts(db, client)
 

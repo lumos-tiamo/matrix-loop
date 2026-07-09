@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import select
 
 from app.connectors.aitoearn import AiToEarnConnector
 from app.connectors.base import ManualOnlyError
@@ -40,5 +41,5 @@ def test_sync_persists_aggregator_snapshot(session):
     client = _FakeClient({"metrics": {"fansCount": 8000, "viewCount": 4000, "engagementCount": 200}})
     out = sync_account(session, acc, connector=AiToEarnConnector(client, "xiaohongshu"))
     assert out["tier"] == "aggregator" and out["snapshots_created"] == 1
-    snap = session.query(Snapshot).filter_by(account_id=acc.id).one()
+    snap = session.scalars(select(Snapshot).where(Snapshot.account_id == acc.id)).one()
     assert snap.followers == 8000 and snap.source_tier == "aggregator" and snap.engagement_rate == 0.05

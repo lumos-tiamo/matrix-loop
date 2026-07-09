@@ -27,6 +27,7 @@ class InstagramConnector:
         handle = (account.handle or "").lstrip("@")
         if not handle:
             raise ValueError("account.handle is empty")
+        # NOTE: API key/token is in the URL per the API contract — do not log this URL at INFO.
         url = (
             f"https://graph.facebook.com/v19.0/{self.business_id}"
             f"?fields=business_discovery.username({handle}){{followers_count,media_count}}"

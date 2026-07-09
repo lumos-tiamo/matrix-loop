@@ -44,3 +44,11 @@ def test_set_external_ref_route(client, session):
 
 def test_set_external_ref_404(client):
     assert client.post("/accounts/999/external-ref", json={"external_ref": "x"}).status_code == 404
+
+
+def test_link_aitoearn_route_reaches_handler_not_shadowed(client):
+    # With no AiToEarn config, the handler returns its own 422 ("未配置"),
+    # NOT a path-param int-validation 422 for account_id="link-aitoearn".
+    resp = client.post("/accounts/link-aitoearn")
+    assert resp.status_code == 422
+    assert "AiToEarn" in resp.json()["detail"]

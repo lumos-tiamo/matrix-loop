@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.connectors.aitoearn_client import to_aitoearn_platform
+from app.connectors.registry import CN_AGGREGATOR
 from app.models import Account
 
 
@@ -26,7 +27,9 @@ def link_aitoearn_accounts(session: Session, client) -> dict:
             if key[1]:
                 by_key.setdefault(key, rid)
 
-    accounts = list(session.scalars(select(Account)).all())
+    accounts = list(session.scalars(
+        select(Account).where(Account.platform.in_(CN_AGGREGATOR))
+    ).all())
     linked = 0
     for acc in accounts:
         if acc.external_ref:

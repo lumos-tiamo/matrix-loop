@@ -28,4 +28,4 @@ def test_list_accounts_filters_types():
         return {"total": 0, "list": []}
     c = AiToEarnClient("http://host/api/v2", "KEY", http_get=fake_get)
     c.list_accounts(types=["xhs", "douyin"])
-    assert "types[]=xhs" in seen["url"] and "types[]=douyin" in seen["url"]
+    assert "types%5B%5D=xhs" in seen["url"] and "types%5B%5D=douyin" in seen["url"]

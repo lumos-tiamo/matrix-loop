@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import logging
+
 from app.connectors.base import ConnectorResult, ManualOnlyError
+
+logger = logging.getLogger(__name__)
 
 
 class AiToEarnConnector:
@@ -17,7 +21,7 @@ class AiToEarnConnector:
         self.platform = platform
 
     def fetch(self, account) -> ConnectorResult:
-        external_ref = getattr(account, "external_ref", None)
+        external_ref = account.external_ref
         if not external_ref:
             raise ManualOnlyError(
                 f"account {account.handle} 未映射 AiToEarn accountId(external_ref);请先 link 或手动设置"
@@ -34,5 +38,8 @@ class AiToEarnConnector:
             snap["views"] = views
         if engagement is not None and views:
             snap["engagement_rate"] = round(engagement / views, 4)
+        elif engagement is not None and not views:
+            logger.debug("account %s: engagement=%s but views=%s; skipping engagement_rate",
+                         getattr(account, "handle", "?"), engagement, views)
         snapshots = [snap] if snap else []
         return ConnectorResult(tier=self.tier, snapshots=snapshots)
