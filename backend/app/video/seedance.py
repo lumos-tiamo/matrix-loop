@@ -10,45 +10,64 @@ from app.video.base import VideoResult
 logger = logging.getLogger(__name__)
 
 
-def _parse_json(text):
+def _parse_json(text: str | None) -> dict | list | None:
     text = (text or "").strip()
     try:
         return json.loads(text)
-    except Exception:
+    except (json.JSONDecodeError, TypeError, ValueError):
         # dreamina may print a plain error line (e.g. permission gate) instead of JSON
         return None
 
 
 class SeedanceVideoProvider:
+    """Video provider backed by the dreamina CLI (Seedance model).
+
+    NOTE: generate() is synchronous and blocks the calling thread up to
+    poll_attempts*poll_interval seconds (~120s). A single video per request is
+    fine; a fully async submit/poll job model is a follow-up before
+    high-concurrency use.
+    """
+
     name = "seedance"
 
     def __init__(
         self,
         *,
-        bin="dreamina",
+        binary="dreamina",
         model="seedance2.0fast",
         output_dir="./data/videos",
         public_base_url="http://127.0.0.1:8010",
         run=None,
         sleep=None,
-        poll_attempts=60,
-        poll_interval=5,
+        poll_attempts=40,
+        poll_interval=3,
+        proc_timeout=600,
     ):
-        self._bin = bin
+        self._binary = binary
         self._model = model
-        self._output_dir = output_dir
+        self._output_dir = os.path.abspath(output_dir)
         self._public_base = public_base_url.rstrip("/")
         self._run = run or self._default_run
         self._sleep = sleep or time.sleep
         self._poll_attempts = poll_attempts
         self._poll_interval = poll_interval
+        self._proc_timeout = proc_timeout
 
     def _default_run(self, args):
         import subprocess
 
-        p = subprocess.run(
-            [self._bin, *args], capture_output=True, text=True, timeout=600
-        )
+        try:
+            p = subprocess.run(
+                [self._binary, *args], capture_output=True, text=True, timeout=self._proc_timeout
+            )
+        except FileNotFoundError as exc:
+            raise RuntimeError(
+                f"dreamina CLI not found ({self._binary}); install it or set MATRIXLOOP_DREAMINA_BIN"
+            ) from exc
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError(
+                f"dreamina call timed out after {self._proc_timeout}s: {' '.join(args[:1])}"
+            ) from exc
         return p.returncode, p.stdout, p.stderr
 
     def _build_prompt(self, script, brief, params):
@@ -67,7 +86,7 @@ class SeedanceVideoProvider:
         )
         return style + ("Scene: " + head if head else "cinematic, neon, dynamic")
 
-    def generate(self, *, script, brief, params):
+    def generate(self, *, script: str, brief, params: dict) -> VideoResult:
         prompt = self._build_prompt(script, brief, params)
         rc, out, err = self._run(
             [
@@ -79,6 +98,10 @@ class SeedanceVideoProvider:
                 "--poll=0",
             ]
         )
+        if rc != 0:
+            raise RuntimeError(
+                f"seedance text2video exited {rc}: {(err or out or '').strip()[:200]}"
+            )
         data = _parse_json(out)
         if data is None:
             raise RuntimeError(
@@ -113,12 +136,23 @@ class SeedanceVideoProvider:
                     f"--download_dir={self._output_dir}",
                 ]
             )
+            if rc != 0:
+                raise RuntimeError(
+                    f"seedance query_result exited {rc}: {(err or out or '').strip()[:200]}"
+                )
             res = _parse_json(out)
             if res is None:
                 raise RuntimeError(
                     f"seedance query failed: {(out or err or '').strip()[:300]}"
                 )
             status = res.get("gen_status")
+            logger.debug(
+                "seedance poll %d/%d submit=%s status=%s",
+                attempt + 1,
+                self._poll_attempts,
+                submit_id,
+                status,
+            )
             if status == "success":
                 return res
             if status == "fail":
@@ -145,8 +179,11 @@ class SeedanceVideoProvider:
             ):
                 val = result.get(key)
                 if isinstance(val, str) and val:
-                    return os.path.basename(val)
-        # fallback: newest mp4 in output_dir
+                    candidate = os.path.join(self._output_dir, os.path.basename(str(val)))
+                    if os.path.exists(candidate):
+                        return os.path.basename(candidate)
+        # FIXME: newest-mp4 fallback can mis-assign under concurrent generation;
+        # disambiguate by submit_id when the real query_result field is known
         try:
             mp4s = [
                 f
@@ -160,9 +197,11 @@ class SeedanceVideoProvider:
                     ),
                     reverse=True,
                 )
-                return mp4s[0]
+                newest = mp4s[0]
+                if os.path.exists(os.path.join(self._output_dir, newest)):
+                    return newest
         except OSError:
             pass
         raise RuntimeError(
-            "seedance succeeded but no media file was found in the download dir"
+            "seedance succeeded but no media file found in output dir"
         )

@@ -17,14 +17,15 @@ def resolve_video_provider():
             from app.video.seedance import SeedanceVideoProvider
 
             return SeedanceVideoProvider(
-                bin=settings.dreamina_bin,
+                binary=settings.dreamina_bin,
                 model=settings.seedance_model,
                 output_dir=settings.video_output_dir,
                 public_base_url=settings.public_base_url,
             )
         except Exception as exc:
             logger.warning(
-                "SeedanceVideoProvider construction failed (%s); falling back to fake.",
+                "SeedanceVideoProvider init failed (%s: %s); falling back to fake",
+                exc.__class__.__name__,
                 exc,
             )
             return FakeVideoProvider()

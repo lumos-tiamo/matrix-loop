@@ -16,8 +16,9 @@ app.add_middleware(
 )
 app.include_router(api_router)
 
-os.makedirs(settings.video_output_dir, exist_ok=True)
-app.mount("/media", StaticFiles(directory=settings.video_output_dir), name="media")
+_media_dir = os.path.abspath(settings.video_output_dir)
+os.makedirs(_media_dir, exist_ok=True)
+app.mount("/media", StaticFiles(directory=_media_dir), name="media")
 
 
 @app.get("/health")

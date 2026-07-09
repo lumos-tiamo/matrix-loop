@@ -36,6 +36,8 @@ def test_happy_path_returns_video_result(tmp_path):
             "credit_cost": 8,
         }
     )
+    # The provider resolves output_dir to absolute; we need the file to exist there
+    (tmp_path / "clip_s1.mp4").write_bytes(b"\x00")
     provider = SeedanceVideoProvider(
         output_dir=str(tmp_path),
         public_base_url="http://127.0.0.1:8010",
@@ -150,6 +152,7 @@ def test_custom_visual_prompt_passed_through(tmp_path):
     query_resp = json.dumps(
         {"gen_status": "success", "download_path": "/x/out/clip.mp4", "duration": 5, "credit_cost": 1}
     )
+    (tmp_path / "clip.mp4").write_bytes(b"\x00")
 
     captured = {}
 
@@ -167,3 +170,30 @@ def test_custom_visual_prompt_passed_through(tmp_path):
     )
     provider.generate(script="ignored", brief=None, params={"visual_prompt": "neon city rain"})
     assert any("neon city rain" in a for a in captured["args"])
+
+
+# ---------------------------------------------------------------------------
+# FIX 1: non-zero return code from text2video → RuntimeError
+# ---------------------------------------------------------------------------
+
+def test_text2video_nonzero_rc_raises_runtime_error():
+    provider = SeedanceVideoProvider(
+        run=_make_run((1, "", "boom")),
+        sleep=lambda s: None,
+    )
+    with pytest.raises(RuntimeError, match="exited 1"):
+        provider.generate(script="anything", brief=None, params={})
+
+
+# ---------------------------------------------------------------------------
+# FIX 1: non-zero return code from query_result → RuntimeError
+# ---------------------------------------------------------------------------
+
+def test_query_result_nonzero_rc_raises_runtime_error():
+    submit_resp = json.dumps({"submit_id": "s6", "gen_status": "querying"})
+    provider = SeedanceVideoProvider(
+        run=_make_run((0, submit_resp, ""), (1, "", "server error")),
+        sleep=lambda s: None,
+    )
+    with pytest.raises(RuntimeError, match="query_result exited 1"):
+        provider.generate(script="anything", brief=None, params={})
