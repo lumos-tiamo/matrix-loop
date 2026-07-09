@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
 from app.api.overview import build_overview
-from app.models import Account, AccountSegment, AudienceSegment, ContentItem, Draft, Endpoint, Evaluation, LoopRun, Recommendation, Snapshot
+from app.models import Account, AccountSegment, AudienceSegment, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, Recommendation, Snapshot, VideoAsset
 from app.flow.build import build_flow
 from app.flow.classify import classify_audience
 from app.analysis.claude_client import ClaudeClient
@@ -334,3 +334,55 @@ def sync_account_endpoint(account_id: int, db: Session = Depends(get_db)) -> dic
     except Exception as exc:  # noqa: BLE001
         logger.warning("connector sync failed for account %s: %s", account_id, exc)
         raise HTTPException(status_code=502, detail="upstream connector error") from exc
+
+
+@router.post("/accounts/{account_id}/brief")
+def set_brief(account_id: int, payload: schemas.SetBrief, db: Session = Depends(get_db)) -> dict:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    brief = db.scalar(select(ChannelBrief).where(ChannelBrief.account_id == account_id))
+    if brief is None:
+        brief = ChannelBrief(account_id=account_id, main_direction=payload.main_direction)
+        db.add(brief)
+    brief.main_direction = payload.main_direction
+    brief.sub_niches = payload.sub_niches
+    brief.tone = payload.tone
+    brief.language = payload.language
+    brief.persona = payload.persona
+    brief.format = payload.format
+    brief.compliance_stance = payload.compliance_stance
+    db.commit()
+    return {"account_id": account_id, "id": brief.id}
+
+
+@router.get("/accounts/{account_id}/brief")
+def get_brief(account_id: int, db: Session = Depends(get_db)) -> dict:
+    brief = db.scalar(select(ChannelBrief).where(ChannelBrief.account_id == account_id))
+    if brief is None:
+        raise HTTPException(status_code=404, detail="no brief for this account")
+    return {
+        "account_id": account_id, "id": brief.id, "main_direction": brief.main_direction,
+        "sub_niches": brief.sub_niches, "tone": brief.tone, "language": brief.language,
+        "persona": brief.persona, "format": brief.format, "compliance_stance": brief.compliance_stance,
+    }
+
+
+@router.post("/drafts/{draft_id}/generate-script", response_model=schemas.DraftOut, status_code=201)
+def generate_script_route(draft_id: int, db: Session = Depends(get_db)) -> Draft:
+    topic = db.get(Draft, draft_id)
+    if topic is None:
+        raise HTTPException(status_code=404, detail="draft not found")
+    if topic.review_status != "adopted":
+        raise HTTPException(status_code=422, detail="topic draft must be adopted first")
+    client = resolve_llm_client()
+    if client is None:
+        raise HTTPException(status_code=422, detail="LLM 未配置(MATRIXLOOP_ANTHROPIC_API_KEY)")
+    from app.analysis.script import generate_script
+    lr = db.get(LoopRun, topic.loop_run_id)
+    brief = db.scalar(select(ChannelBrief).where(ChannelBrief.account_id == lr.account_id))
+    text = generate_script(topic.content, brief, client)
+    script = Draft(loop_run_id=topic.loop_run_id, kind="script", content=text, review_status="pending")
+    db.add(script)
+    db.commit()
+    return script

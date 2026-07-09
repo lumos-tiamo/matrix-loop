@@ -146,3 +146,13 @@ class SetEndpoint(BaseModel):
 class SetExternalRef(BaseModel):
     external_ref: str
     external_source: str | None = "aitoearn"
+
+
+class SetBrief(BaseModel):
+    main_direction: str
+    sub_niches: list[str] = []
+    tone: str | None = None
+    language: str = "en"
+    persona: str | None = None
+    format: str = "faceless"
+    compliance_stance: str = "info_education"
