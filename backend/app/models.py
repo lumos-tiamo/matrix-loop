@@ -81,6 +81,8 @@ class ContentItem(Base):
     likes: Mapped[int | None] = mapped_column(Integer, nullable=True)
     comments: Mapped[int | None] = mapped_column(Integer, nullable=True)
     saves: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    video_asset_id: Mapped[int | None] = mapped_column(ForeignKey("video_assets.id"), nullable=True, index=True)
+    draft_id: Mapped[int | None] = mapped_column(ForeignKey("drafts.id"), nullable=True, index=True)
     extra: Mapped[dict] = mapped_column(JSON, default=dict)
 
     account: Mapped["Account"] = relationship(back_populates="content_items")
