@@ -300,6 +300,28 @@ def classify_audience_endpoint(account_id: int, db: Session = Depends(get_db)) -
     return {"account_id": account_id, "segments": picked}
 
 
+@router.post("/accounts/{account_id}/external-ref")
+def set_external_ref(account_id: int, payload: schemas.SetExternalRef, db: Session = Depends(get_db)) -> dict:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    acc.external_ref = payload.external_ref
+    acc.external_source = payload.external_source
+    db.commit()
+    return {"account_id": account_id, "external_ref": acc.external_ref, "external_source": acc.external_source}
+
+
+@router.post("/accounts/link-aitoearn")
+def link_aitoearn(db: Session = Depends(get_db)) -> dict:
+    from app.config import settings
+    if not (settings.aitoearn_base_url and settings.aitoearn_api_key):
+        raise HTTPException(status_code=422, detail="AiToEarn 未配置(MATRIXLOOP_AITOEARN_BASE_URL/API_KEY)")
+    from app.connectors.aitoearn_client import AiToEarnClient
+    from app.connectors.linking import link_aitoearn_accounts
+    client = AiToEarnClient(settings.aitoearn_base_url, settings.aitoearn_api_key)
+    return link_aitoearn_accounts(db, client)
+
+
 @router.post("/accounts/{account_id}/sync")
 def sync_account_endpoint(account_id: int, db: Session = Depends(get_db)) -> dict:
     acc = db.get(Account, account_id)
