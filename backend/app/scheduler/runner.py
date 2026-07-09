@@ -6,32 +6,41 @@ from collections.abc import Callable
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.config import settings
-from app.scheduler.batch import run_batch, BatchConfig
 
 logger = logging.getLogger(__name__)
 
 
-def _run_scheduled_batch(session_factory: Callable, batch_cfg: BatchConfig) -> None:
+def _run_autopilot(session_factory: Callable) -> None:
+    from app.orchestrator.engine import run_autopilot_cycle
+    from app.analysis.factory import resolve_llm_client
+    from app.video.factory import resolve_video_provider
+    from app.config import settings as cfg
     session = session_factory()
     try:
-        report = run_batch(session, sync=True, batch_cfg=batch_cfg)
-        logger.info("scheduled batch: processed=%s looped=%s synced=%s errors=%s no_progress=%s",
-                    report.processed, report.looped, report.synced, len(report.errors), len(report.no_progress))
+        aitoearn = None
+        if cfg.aitoearn_base_url and cfg.aitoearn_api_key:
+            from app.connectors.aitoearn_client import AiToEarnClient
+            aitoearn = AiToEarnClient(cfg.aitoearn_base_url, cfg.aitoearn_api_key)
+        rep = run_autopilot_cycle(session, llm=resolve_llm_client(),
+                                  video=resolve_video_provider(), aitoearn=aitoearn, sync=True)
+        logger.info("autopilot cycle: paused=%s processed=%s errors=%s",
+                    rep.get("paused"), rep.get("processed"), len(rep.get("errors", [])))
+        if aitoearn is not None:
+            from app.publish.analytics import refresh_published_analytics
+            refresh_published_analytics(session, client=aitoearn)
     except Exception:
-        logger.exception("scheduled batch failed")
-        raise
+        logger.exception("autopilot cycle failed")
     finally:
         session.close()
 
 
 def build_scheduler(session_factory: Callable, interval_minutes: int | None = None,
                     max_accounts: int | None = None) -> BackgroundScheduler:
-    """Build (but do not start) a scheduler that runs run_batch every interval_minutes.
+    """Build (but do not start) a scheduler that runs the autopilot cycle every interval_minutes.
     Call .start() on the returned scheduler to begin unattended operation."""
-    minutes = interval_minutes if interval_minutes is not None else settings.schedule_interval_minutes
-    resolved_max = max_accounts if max_accounts is not None else settings.schedule_max_accounts
-    batch_cfg = BatchConfig(max_accounts=resolved_max)
+    from app.config import settings as _s
+    interval = interval_minutes if interval_minutes is not None else _s.orchestrator_interval_minutes
     scheduler = BackgroundScheduler()
-    scheduler.add_job(_run_scheduled_batch, "interval", minutes=minutes,
-                      args=[session_factory, batch_cfg], id="matrixloop-batch", replace_existing=True)
+    scheduler.add_job(_run_autopilot, "interval", minutes=interval,
+                      args=[session_factory], id="matrixloop-autopilot", replace_existing=True)
     return scheduler
