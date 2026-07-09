@@ -1,0 +1,82 @@
+# MatrixLoop — 交付说明 / Runbook
+
+**日期:** 2026-07-09 · **状态:** 全流程打通、可交付 · **测试:** 226 后端 + 38 前端全绿
+
+MatrixLoop 是多平台矩阵账号的**自我修正 Loop + 内容生产流水线 + 可视化指挥台**。它是一个**独立的 Python 大脑**:自己能拿的数据自己拿(官方 API),拿不到的和发布交给下游 **AiToEarn**(手),视频交给 **即梦/Seedance**。
+
+## 全流程(已端到端验证)
+
+```
+频道定调(ChannelBrief: web3 + crypto子垂类 + 语气/英文/人设/形态)
+  → Loop 选题(真 LLM) → 人审采纳选题
+  → 生成脚本(真 LLM,brief 喂养) → 人审采纳脚本
+  → 生成视频(VideoProvider: 真 Seedance / fake 回退,用量治理+反作弊护栏)
+  → 人审成片(approve/reject)
+  → 发布(AiToEarn 发布手,仅对已审通过的成片、显式触发,绝不自动发)
+  → 真实数据回流 → Loop 评估「哪种选题/脚本/视频真的涨」→ 自我修正定调
+```
+
+## 已上线、经测试可用(无需外部凭证)
+
+- **自我修正 Loop 引擎** — 目标(4权重)→采集→评估(growth/engagement/commercial/positioning)→诊断/建议/草稿→验证(回标上轮建议 worked/failed)→无进展护栏→记忆。永不自动发布。
+- **真 LLM 定位分析 + 脚本生成** — Claude(key 已配 `.env`,走 newapi 中转 `claude-sonnet-4-6`)。降级:无 key 时走确定性熵代理。
+- **Dashboard**(前端 :5173,深色 BI 大屏):总览/对比/爆文库/导流桑基/**视频工作台**。
+- **视频生成子系统** — `ChannelBrief`、`VideoProvider` 接缝(`seedance` 真 provider + `fake` 回退)、用量治理(人审门/预算熔断/日配额 全局20·单号2·单垂类10/去重/限速/计量)、矩阵反作弊(TTS 音色池轮换 + 跨账号近重脚本拒绝)、成片人审、`/media` 静态服务。
+- **数据接入(读)** — 混合连接器:X/YouTube/Instagram 自建官方 API;小红书/抖音/视频号/公众号/TikTok 走 AiToEarn;都可优雅降级到手动 CSV。
+- **发布手** — `PublishDispatch` + `POST /accounts/{id}/publish`(门控:成片 approved + 账号已映射 external_ref + AiToEarn 已配)+ `GET /publish/dispatches[/{id}]`(轮询状态)。
+- **批处理/调度** — `run_batch`(隔离+熔断+token/video 预算),APScheduler。
+
+## 需要外部凭证/访问才「真联网」的(诚实边界)
+
+| 能力 | 现状 | 打开方法 |
+|---|---|---|
+| **真 Seedance 视频画面** | 接线已做完、假实现测通;当前即梦账号 `artisan` 被 tier 门挡(仅限「高级会员或以上」) | 换一个即梦**高级+会员**账号 → `dreamina login` → 设 `MATRIXLOOP_VIDEO_PROVIDER=seedance` → `/video` 生成即出真 mp4 到 `/media` |
+| **CN 平台真实数据 + 真发布** | 代码+门控就绪;未联网 | 跑起 AiToEarn docker + 账号在其内连接 + 设 `MATRIXLOOP_AITOEARN_BASE_URL/API_KEY` + `POST /accounts/link-aitoearn`(或手动 external_ref) |
+| **X / YouTube / Instagram 真实数据** | 连接器就绪 | 设 `MATRIXLOOP_X_BEARER_TOKEN` / `MATRIXLOOP_YOUTUBE_API_KEY` / `MATRIXLOOP_INSTAGRAM_TOKEN`+`_BUSINESS_ID` |
+
+## 本地怎么跑
+
+```bash
+# 后端(从 backend/ 启动才会加载 .env),端口 8010(:8000 被 sign-bot 生产占用)
+cd ~/matrix-loop/backend
+MATRIXLOOP_DATABASE_URL="sqlite:////Users/aa00102/matrix-loop/backend/data/matrixloop.db" \
+  ./.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8010
+# 首次/改 schema 后灌 demo:  ./.venv/bin/python seed_demo.py
+
+# 前端,端口 5173 → 指向后端 8010
+cd ~/matrix-loop/frontend
+VITE_API_BASE="http://127.0.0.1:8010" npx vite --host 127.0.0.1 --port 5173
+# 打开 http://127.0.0.1:5173 ；视频工作台在 /video
+
+# 测试
+cd backend && ./.venv/bin/python -m pytest -q        # 226 绿
+cd frontend && npx vitest run                        # 38 绿
+```
+
+## `.env`(backend/.env,已 gitignore,勿提交)
+
+```
+MATRIXLOOP_ANTHROPIC_API_KEY=...            # 已配(newapi 中转)
+MATRIXLOOP_ANTHROPIC_BASE_URL=https://newapi.elevatesphere.com
+MATRIXLOOP_LLM_MODEL=claude-sonnet-4-6
+# 打开真视频:
+MATRIXLOOP_VIDEO_PROVIDER=seedance          # 默认 fake
+# 打开 AiToEarn 发布/CN 数据:
+MATRIXLOOP_AITOEARN_BASE_URL=http://127.0.0.1:8080/api/v2
+MATRIXLOOP_AITOEARN_API_KEY=...
+# 官方数据:
+MATRIXLOOP_X_BEARER_TOKEN=... / MATRIXLOOP_YOUTUBE_API_KEY=... / MATRIXLOOP_INSTAGRAM_TOKEN=... MATRIXLOOP_INSTAGRAM_BUSINESS_ID=...
+```
+
+## 已知待办(follow-up,不阻塞交付)
+
+- 视频生成目前**同步阻塞**(单条 ~≤120s);高并发前改成 submit/poll 异步 job 模型。
+- Seedance `query_result` 的成片字段解析是**防御性**的(候选 key + 最新 mp4 兜底);待一个合格账号真跑一次确认确切字段(见 `app/video/seedance.py` TODO)。
+- 闭环归因最后一环:用发布回传的 `platform_work_id` 拉 `work_analytics` 回写 ContentItem、归到具体建议/草稿(需逐帖采集 follow-up)。
+- 发帖时间打散护栏(发布手/调度侧)。
+- 前端无 ESLint(react-hooks/jsx-a11y)工具链,建议单独立。
+- 真发布前把生成的媒体上传到 AiToEarn 的 S3(media_url 需 AiToEarn 可达)。
+
+## 设计/计划文档
+
+`docs/superpowers/specs/`(设计) 与 `docs/superpowers/plans/`(逐任务实现计划)记录了每个子系统的完整设计与 TDD 计划。
