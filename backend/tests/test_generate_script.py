@@ -28,3 +28,10 @@ def test_generate_script_returns_llm_text():
     out = generate_script("Airdrop farming 101", _Brief(), llm)
     assert out.startswith("Hook:")
     assert "Airdrop farming 101" in llm.seen        # topic was in the prompt
+
+
+def test_build_script_prompt_includes_performance_when_given():
+    from app.analysis.script import build_script_prompt
+    perf_block = "Past content performance ... Top performers: \"airdrop guide\" (9000 views)"
+    p = build_script_prompt("New topic", _Brief(), performance=perf_block)
+    assert "airdrop guide" in p
