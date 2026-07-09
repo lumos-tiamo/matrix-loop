@@ -19,3 +19,11 @@ def test_scheduler_control_start_stop():
     assert control.scheduler_running() is True
     control.stop_scheduler()
     assert control.scheduler_running() is False
+
+
+def test_scheduler_api_start_status_stop(client):
+    assert client.get("/flywheel/status").json().get("scheduler_running") is False
+    r = client.post("/flywheel/scheduler/start")
+    assert r.status_code == 200 and r.json()["scheduler_running"] is True
+    assert client.get("/flywheel/status").json()["scheduler_running"] is True
+    assert client.post("/flywheel/scheduler/stop").json()["scheduler_running"] is False

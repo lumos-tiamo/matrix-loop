@@ -37,6 +37,7 @@ from app.connectors.linking import link_aitoearn_accounts
 from app.analysis.performance import content_performance, performance_prompt_block
 from app.analysis.trends import trend_prompt_block
 from app.orchestrator.state import is_paused, set_paused, flywheel_state
+from app.scheduler.control import start_scheduler, stop_scheduler, scheduler_running
 
 router = APIRouter()
 
@@ -544,10 +545,10 @@ def list_trends(niche: str | None = None, limit: int = 50, db: Session = Depends
             for t in db.scalars(stmt).all()]
 
 
-# NOTE: register /flywheel/status|pause|resume BEFORE GET /flywheel (static prefixes; order is load-bearing).
+# NOTE: register /flywheel/status|pause|resume|scheduler BEFORE GET /flywheel (static prefixes; order is load-bearing).
 @router.get("/flywheel/status")
 def flywheel_status(db: Session = Depends(get_db)) -> dict:
-    return {"paused": is_paused(db)}
+    return {"paused": is_paused(db), "scheduler_running": scheduler_running()}
 
 
 @router.post("/flywheel/pause")
@@ -562,6 +563,18 @@ def flywheel_resume(db: Session = Depends(get_db)) -> dict:
     return {"paused": False}
 
 
+@router.post("/flywheel/scheduler/start")
+def scheduler_start() -> dict:
+    start_scheduler(SessionLocal)
+    return {"scheduler_running": scheduler_running()}
+
+
+@router.post("/flywheel/scheduler/stop")
+def scheduler_stop() -> dict:
+    stop_scheduler()
+    return {"scheduler_running": scheduler_running()}
+
+
 @router.get("/flywheel")
 def flywheel(db: Session = Depends(get_db)) -> dict:
-    return flywheel_state(db)
+    return {**flywheel_state(db), "scheduler_running": scheduler_running()}
