@@ -48,6 +48,16 @@ def _build_outputs(result, analysis, content_items):
             kind="cadence",
             content=f"复制 {len(hits)} 条爆文的选题结构，提高高表现内容的产出频率",
         ))
+    scored = [c for c in content_items if c.views is not None]
+    if scored:
+        scored.sort(key=lambda c: c.views or 0, reverse=True)
+        top, low = scored[0], scored[-1]
+        if (top.views or 0) > 0 and top is not low:
+            recs.append(Recommendation(
+                kind="content_performance",
+                content=(f"表现反馈：最高「{(top.topic or '?')[:40]}」{top.views} views —— 多做此类角度；"
+                         f"最低「{(low.topic or '?')[:40]}」{low.views} views —— 减少或换角度。"),
+            ))
     return diagnosis, recs, drafts
 
 
