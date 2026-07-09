@@ -7,11 +7,10 @@ _SYSTEM = (
 )
 
 
-def build_script_prompt(topic: str, brief) -> str:
-    niches = "、".join(getattr(brief, "sub_niches", None) or [])
-    return "\n".join([
+def build_script_prompt(topic: str, brief, performance: str | None = None) -> str:
+    lines = [
         f"Channel main direction: {getattr(brief, 'main_direction', '')}",
-        f"Sub-niches: {niches or '(none)'}",
+        f"Sub-niches: {'、'.join(getattr(brief, 'sub_niches', None) or []) or '(none)'}",
         f"Host persona: {getattr(brief, 'persona', None) or '(faceless voiceover)'}",
         f"Tone: {getattr(brief, 'tone', None) or 'clear and energetic'}",
         f"Language: {getattr(brief, 'language', None) or 'en'}",
@@ -19,8 +18,11 @@ def build_script_prompt(topic: str, brief) -> str:
         "",
         "Compliance: frame as information/education only, NOT investment advice or a "
         "trading solicitation. Avoid promises of returns.",
-    ])
+    ]
+    if performance:
+        lines += ["", performance]
+    return "\n".join(lines)
 
 
-def generate_script(topic: str, brief, client) -> str:
-    return client.complete(system=_SYSTEM, prompt=build_script_prompt(topic, brief)).strip()
+def generate_script(topic: str, brief, client, performance: str | None = None) -> str:
+    return client.complete(system=_SYSTEM, prompt=build_script_prompt(topic, brief, performance)).strip()

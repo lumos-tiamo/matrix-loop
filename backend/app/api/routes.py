@@ -388,7 +388,9 @@ def generate_script_route(draft_id: int, db: Session = Depends(get_db)) -> Draft
     if lr is None:
         raise HTTPException(status_code=422, detail="loop run not found")
     brief = db.scalar(select(ChannelBrief).where(ChannelBrief.account_id == lr.account_id))
-    text = generate_script(topic.content, brief, client)
+    from app.analysis.performance import content_performance, performance_prompt_block
+    perf_block = performance_prompt_block(content_performance(db, lr.account_id))
+    text = generate_script(topic.content, brief, client, performance=perf_block or None)
     script = Draft(loop_run_id=topic.loop_run_id, kind="script", content=text, review_status="pending")
     db.add(script)
     db.commit()
