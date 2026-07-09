@@ -39,6 +39,7 @@ def is_near_duplicate_script(session: Session, account_id: int, script: str,
         select(Draft.content)
         .join(VideoAsset, VideoAsset.script_draft_id == Draft.id)
         .where(VideoAsset.account_id != account_id)
+        .distinct()
         .order_by(VideoAsset.id.desc())
         .limit(limit)
     )

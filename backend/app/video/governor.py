@@ -32,12 +32,14 @@ def _today_start() -> datetime:
 
 
 def _count_since(session: Session, start: datetime, *, account_id: int | None = None,
-                 vertical: str | None = None) -> int:
+                 vertical: str | None = None, statuses: list[str] | None = None) -> int:
     stmt = select(func.count(VideoAsset.id)).where(VideoAsset.created_at >= start)
     if account_id is not None:
         stmt = stmt.where(VideoAsset.account_id == account_id)
     if vertical is not None:
         stmt = stmt.join(Account, Account.id == VideoAsset.account_id).where(Account.vertical == vertical)
+    if statuses is not None:
+        stmt = stmt.where(VideoAsset.status.in_(statuses))
     return int(session.scalar(stmt) or 0)
 
 
@@ -77,14 +79,15 @@ def generate_video(session: Session, account, script_draft, *, provider,
             f"script too similar (>= {cfg.dedup_similarity}) to another account's recent video"
         )
 
-    # daily quotas
+    # NOTE: dedup + quota are check-then-act without locking — safe for the current single-worker deployment; needs SELECT FOR UPDATE or a unique constraint if run multi-worker.
+    # daily quotas — count only non-failed rows (ready + generating) so failed attempts don't burn quota
     start = _today_start()
-    if _count_since(session, start) >= cfg.max_videos_per_day:
+    if _count_since(session, start, statuses=["ready", "generating"]) >= cfg.max_videos_per_day:
         raise VideoQuotaExceeded(f"global daily cap {cfg.max_videos_per_day} reached")
-    if _count_since(session, start, account_id=account.id) >= cfg.per_account_per_day:
+    if _count_since(session, start, account_id=account.id, statuses=["ready", "generating"]) >= cfg.per_account_per_day:
         raise VideoQuotaExceeded(f"account daily cap {cfg.per_account_per_day} reached")
     if account.vertical is not None and \
-            _count_since(session, start, vertical=account.vertical) >= cfg.per_channel_per_day:
+            _count_since(session, start, vertical=account.vertical, statuses=["ready", "generating"]) >= cfg.per_channel_per_day:
         raise VideoQuotaExceeded(f"channel(vertical) daily cap {cfg.per_channel_per_day} reached")
 
     # generate + meter
@@ -102,8 +105,7 @@ def generate_video(session: Session, account, script_draft, *, provider,
     asset.media_url = result.media_url
     asset.duration = result.duration
     asset.cost = result.cost
-    # Keep the account-scoped dedup_key (not the provider's content-only hash) so
-    # the dedup lookup above always finds the same row for the same (account, script, provider).
+    # We keep our account-scoped dedup_key (not result.dedup_key). A real provider's job/content id (result.dedup_key) is intentionally not persisted yet; add a provider_job_id column when wiring Seedance.
     asset.status = "ready"
     session.commit()
     return asset
@@ -117,7 +119,8 @@ def estimate_batch(count: int, per_video_cost: float = 1.0) -> dict:
 def run_video_batch(session: Session, pairs, *, provider, cfg: VideoConfig | None = None) -> dict:
     """Generate videos for (account, script_draft) pairs under the budget breaker.
     Per-item failures (not adopted, quota, near-duplicate, provider error) are isolated.
-    Stops early once cumulative cost EXCEEDS cfg.video_budget."""
+    Stops after the first video whose cumulative cost reaches or exceeds cfg.video_budget (inclusive ceiling).
+    Commits per item on the shared session; not safe to call inside an outer transaction."""
     cfg = cfg or VideoConfig()
     generated = 0
     total_cost = 0.0
@@ -142,12 +145,18 @@ def usage_summary(session: Session, *, cfg: VideoConfig | None = None) -> dict:
     """Daily + cumulative video usage for the dashboard."""
     cfg = cfg or VideoConfig()
     start = _today_start()
-    today_count = _count_since(session, start)
+    today_count = _count_since(session, start, statuses=["ready"])
     today_cost = float(session.scalar(
-        select(func.coalesce(func.sum(VideoAsset.cost), 0.0)).where(VideoAsset.created_at >= start)
+        select(func.coalesce(func.sum(VideoAsset.cost), 0.0))
+        .where(VideoAsset.created_at >= start)
+        .where(VideoAsset.status == "ready")
     ) or 0.0)
-    total_count = int(session.scalar(select(func.count(VideoAsset.id))) or 0)
-    total_cost = float(session.scalar(select(func.coalesce(func.sum(VideoAsset.cost), 0.0))) or 0.0)
+    total_count = int(session.scalar(
+        select(func.count(VideoAsset.id)).where(VideoAsset.status == "ready")
+    ) or 0)
+    total_cost = float(session.scalar(
+        select(func.coalesce(func.sum(VideoAsset.cost), 0.0)).where(VideoAsset.status == "ready")
+    ) or 0.0)
     return {
         "today_count": today_count,
         "today_cost": round(today_cost, 4),

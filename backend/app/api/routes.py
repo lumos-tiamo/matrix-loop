@@ -27,6 +27,7 @@ from app.flow.build import build_flow
 from app.flow.classify import classify_audience
 from app.analysis.claude_client import ClaudeClient
 from app.analysis.factory import resolve_llm_client
+from app.analysis.script import generate_script
 from app.config import settings
 from app.video.factory import resolve_video_provider
 from app.video.governor import generate_video, usage_summary, VideoConfig
@@ -376,13 +377,16 @@ def generate_script_route(draft_id: int, db: Session = Depends(get_db)) -> Draft
     topic = db.get(Draft, draft_id)
     if topic is None:
         raise HTTPException(status_code=404, detail="draft not found")
+    if topic.kind != "topic":
+        raise HTTPException(status_code=422, detail="draft must be of kind 'topic'")
     if topic.review_status != "adopted":
         raise HTTPException(status_code=422, detail="topic draft must be adopted first")
     client = resolve_llm_client()
     if client is None:
         raise HTTPException(status_code=422, detail="LLM 未配置(MATRIXLOOP_ANTHROPIC_API_KEY)")
-    from app.analysis.script import generate_script
     lr = db.get(LoopRun, topic.loop_run_id)
+    if lr is None:
+        raise HTTPException(status_code=422, detail="loop run not found")
     brief = db.scalar(select(ChannelBrief).where(ChannelBrief.account_id == lr.account_id))
     text = generate_script(topic.content, brief, client)
     script = Draft(loop_run_id=topic.loop_run_id, kind="script", content=text, review_status="pending")

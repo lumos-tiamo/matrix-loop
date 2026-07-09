@@ -59,6 +59,17 @@ def test_generate_script_without_llm_is_422(client, session, monkeypatch):
     assert client.post(f"/drafts/{topic.id}/generate-script").status_code == 422
 
 
+def test_generate_script_rejects_non_topic_kind(client, session, monkeypatch):
+    acc = _seed_account(session)
+    lr = LoopRun(account_id=acc.id); session.add(lr); session.commit()
+    script = Draft(loop_run_id=lr.id, kind="script", content="already a script", review_status="adopted")
+    session.add(script); session.commit()
+    monkeypatch.setattr("app.api.routes.resolve_llm_client", lambda: type("L", (), {"complete": lambda self, *, system, prompt: "x"})())
+    r = client.post(f"/drafts/{script.id}/generate-script")
+    assert r.status_code == 422
+    assert "topic" in r.json()["detail"]
+
+
 def _adopted_script(session, account_id, content="unique defi yield explainer"):
     lr = LoopRun(account_id=account_id); session.add(lr); session.commit()
     d = Draft(loop_run_id=lr.id, kind="script", content=content, review_status="adopted")
