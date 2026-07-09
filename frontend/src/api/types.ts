@@ -116,3 +116,52 @@ export interface ContentLibraryItem {
   comments: number | null;
   published_at: string | null;
 }
+
+// ---- Video workbench ----
+export interface ChannelBriefOut {
+  account_id: number;
+  id: number;
+  main_direction: string;
+  sub_niches: string[];
+  tone: string | null;
+  language: string;
+  persona: string | null;
+  format: string;
+  compliance_stance: string;
+}
+
+export interface VideoAssetOut {
+  id: number;
+  account_id: number;
+  script_draft_id: number | null;
+  provider: string;
+  media_url: string | null;
+  duration: number | null;
+  cost: number;
+  status: string;
+  review_status: string;
+  created_at: string;
+}
+
+export interface VideoUsage {
+  today_count: number;
+  today_cost: number;
+  total_count: number;
+  total_cost: number;
+  caps: {
+    max_videos_per_day: number;
+    per_account_per_day: number;
+    per_channel_per_day: number;
+    video_budget: number;
+  };
+}
+
+export interface SetBriefIn {
+  main_direction: string;
+  sub_niches: string[];
+  tone?: string | null;
+  language?: string;
+  persona?: string | null;
+  format?: string;
+  compliance_stance?: string;
+}

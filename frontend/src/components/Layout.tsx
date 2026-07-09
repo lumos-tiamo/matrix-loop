@@ -7,6 +7,7 @@ const NAV = [
   { to: "/", label: "总览" },
   { to: "/compare", label: "对比" },
   { to: "/flow", label: "导流" },
+  { to: "/video", label: "视频" },
   { to: "/content", label: "爆文库" },
 ];
 
