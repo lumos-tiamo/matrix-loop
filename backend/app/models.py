@@ -32,6 +32,7 @@ class Account(Base):
     endpoint_id: Mapped[int | None] = mapped_column(ForeignKey("endpoints.id"), nullable=True)
     external_ref: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
     external_source: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    autopilot: Mapped[bool] = mapped_column(default=False)
 
     snapshots: Mapped[list["Snapshot"]] = relationship(back_populates="account", cascade="all, delete-orphan")
     content_items: Mapped[list["ContentItem"]] = relationship(
@@ -240,3 +241,20 @@ class PublishDispatch(Base):
     def __init__(self, **kw):
         kw.setdefault("media_urls", list())
         super().__init__(**kw)
+
+
+class AppState(Base):
+    __tablename__ = "app_state"
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+class FlywheelEvent(Base):
+    __tablename__ = "flywheel_events"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, index=True)
+    account_id: Mapped[int | None] = mapped_column(ForeignKey("accounts.id"), nullable=True, index=True)
+    cycle_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    step: Mapped[str] = mapped_column(String(16))                 # sync|evaluate|topic|script|video|publish|track
+    status: Mapped[str] = mapped_column(String(12))               # ok|skipped|blocked|error
+    detail: Mapped[str | None] = mapped_column(String, nullable=True)
