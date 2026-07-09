@@ -4,11 +4,12 @@ import { useAsync } from "../api/hooks";
 import { OpsBar } from "./OpsBar";
 
 const NAV = [
-  { to: "/", label: "总览" },
-  { to: "/compare", label: "对比" },
-  { to: "/flow", label: "导流" },
+  { to: "/", label: "飞轮" },
+  { to: "/overview", label: "总览" },
   { to: "/video", label: "视频" },
+  { to: "/flow", label: "导流" },
   { to: "/content", label: "爆文库" },
+  { to: "/compare", label: "对比" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -23,7 +24,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </Link>
         <nav className="flex items-center gap-1">
           {NAV.map((n) => {
-            const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
+            const active = n.to === "/" ? pathname === "/" : (pathname === n.to || pathname.startsWith(n.to + "/"));
             return (
               <Link
                 key={n.to}

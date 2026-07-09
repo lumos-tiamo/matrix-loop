@@ -6,12 +6,14 @@ import { Compare } from "./pages/Compare";
 import { ContentLibrary } from "./pages/ContentLibrary";
 import { Flow } from "./pages/Flow";
 import { Video } from "./pages/Video";
+import { Flywheel } from "./pages/Flywheel";
 
 export default function App() {
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<Overview />} />
+        <Route path="/" element={<Flywheel />} />
+        <Route path="/overview" element={<Overview />} />
         <Route path="/compare" element={<Compare />} />
         <Route path="/content" element={<ContentLibrary />} />
         <Route path="/flow" element={<Flow />} />

@@ -179,3 +179,16 @@ export interface PublishDispatchOut {
   caption: string | null;
   created_at: string;
 }
+
+// ---- Flywheel ----
+export interface FlywheelStep { key: string; label: string; count: number; status: string; }
+export interface FlywheelAccount { id: number; handle: string; platform: string; autopilot: boolean; }
+export interface FlywheelEventOut { account_id: number | null; step: string; status: string; detail: string | null; ts: string | null; }
+export interface FlywheelState {
+  paused: boolean;
+  autopilot_accounts: number;
+  pending_review: number;
+  steps: FlywheelStep[];
+  accounts: FlywheelAccount[];
+  events: FlywheelEventOut[];
+}
