@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     schedule_interval_minutes: int = 360
     schedule_max_accounts: int | None = None
 
+    orchestrator_interval_minutes: int = 180
+    orchestrator_allow_fake_publish: bool = False
+
     # Video generation
     video_provider: str = "fake"                      # fake | seedance
     seedance_model: str = "seedance2.0fast"
