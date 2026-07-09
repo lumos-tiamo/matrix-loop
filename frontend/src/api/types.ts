@@ -128,6 +128,7 @@ export interface ChannelBriefOut {
   persona: string | null;
   format: string;
   compliance_stance: string;
+  target_seconds: number;
 }
 
 export interface VideoAssetOut {
@@ -164,6 +165,7 @@ export interface SetBriefIn {
   persona?: string | null;
   format?: string;
   compliance_stance?: string;
+  target_seconds?: number;
 }
 
 export interface PublishDispatchOut {

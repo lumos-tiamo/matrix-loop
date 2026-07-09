@@ -199,6 +199,7 @@ class ChannelBrief(Base):
     persona: Mapped[str | None] = mapped_column(String(128), nullable=True)
     format: Mapped[str] = mapped_column(String(16), default="faceless")           # faceless|avatar
     compliance_stance: Mapped[str] = mapped_column(String(24), default="info_education")
+    target_seconds: Mapped[int] = mapped_column(default=50, server_default="50", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     def __init__(self, **kw):

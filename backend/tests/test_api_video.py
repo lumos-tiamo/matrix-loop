@@ -112,3 +112,10 @@ def test_video_usage_endpoint(client, session):
                 json={"script_draft_id": _adopted_script(session, acc.id).id})
     usage = client.get("/video/usage").json()
     assert usage["today_count"] >= 1 and usage["caps"]["per_account_per_day"] == 2
+
+
+def test_brief_roundtrips_target_seconds(client, session):
+    acc = _seed_account(session)
+    client.post(f"/accounts/{acc.id}/brief", json={"main_direction": "web3", "target_seconds": 90})
+    body = client.get(f"/accounts/{acc.id}/brief").json()
+    assert body["target_seconds"] == 90

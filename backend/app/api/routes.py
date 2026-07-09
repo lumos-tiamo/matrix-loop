@@ -360,6 +360,7 @@ def set_brief(account_id: int, payload: schemas.SetBrief, db: Session = Depends(
     brief.persona = payload.persona
     brief.format = payload.format
     brief.compliance_stance = payload.compliance_stance
+    brief.target_seconds = payload.target_seconds
     db.commit()
     return {"account_id": account_id, "id": brief.id}
 
@@ -373,6 +374,7 @@ def get_brief(account_id: int, db: Session = Depends(get_db)) -> dict:
         "account_id": account_id, "id": brief.id, "main_direction": brief.main_direction,
         "sub_niches": brief.sub_niches, "tone": brief.tone, "language": brief.language,
         "persona": brief.persona, "format": brief.format, "compliance_stance": brief.compliance_stance,
+        "target_seconds": brief.target_seconds,
     }
 
 
