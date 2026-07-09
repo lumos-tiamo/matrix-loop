@@ -91,3 +91,50 @@ it("saves the brief via POST /accounts/{id}/brief", async () => {
   fireEvent.click(screen.getByRole("button", { name: /保存定调/ }));
   await waitFor(() => expect(posted.length).toBe(1));
 });
+
+function detailWithDrafts(drafts: { id: number; kind: string; content: string; review_status: string }[]) {
+  return {
+    id: 4, platform: "youtube", handle: "@nina", vertical: "crypto", positioning: null,
+    objective_weights: {}, snapshots: [], content_items: [],
+    loop_runs: [{ id: 1, ts: "2026-07-09T00:00:00Z", diagnosis: "d", verify_result: {}, status: "ok",
+      evaluation: null, recommendations: [], drafts }],
+  };
+}
+
+it("adopts a topic then generates a script", async () => {
+  const calls: string[] = [];
+  stub((url, init) => {
+    if (url.endsWith("/accounts")) return { ok: true, json: async () => ACCOUNTS };
+    if (url.endsWith("/video/usage")) return { ok: true, json: async () => USAGE };
+    if (url.includes("/video-assets")) return { ok: true, json: async () => [] };
+    if (url.match(/\/accounts\/4\/brief$/)) return { ok: false, status: 404, json: async () => ({}) };
+    if (url.match(/\/drafts\/1\/status$/) && init?.method === "POST") { calls.push("adopt-topic"); return { ok: true, json: async () => ({}) }; }
+    if (url.match(/\/drafts\/1\/generate-script$/) && init?.method === "POST") { calls.push("gen-script"); return { ok: true, json: async () => ({ id: 2, kind: "script", content: "Hook...", review_status: "pending" }) }; }
+    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([{ id: 1, kind: "topic", content: "Airdrop 101", review_status: "adopted" }]) };
+    return undefined;
+  });
+  const { fireEvent } = await import("@testing-library/react");
+  render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
+  fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
+  // adopted topic -> 生成脚本 button present
+  fireEvent.click(await screen.findByRole("button", { name: /生成脚本/ }));
+  await waitFor(() => expect(calls).toContain("gen-script"));
+});
+
+it("generates a video from an adopted script", async () => {
+  const calls: string[] = [];
+  stub((url, init) => {
+    if (url.endsWith("/accounts")) return { ok: true, json: async () => ACCOUNTS };
+    if (url.endsWith("/video/usage")) return { ok: true, json: async () => USAGE };
+    if (url.includes("/video-assets")) return { ok: true, json: async () => [] };
+    if (url.match(/\/accounts\/4\/brief$/)) return { ok: false, status: 404, json: async () => ({}) };
+    if (url.match(/\/accounts\/4\/generate-video$/) && init?.method === "POST") { calls.push("gen-video"); return { ok: true, json: async () => ({ id: 9, account_id: 4, script_draft_id: 2, provider: "fake", media_url: "https://f/x.mp4", duration: 45, cost: 1, status: "ready", review_status: "pending", created_at: "2026-07-09T00:00:00Z" }) }; }
+    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([{ id: 2, kind: "script", content: "Hook...", review_status: "adopted" }]) };
+    return undefined;
+  });
+  const { fireEvent } = await import("@testing-library/react");
+  render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
+  fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
+  fireEvent.click(await screen.findByRole("button", { name: /生成视频/ }));
+  await waitFor(() => expect(calls).toContain("gen-video"));
+});

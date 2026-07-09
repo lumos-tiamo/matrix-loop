@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "../api/client";
 import { useAsync } from "../api/hooks";
+import type { DraftOut } from "../api/types";
 import { ChartCard } from "../components/ChartCard";
 import { StatTile } from "../components/StatTile";
 
@@ -152,8 +153,70 @@ function BriefEditor({ accountId }: { accountId: number }) {
   );
 }
 function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenerated: () => void }) {
-  void accountId; void onGenerated;
-  return <ChartCard title="✍️ 选题 · 脚本 · 视频"><div data-testid="draft-workflow" /></ChartCard>;
+  const detail = useAsync(() => api.getAccount(accountId), [accountId]);
+  const [busy, setBusy] = useState<number | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const drafts: DraftOut[] = useMemo(() => {
+    const runs = detail.data?.loop_runs ?? [];
+    const all = runs.flatMap((r) => r.drafts ?? []);
+    return [...all].reverse();   // newest first
+  }, [detail.data]);
+
+  async function act(key: number, fn: () => Promise<unknown>, done: string) {
+    setBusy(key); setMsg(null);
+    try { await fn(); setMsg(done); detail.reload(); onGenerated(); }
+    catch (e) { setMsg(String(e)); }
+    finally { setBusy(null); }
+  }
+
+  const btn = "rounded-md border px-[10px] py-[4px] font-mono text-[11px] transition-colors disabled:opacity-50";
+
+  return (
+    <ChartCard title="✍️ 选题 · 脚本 · 视频" pill={`${drafts.length} 草稿`}>
+      {drafts.length === 0 && (
+        <p className="py-6 text-center font-mono text-[11px] text-muted">
+          还没有草稿。先在总览/下钻里对该账号跑一轮 Loop 生成选题。
+        </p>
+      )}
+      <div className="space-y-[8px]">
+        {drafts.map((d) => {
+          const adopted = d.review_status === "adopted";
+          return (
+            <div key={d.id} className="rounded-lg border border-line bg-panel px-3 py-2">
+              <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider">
+                <span className={d.kind === "script" ? "text-cyan" : "text-lime"}>{d.kind}</span>
+                <span className="text-dim">#{d.id}</span>
+                <span className="text-muted">{d.review_status}</span>
+              </div>
+              <p className="mb-2 font-mono text-[11px] leading-relaxed text-text">{d.content.slice(0, 200)}</p>
+              <div className="flex gap-2">
+                {!adopted && (
+                  <button className={`${btn} border-muted/40 text-muted hover:text-text`} disabled={busy === d.id}
+                    onClick={() => act(d.id, () => api.setDraftStatus(d.id, "adopted"), "已采纳")}>
+                    采纳{d.kind === "script" ? "脚本" : "选题"}
+                  </button>
+                )}
+                {adopted && d.kind === "topic" && (
+                  <button className={`${btn} border-cyan/50 bg-cyan/[.08] text-cyan hover:bg-cyan/[.16]`} disabled={busy === d.id}
+                    onClick={() => act(d.id, () => api.generateScript(d.id), "已生成脚本")}>
+                    {busy === d.id ? "生成中…" : "生成脚本"}
+                  </button>
+                )}
+                {adopted && d.kind === "script" && (
+                  <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet hover:bg-violet/[.18]`} disabled={busy === d.id}
+                    onClick={() => act(d.id, () => api.generateVideo(accountId, d.id), "已生成视频")}>
+                    {busy === d.id ? "生成中…" : "生成视频"}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {msg && <p className="mt-2 font-mono text-[11px] text-muted">{msg}</p>}
+    </ChartCard>
+  );
 }
 function ReviewQueue({ accountId, className }: { accountId: number; className?: string }) {
   void accountId;
