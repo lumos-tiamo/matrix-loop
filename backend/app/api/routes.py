@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
 from app.api.overview import build_overview
-from app.models import Account, AccountSegment, AudienceSegment, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, Recommendation, Snapshot, VideoAsset
+from app.models import Account, AccountSegment, AudienceSegment, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, PublishDispatch, Recommendation, Snapshot, VideoAsset
 from app.flow.build import build_flow
 from app.flow.classify import classify_audience
 from app.analysis.claude_client import ClaudeClient
@@ -444,3 +444,49 @@ def generate_video_route(account_id: int, payload: schemas.GenerateVideoIn, db: 
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except VideoQuotaExceeded as exc:
         raise HTTPException(status_code=429, detail=str(exc)) from exc
+
+
+def _aitoearn_client_or_422() -> AiToEarnClient:
+    from app.config import settings
+    if not (settings.aitoearn_base_url and settings.aitoearn_api_key):
+        raise HTTPException(status_code=422, detail="AiToEarn 未配置(MATRIXLOOP_AITOEARN_BASE_URL/API_KEY)")
+    return AiToEarnClient(settings.aitoearn_base_url, settings.aitoearn_api_key)
+
+
+@router.post("/accounts/{account_id}/publish", response_model=schemas.PublishDispatchOut, status_code=201)
+def publish_account(account_id: int, payload: schemas.PublishIn, db: Session = Depends(get_db)) -> PublishDispatch:
+    acc = db.get(Account, account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    asset = db.get(VideoAsset, payload.video_asset_id)
+    if asset is None or asset.account_id != account_id:
+        raise HTTPException(status_code=404, detail="video asset not found for this account")
+    client = _aitoearn_client_or_422()
+    from app.publish.dispatch import create_dispatch, PublishNotReady
+    try:
+        return create_dispatch(db, acc, asset, client=client, caption=payload.caption, publish_at=payload.publish_at)
+    except PublishNotReady as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001 - upstream connector error
+        logger.warning("publish failed for account %s: %s", account_id, exc)
+        raise HTTPException(status_code=502, detail="upstream publish error") from exc
+
+
+@router.get("/publish/dispatches", response_model=list[schemas.PublishDispatchOut])
+def list_dispatches(account_id: int | None = None, db: Session = Depends(get_db)) -> list[PublishDispatch]:
+    stmt = select(PublishDispatch).order_by(PublishDispatch.id.desc())
+    if account_id is not None:
+        stmt = stmt.where(PublishDispatch.account_id == account_id)
+    return list(db.scalars(stmt).all())
+
+
+@router.get("/publish/dispatches/{dispatch_id}", response_model=schemas.PublishDispatchOut)
+def get_dispatch(dispatch_id: int, db: Session = Depends(get_db)) -> PublishDispatch:
+    d = db.get(PublishDispatch, dispatch_id)
+    if d is None:
+        raise HTTPException(status_code=404, detail="dispatch not found")
+    from app.publish.dispatch import refresh_dispatch
+    try:
+        return refresh_dispatch(db, d, client=_aitoearn_client_or_422())
+    except HTTPException:
+        return d   # AiToEarn not configured -> return stored state without polling
