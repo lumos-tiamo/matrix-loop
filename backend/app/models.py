@@ -262,6 +262,7 @@ class FlywheelEvent(Base):
 
 class Trend(Base):
     __tablename__ = "trends"
+    __table_args__ = (UniqueConstraint("source", "title", name="uq_trend_source_title"),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     source: Mapped[str] = mapped_column(String(24))                       # tiktok|youtube|x|web
     title: Mapped[str] = mapped_column(String)                           # the viral piece / headline

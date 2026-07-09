@@ -6,7 +6,7 @@ from dataclasses import asdict
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
+from sqlalchemy import select, tuple_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -393,8 +393,7 @@ def generate_script_route(draft_id: int, db: Session = Depends(get_db)) -> Draft
         raise HTTPException(status_code=422, detail="loop run not found")
     brief = db.scalar(select(ChannelBrief).where(ChannelBrief.account_id == lr.account_id))
     perf_block = performance_prompt_block(content_performance(db, lr.account_id))
-    niches = brief.sub_niches if brief else None
-    trend_block = trend_prompt_block(db, niches)
+    trend_block = trend_prompt_block(db, brief.sub_niches) if brief else ""
     text = generate_script(topic.content, brief, client, performance=perf_block, trends=trend_block or None)
     script = Draft(loop_run_id=topic.loop_run_id, kind="script", content=text, review_status="pending")
     db.add(script)
@@ -520,21 +519,32 @@ def set_autopilot(account_id: int, payload: schemas.SetAutopilot, db: Session = 
 
 @router.post("/trends/ingest", status_code=201)
 def ingest_trends(payload: schemas.TrendIngest, db: Session = Depends(get_db)) -> dict:
+    incoming = [(t.source.strip().lower(), t.title) for t in payload.trends]
+    existing = set(db.execute(
+        select(Trend.source, Trend.title).where(
+            tuple_(Trend.source, Trend.title).in_(incoming))
+    ).all()) if incoming else set()
     ingested = skipped = 0
+    seen: set = set()
     for t in payload.trends:
-        existing = db.scalar(select(Trend).where(Trend.source == t.source, Trend.title == t.title))
-        if existing is not None:
+        key = (t.source.strip().lower(), t.title)
+        if key in existing or key in seen:
             skipped += 1
             continue
-        db.add(Trend(source=t.source, title=t.title, url=t.url, niche=t.niche,
+        seen.add(key)
+        db.add(Trend(source=key[0], title=t.title, url=t.url, niche=t.niche,
                      engagement=t.engagement, distilled_topic=t.distilled_topic, score=t.score))
         ingested += 1
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="concurrent duplicate trend")
     return {"ingested": ingested, "skipped": skipped}
 
 
 @router.get("/trends")
-def list_trends(niche: str | None = None, limit: int = 50, db: Session = Depends(get_db)) -> list[dict]:
+def list_trends(niche: str | None = None, limit: int = Query(default=50, le=500), db: Session = Depends(get_db)) -> list[dict]:
     stmt = select(Trend).order_by(Trend.captured_at.desc(), Trend.id.desc())
     if niche:
         stmt = stmt.where(Trend.niche == niche)
@@ -545,7 +555,7 @@ def list_trends(niche: str | None = None, limit: int = 50, db: Session = Depends
             for t in db.scalars(stmt).all()]
 
 
-# NOTE: register /flywheel/status|pause|resume|scheduler BEFORE GET /flywheel (static prefixes; order is load-bearing).
+# NOTE: /flywheel is a static path (no {param}), so the ordering below is stylistic, not load-bearing.
 @router.get("/flywheel/status")
 def flywheel_status(db: Session = Depends(get_db)) -> dict:
     return {"paused": is_paused(db), "scheduler_running": scheduler_running()}

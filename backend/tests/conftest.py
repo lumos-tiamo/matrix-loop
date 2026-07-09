@@ -15,6 +15,15 @@ def _no_live_llm(monkeypatch):
     monkeypatch.setattr(settings, "anthropic_api_key", None, raising=False)
 
 
+@pytest.fixture(autouse=True)
+def _no_live_scheduler(monkeypatch):
+    from app.config import settings
+    monkeypatch.setattr(settings, "scheduler_autostart", False, raising=False)
+    yield
+    from app.scheduler import control
+    control.stop_scheduler()
+
+
 @pytest.fixture()
 def session():
     engine = create_engine(
