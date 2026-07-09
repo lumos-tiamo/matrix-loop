@@ -11,6 +11,20 @@ def test_create_account_with_defaults(session):
     assert acc.objective_weights == {"growth": 0.25, "engagement": 0.25, "commercial": 0.25, "positioning": 0.25}
 
 
+def test_account_external_ref_defaults_none_and_persists(session):
+    from app.models import Account
+    a = Account(platform="xiaohongshu", handle="@x")
+    session.add(a); session.commit()
+    assert a.external_ref is None
+    assert a.external_source is None
+    a.external_ref = "ae_123"
+    a.external_source = "aitoearn"
+    session.commit()
+    got = session.get(Account, a.id)
+    assert got.external_ref == "ae_123"
+    assert got.external_source == "aitoearn"
+
+
 def test_snapshot_linked_to_account(session):
     acc = Account(platform="douyin", handle="@a2")
     session.add(acc)
