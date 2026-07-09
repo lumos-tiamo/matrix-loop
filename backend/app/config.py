@@ -18,5 +18,12 @@ class Settings(BaseSettings):
     schedule_interval_minutes: int = 360
     schedule_max_accounts: int | None = None
 
+    # Video generation
+    video_provider: str = "fake"                      # fake | seedance
+    seedance_model: str = "seedance2.0fast"
+    dreamina_bin: str = "dreamina"
+    video_output_dir: str = "./data/videos"
+    public_base_url: str = "http://127.0.0.1:8010"
+
 
 settings = Settings()
