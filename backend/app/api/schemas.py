@@ -186,6 +186,10 @@ class PublishIn(BaseModel):
     publish_at: datetime | None = None
 
 
+class SetAutopilot(BaseModel):
+    enabled: bool
+
+
 class PublishDispatchOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int

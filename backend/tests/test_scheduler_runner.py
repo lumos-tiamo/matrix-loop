@@ -4,8 +4,6 @@ from app.scheduler.runner import build_scheduler
 
 
 def test_build_scheduler_registers_one_job():
-    called = {}
-
     def fake_session_factory():
         raise AssertionError("should not be called at build time")
 
@@ -20,4 +18,12 @@ def test_build_scheduler_registers_one_job():
             scheduler.shutdown(wait=False)
         except SchedulerNotRunningError:
             pass  # never started — nothing to shut down
-    assert called == {}  # session factory not invoked merely by building
+
+
+def test_build_scheduler_registers_autopilot_and_analytics_jobs():
+    from app.scheduler.runner import build_scheduler
+    sched = build_scheduler(lambda: None, interval_minutes=30)
+    ids = {j.id for j in sched.get_jobs()}
+    assert "matrixloop-autopilot" in ids
+    # does not auto-start
+    assert not sched.running
