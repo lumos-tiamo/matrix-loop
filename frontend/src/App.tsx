@@ -5,6 +5,7 @@ import { AccountDetail } from "./pages/AccountDetail";
 import { Compare } from "./pages/Compare";
 import { ContentLibrary } from "./pages/ContentLibrary";
 import { Flow } from "./pages/Flow";
+import { Video } from "./pages/Video";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/compare" element={<Compare />} />
         <Route path="/content" element={<ContentLibrary />} />
         <Route path="/flow" element={<Flow />} />
+        <Route path="/video" element={<Video />} />
         <Route path="/accounts/:id" element={<AccountDetail />} />
       </Routes>
     </Layout>
