@@ -15,6 +15,7 @@ const EMPTY: FlywheelState = { paused: false, autopilot_accounts: 0, pending_rev
 export function Flywheel() {
   const fw = useAsync(() => api.getFlywheel(), []);
   const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   const d: FlywheelState = fw.data ?? EMPTY;
 
   const delivered = useMemo(
@@ -22,11 +23,11 @@ export function Flywheel() {
 
   async function toggleAutopilot(id: number, enabled: boolean) {
     setBusy(`ap-${id}`);
-    try { await api.setAutopilot(id, enabled); fw.reload(); } finally { setBusy(null); }
+    try { setErr(null); await api.setAutopilot(id, enabled); fw.reload(); } catch (e) { setErr(String(e)); } finally { setBusy(null); }
   }
   async function togglePause() {
     setBusy("pause");
-    try { d.paused ? await api.resumeFlywheel() : await api.pauseFlywheel(); fw.reload(); } finally { setBusy(null); }
+    try { setErr(null); d.paused ? await api.resumeFlywheel() : await api.pauseFlywheel(); fw.reload(); } catch (e) { setErr(String(e)); } finally { setBusy(null); }
   }
 
   return (
@@ -37,13 +38,13 @@ export function Flywheel() {
           <p className="mt-[3px] font-mono text-[11px] text-muted">爬爆款 → 定调 → 脚本 → 视频 → 发布 → 追踪 → 复盘 → 评估 → 改进 · <span className="text-warn">下班无人值守</span></p>
         </div>
         <div className="flex-1" />
-        <button onClick={togglePause} disabled={busy === "pause"} aria-label="暂停或恢复飞轮"
+        <button onClick={togglePause} disabled={busy !== null} aria-label="暂停或恢复飞轮"
           className={`rounded-lg border px-4 py-2 font-mono text-xs transition-colors disabled:opacity-50 ${d.paused ? "border-good/50 bg-good/[.1] text-good" : "border-alert/50 bg-alert/[.08] text-alert"}`}>
           {d.paused ? "▶ 恢复飞轮" : "⏸ 暂停飞轮"}
         </button>
       </div>
 
-      {fw.error && <div className="px-1 pb-3 font-mono text-alert">加载失败：{fw.error}</div>}
+      {(fw.error || err) && <div className="px-1 pb-3 font-mono text-alert">操作失败：{err || fw.error}</div>}
 
       <div className="mb-[14px] grid grid-cols-2 gap-[14px] md:grid-cols-4">
         <StatTile label="今日交付(发布)" value={String(delivered)} accent />
@@ -54,7 +55,7 @@ export function Flywheel() {
 
       <div className="grid gap-[14px] lg:grid-cols-[1.55fr_.95fr]">
         <ChartCard title="🌀 内容自转飞轮" pill="9 步 · 实时" glow className="rise min-h-[660px]">
-          <FlywheelChart steps={d.steps} deliveredToday={delivered} autopilotCount={d.autopilot_accounts} paused={d.paused} />
+          <FlywheelChart steps={d.steps} deliveredToday={delivered} autopilotCount={d.autopilot_accounts} paused={d.paused} loading={fw.loading} />
         </ChartCard>
 
         <div className="flex flex-col gap-[14px]">
@@ -66,7 +67,7 @@ export function Flywheel() {
                     <div className="font-display text-[13px] font-bold text-text">{a.handle}</div>
                     <div className="font-mono text-[10.5px] text-muted">{PLATFORM_LABEL[a.platform] ?? a.platform}</div>
                   </div>
-                  <button onClick={() => toggleAutopilot(a.id, !a.autopilot)} disabled={busy === `ap-${a.id}`}
+                  <button onClick={() => toggleAutopilot(a.id, !a.autopilot)} disabled={busy !== null}
                     aria-label={`切换 ${a.handle} 自动驾驶`}
                     className={`relative h-6 w-11 rounded-full border transition-colors disabled:opacity-50 ${a.autopilot ? "border-lime bg-lime/[.18]" : "border-line bg-panel2"}`}>
                     <span className={`absolute top-[2px] h-[18px] w-[18px] rounded-full transition-all ${a.autopilot ? "left-[22px] bg-lime" : "left-[2px] bg-muted"}`} />
@@ -80,7 +81,7 @@ export function Flywheel() {
           <ChartCard title="⚡ 飞轮流水" pill="实时">
             <div className="space-y-[2px]">
               {d.events.map((e, i) => (
-                <div key={i} className="flex items-baseline gap-[10px] border-t border-line py-[9px] font-mono text-[11.5px] first:border-t-0">
+                <div key={`${e.ts ?? "?"}-${e.step}-${e.account_id ?? "?"}-${i}`} className="flex items-baseline gap-[10px] border-t border-line py-[9px] font-mono text-[11.5px] first:border-t-0">
                   <span className="text-dim">{e.ts ? e.ts.slice(11, 16) : "--:--"}</span>
                   <span className={e.status === "ok" ? "text-cyan" : e.status === "blocked" ? "text-warn" : e.status === "error" ? "text-alert" : "text-muted"}>{e.step}</span>
                   <span className="min-w-0 flex-1 truncate text-muted">{e.detail}</span>

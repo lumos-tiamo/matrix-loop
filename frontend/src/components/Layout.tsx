@@ -24,7 +24,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </Link>
         <nav className="flex items-center gap-1">
           {NAV.map((n) => {
-            const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
+            const active = n.to === "/" ? pathname === "/" : (pathname === n.to || pathname.startsWith(n.to + "/"));
             return (
               <Link
                 key={n.to}

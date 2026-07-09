@@ -34,7 +34,7 @@ it("renders the 9 flywheel steps + delivered count from /flywheel", async () => 
   expect(await screen.findByText("发布")).toBeInTheDocument();
   expect(screen.getByText("追踪流量")).toBeInTheDocument();
   // delivered = publish count = 4 shown in core
-  await waitFor(() => expect(screen.getAllByText("4").length).toBeGreaterThan(0));
+  await waitFor(() => expect(screen.getByTestId("fw-delivered")).toHaveTextContent("4"));
 });
 
 it("toggling an account calls POST /accounts/{id}/autopilot", async () => {

@@ -19,12 +19,13 @@ const ICON: Record<string, JSX.Element> = {
   improve: <><path d="M9.6 18.5h4.8M10.1 21.5h3.8"/><path d="M12 2.5A6.2 6.2 0 0 0 8.2 13.6c.9.7 1.3 1.4 1.3 2.4h5c0-1 .4-1.7 1.3-2.4A6.2 6.2 0 0 0 12 2.5z"/></>,
 };
 
-export function FlywheelChart({ steps, deliveredToday, autopilotCount, paused }:
-  { steps: FlywheelStep[]; deliveredToday: number; autopilotCount: number; paused: boolean }) {
+export function FlywheelChart({ steps, deliveredToday, autopilotCount, paused, loading }:
+  { steps: FlywheelStep[]; deliveredToday: number; autopilotCount: number; paused: boolean; loading?: boolean }) {
   const R = 250;
+  const empty = steps.length === 0;
   return (
     <div className="relative mx-auto" style={{ width: 600, height: 600 }}>
-      <svg viewBox="0 0 600 600" className="absolute inset-0 h-full w-full">
+      <svg viewBox="0 0 600 600" aria-hidden="true" className="absolute inset-0 h-full w-full">
         <defs>
           <linearGradient id="fwflow" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#B6FF3C"/><stop offset=".5" stopColor="#4CD4F0"/><stop offset="1" stopColor="#A78BFA"/>
@@ -46,8 +47,8 @@ export function FlywheelChart({ steps, deliveredToday, autopilotCount, paused }:
         style={{ transform: "translate(-50%,-50%)", width: 230, height: 230, borderRadius: "50%",
           border: "1px solid var(--line,#232B3C)",
           background: "radial-gradient(circle at 50% 40%, rgba(182,255,60,.10), rgba(17,21,31,.9) 68%)" }}>
-        <div className="font-display text-[44px] font-black leading-none tracking-tight text-lime tabnums">
-          {deliveredToday}<span className="text-[14px] font-semibold text-muted"> 条/日</span></div>
+        <div data-testid="fw-delivered" className="font-display text-[44px] font-black leading-none tracking-tight text-lime tabnums">
+          {empty ? (loading ? "加载中…" : "—") : deliveredToday}<span className="text-[14px] font-semibold text-muted"> 条/日</span></div>
         <div className="font-mono text-[11px] text-muted">今日已交付</div>
         <div className="mt-[6px] font-mono text-[12px] text-text">在跑 <b className="text-cyan">{autopilotCount}</b> 个自动驾驶账号</div>
         <div className={`mt-2 font-mono text-[10px] uppercase tracking-[.22em] ${paused ? "text-warn" : "text-good"}`}>
@@ -56,7 +57,7 @@ export function FlywheelChart({ steps, deliveredToday, autopilotCount, paused }:
 
       {/* nodes */}
       {steps.slice(0, 9).map((s, i) => {
-        const angle = -90 + i * 40;
+        const angle = -90 + (360 / Math.max(steps.length, 1)) * i;
         const on = s.status === "ok";
         return (
           <div key={s.key} className="absolute left-1/2 top-1/2 text-center"
@@ -65,9 +66,8 @@ export function FlywheelChart({ steps, deliveredToday, autopilotCount, paused }:
             <div className={`relative mx-auto flex items-center justify-center rounded-[17px] border transition-colors ${on ? "fw-node-on" : ""}`}
               style={{ width: 58, height: 58, color: NC[s.key],
                 background: on ? "color-mix(in oklab, var(--nc) 13%, transparent)" : "var(--panel2,#151A26)",
-                borderColor: on ? NC[s.key] : "var(--line,#232B3C)",
-                boxShadow: on ? "0 0 22px color-mix(in oklab, var(--nc) 28%, transparent)" : "none" }}>
-              <svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="currentColor"
+                borderColor: on ? NC[s.key] : "var(--line,#232B3C)" }}>
+              <svg viewBox="0 0 24 24" width="27" height="27" aria-hidden="true" fill="none" stroke="currentColor"
                 strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{ICON[s.key]}</svg>
               <span className="absolute -left-[7px] -top-[7px] flex h-[19px] w-[19px] items-center justify-center rounded-full border border-line bg-bg font-mono text-[10px] text-muted">{i + 1}</span>
             </div>
