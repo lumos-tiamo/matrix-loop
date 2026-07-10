@@ -36,8 +36,8 @@ class Settings(BaseSettings):
     tts_provider: str = "auto"            # auto | say | openai | fake
     tts_model: str = ""                   # e.g. "tts-1"; empty disables the openai TTS path
     tts_voice: str = "alloy"
-    tts_base_url: str | None = None       # defaults to anthropic_base_url when empty
-    tts_api_key: str | None = None        # defaults to anthropic_api_key when empty
+    tts_base_url: str | None = None       # if None, the TTS factory falls back to anthropic_base_url
+    tts_api_key: str | None = None        # if None, the TTS factory falls back to anthropic_api_key
     faceless_visual: str = "fake"         # aitoearn | seedance | fake — inner clip provider for b-roll
 
 

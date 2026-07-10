@@ -16,6 +16,9 @@ def _resolve_clip_provider(settings, name):
         client = AiToEarnClient(settings.aitoearn_base_url or "", settings.aitoearn_api_key,
                                 ai_base_url=settings.aitoearn_ai_base_url)
         return AiToEarnVideoProvider(client, model=settings.aitoearn_video_model)
+    if name == "aitoearn":
+        logger.warning("faceless_visual=aitoearn but aitoearn_ai_base_url/api_key incomplete; "
+                       "using fake b-roll")
     if name == "seedance":
         from app.video.seedance import SeedanceVideoProvider
         return SeedanceVideoProvider(

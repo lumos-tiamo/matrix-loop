@@ -56,7 +56,9 @@ class FacelessVideoProvider:
             "-t", str(duration), "-pix_fmt", "yuv420p", out,
         ])
         if rc != 0:
-            raise RuntimeError(f"faceless gradient bg failed rc={rc}: {(e or o or '').strip()[:200]}")
+            msg = f"faceless gradient bg failed rc={rc}: {(e or o or '').strip()[:200]}"
+            logger.error(msg)
+            raise RuntimeError(msg)
         return out
 
     def _download(self, url: str, tmp: str) -> str:
@@ -65,7 +67,9 @@ class FacelessVideoProvider:
         try:
             urllib.request.urlretrieve(url, out)
         except Exception as exc:  # noqa: BLE001
-            raise RuntimeError(f"faceless: failed to download background clip {url}: {exc}") from exc
+            msg = f"faceless: failed to download background clip {url}: {exc}"
+            logger.error(msg)
+            raise RuntimeError(msg) from exc
         return out
 
     def _background(self, clip, duration: float, tmp: str) -> str:
@@ -74,11 +78,13 @@ class FacelessVideoProvider:
         url = clip.media_url
         if url.startswith("http://") or url.startswith("https://"):
             return self._download(url, tmp)
-        fname = url.rsplit("/", 1)[-1]
+        fname = os.path.basename(url.rsplit("/", 1)[-1])
         local = os.path.join(self._output_dir, fname)
         if os.path.exists(local):
             return local
-        raise RuntimeError(f"faceless: background clip not found locally: {url}")
+        msg = f"faceless: background clip not found locally: {url}"
+        logger.error(msg)
+        raise RuntimeError(msg)
 
     def generate(self, *, script: str, brief, params: dict) -> VideoResult:
         params = params or {}
@@ -113,7 +119,9 @@ class FacelessVideoProvider:
                     "-c:a", "aac", "-shortest", out_path]
             rc, o, e = self._run(cmd)
             if rc != 0:
-                raise RuntimeError(f"faceless ffmpeg compose failed rc={rc}: {(e or o or '').strip()[:300]}")
+                msg = f"faceless ffmpeg compose failed rc={rc}: {(e or o or '').strip()[:300]}"
+                logger.error(msg)
+                raise RuntimeError(msg)
             return VideoResult(
                 media_url=f"{self._public_base}/media/{fname}",
                 duration=duration,

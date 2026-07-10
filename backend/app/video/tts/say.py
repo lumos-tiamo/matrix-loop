@@ -33,15 +33,22 @@ class SayTTSProvider:
         wav_path = os.path.join(self._output_dir, f"tts_say_{digest}.wav")
         with open(txt_path, "w", encoding="utf-8") as f:
             f.write(text or "")
-        say_cmd = ["say", "-f", txt_path, "-o", aiff_path]
-        v = voice or self._voice
-        if v:
-            say_cmd[1:1] = ["-v", v]
-        rc, out, err = self._run(say_cmd)
-        if rc != 0:
-            raise RuntimeError(f"say failed rc={rc}: {(err or out or '').strip()[:200]}")
-        rc, out, err = self._run(["ffmpeg", "-y", "-i", aiff_path, wav_path])
-        if rc != 0:
-            raise RuntimeError(f"say ffmpeg aiff->wav failed rc={rc}: {(err or out or '').strip()[:200]}")
-        duration = ffprobe_duration(wav_path, run=self._run)
-        return TTSResult(audio_path=wav_path, duration_seconds=duration, fmt="wav")
+        try:
+            say_cmd = ["say", "-f", txt_path, "-o", aiff_path]
+            v = voice or self._voice
+            if v:
+                say_cmd[1:1] = ["-v", v]
+            rc, out, err = self._run(say_cmd)
+            if rc != 0:
+                raise RuntimeError(f"say failed rc={rc}: {(err or out or '').strip()[:200]}")
+            rc, out, err = self._run(["ffmpeg", "-y", "-i", aiff_path, wav_path])
+            if rc != 0:
+                raise RuntimeError(f"say ffmpeg aiff->wav failed rc={rc}: {(err or out or '').strip()[:200]}")
+            duration = ffprobe_duration(wav_path, run=self._run)
+            return TTSResult(audio_path=wav_path, duration_seconds=duration, fmt="wav")
+        finally:
+            for p in (txt_path, aiff_path):
+                try:
+                    os.unlink(p)
+                except OSError:
+                    pass

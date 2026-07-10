@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
+
+logger = logging.getLogger(__name__)
 
 _SENTENCE_SPLIT = re.compile(r"[.!?。！？]+\s*|\n+")
 
@@ -82,11 +85,15 @@ def _load_font(size: int):
         "/System/Library/Fonts/Helvetica.ttc",
         "/System/Library/Fonts/Supplemental/Arial.ttf",
         "/Library/Fonts/Arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
     ):
         try:
             return ImageFont.truetype(p, size)
         except OSError:
             continue
+    logger.warning("no truetype font found; captions fall back to the bitmap default "
+                   "and will not size/wrap correctly — install a .ttf (e.g. DejaVuSans)")
     return ImageFont.load_default()
 
 
@@ -106,7 +113,13 @@ def _wrap(draw, text: str, font, max_width: int) -> list[str]:
     return lines
 
 
-def render_caption_images(timings, *, resolution=(1080, 1920), out_dir=".", font_size=72):
+def render_caption_images(
+    timings: list[tuple[str, float, float]],
+    *,
+    resolution: tuple[int, int] = (1080, 1920),
+    out_dir: str = ".",
+    font_size: int = 72,
+) -> list[tuple[str, float, float]]:
     """Render each caption to a full-frame transparent PNG (bottom-centred, outlined) via Pillow.
     Returns [(png_path, start, end)]. Portable: needs only ffmpeg's core `overlay` filter,
     no libass/drawtext."""

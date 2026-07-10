@@ -8,7 +8,7 @@ def _default_run(cmd):
     return p.returncode, p.stdout, p.stderr
 
 
-def ffprobe_duration(path, run=None):
+def ffprobe_duration(path: str, run=None) -> float:
     """Return media duration in seconds via ffprobe. `run(cmd)->(rc,out,err)` is injectable for tests."""
     runner = run or _default_run
     rc, out, err = runner(
