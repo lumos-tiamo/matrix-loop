@@ -26,6 +26,16 @@ def test_factory_returns_seedance_when_configured(monkeypatch):
     assert p.name == "seedance"
 
 
+def test_resolve_returns_aitoearn_when_configured(monkeypatch):
+    from app.config import settings
+    from app.video.aitoearn import AiToEarnVideoProvider
+    monkeypatch.setattr(settings, "video_provider", "aitoearn", raising=False)
+    monkeypatch.setattr(settings, "aitoearn_ai_base_url", "http://h/api/ai", raising=False)
+    monkeypatch.setattr(settings, "aitoearn_api_key", "k", raising=False)
+    from app.video.factory import resolve_video_provider
+    assert isinstance(resolve_video_provider(), AiToEarnVideoProvider)
+
+
 def test_factory_falls_back_to_fake_on_construction_error(monkeypatch):
     """A misconfigured provider must never crash the loop — fall back to fake."""
     from app.config import settings
