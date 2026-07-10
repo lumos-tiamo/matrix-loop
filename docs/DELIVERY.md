@@ -30,7 +30,7 @@ MatrixLoop 是多平台矩阵账号的**自我修正 Loop + 内容生产流水�
 
 | 能力 | 现状 | 打开方法 |
 |---|---|---|
-| **真 Seedance 视频画面** | 接线已做完、假实现测通;当前即梦账号 `artisan` 被 tier 门挡(仅限「高级会员或以上」) | 换一个即梦**高级+会员**账号 → `dreamina login` → 设 `MATRIXLOOP_VIDEO_PROVIDER=seedance` → `/video` 生成即出真 mp4 到 `/media` |
+| **真视频画面** | 三条 provider:`fake`(占位)/`seedance`(本地即梦 CLI,受账号 tier 门)/**`aitoearn`(推荐——复用 AiToEarn 视频生成,服务端持 Volcengine/Seedance/Sora 等 key,绕开即梦 tier 门)** | **推荐**:`MATRIXLOOP_VIDEO_PROVIDER=aitoearn` + `MATRIXLOOP_AITOEARN_AI_BASE_URL=http://<host>:8080/api/ai` + `MATRIXLOOP_AITOEARN_API_KEY=<key>` + `MATRIXLOOP_AITOEARN_VIDEO_MODEL=<GET /api/ai/models/video/generation 里的模型>`,`/video` 生成即出真 videoUrl。或本地 CLI:换高级即梦号 `dreamina login` + `MATRIXLOOP_VIDEO_PROVIDER=seedance` |
 | **CN 平台真实数据 + 真发布** | 代码+门控就绪;未联网 | 跑起 AiToEarn docker + 账号在其内连接 + 设 `MATRIXLOOP_AITOEARN_BASE_URL/API_KEY` + `POST /accounts/link-aitoearn`(或手动 external_ref) |
 | **X / YouTube / Instagram 真实数据** | 连接器就绪 | 设 `MATRIXLOOP_X_BEARER_TOKEN` / `MATRIXLOOP_YOUTUBE_API_KEY` / `MATRIXLOOP_INSTAGRAM_TOKEN`+`_BUSINESS_ID` |
 
