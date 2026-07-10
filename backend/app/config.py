@@ -24,11 +24,13 @@ class Settings(BaseSettings):
     scheduler_autostart: bool = False
 
     # Video generation
-    video_provider: str = "fake"                      # fake | seedance
+    video_provider: str = "fake"                      # fake | seedance | aitoearn
     seedance_model: str = "seedance2.0fast"
     dreamina_bin: str = "dreamina"
     video_output_dir: str = "./data/videos"
     public_base_url: str = "http://127.0.0.1:8010"
+    aitoearn_ai_base_url: str | None = None       # AiToEarn AI service base, e.g. http://127.0.0.1:8080/api/ai
+    aitoearn_video_model: str = "seedance-1-pro"  # model routed by AiToEarn (Volcengine/Seedance/Sora/...)
 
 
 settings = Settings()

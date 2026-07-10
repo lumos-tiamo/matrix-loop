@@ -21,11 +21,12 @@ def to_aitoearn_platform(platform: str) -> str:
 class AiToEarnClient:
     """Thin HTTP client for AiToEarn's REST API. Injected http_get/http_post for tests."""
 
-    def __init__(self, base_url: str, api_key: str, http_get=None, http_post=None):
+    def __init__(self, base_url: str, api_key: str, http_get=None, http_post=None, ai_base_url: str | None = None):
         self.base_url = (base_url or "").rstrip("/")
         self.api_key = api_key
         self._http_get = http_get or self._default_get
         self._http_post = http_post or self._default_post
+        self.ai_base_url = (ai_base_url or "").rstrip("/")
 
     def _headers(self) -> dict:
         return {"x-api-key": self.api_key, "Content-Type": "application/json"}
@@ -70,4 +71,12 @@ class AiToEarnClient:
 
     def flow_status(self, flow_id: str) -> dict:
         url = f"{self.base_url}/channels/publish/flows/{flow_id}"
+        return self._http_get(url, self._headers()) or {}
+
+    def submit_video(self, payload: dict) -> dict:
+        url = f"{self.ai_base_url}/video/generations"
+        return self._http_post(url, self._headers(), payload) or {}
+
+    def video_task(self, task_id: str) -> dict:
+        url = f"{self.ai_base_url}/video/generations/{task_id}"
         return self._http_get(url, self._headers()) or {}
