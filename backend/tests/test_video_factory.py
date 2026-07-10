@@ -56,3 +56,36 @@ def test_factory_falls_back_to_fake_on_construction_error(monkeypatch):
     assert isinstance(p, FakeVideoProvider)
     # restore
     monkeypatch.setattr(seedance_mod, "SeedanceVideoProvider", original_cls)
+
+
+def test_factory_returns_faceless_when_configured(monkeypatch, tmp_path):
+    from app.config import settings
+    from app.video.factory import resolve_video_provider
+    from app.video.faceless import FacelessVideoProvider
+    from app.video.fake import FakeVideoProvider
+
+    monkeypatch.setattr(settings, "video_provider", "faceless", raising=False)
+    monkeypatch.setattr(settings, "faceless_visual", "fake", raising=False)
+    monkeypatch.setattr(settings, "tts_provider", "fake", raising=False)
+    monkeypatch.setattr(settings, "video_output_dir", str(tmp_path), raising=False)
+    p = resolve_video_provider()
+    assert isinstance(p, FacelessVideoProvider)
+    assert p.name == "faceless"
+    # inner visual is a plain clip provider, never another faceless (no recursion)
+    assert isinstance(p._visual, FakeVideoProvider)
+
+
+def test_faceless_inner_visual_never_faceless(monkeypatch, tmp_path):
+    """faceless_visual must resolve to a clip provider, even if set to 'faceless'."""
+    from app.config import settings
+    from app.video.factory import resolve_video_provider
+    from app.video.faceless import FacelessVideoProvider
+    from app.video.fake import FakeVideoProvider
+
+    monkeypatch.setattr(settings, "video_provider", "faceless", raising=False)
+    monkeypatch.setattr(settings, "faceless_visual", "faceless", raising=False)  # nonsense on purpose
+    monkeypatch.setattr(settings, "tts_provider", "fake", raising=False)
+    monkeypatch.setattr(settings, "video_output_dir", str(tmp_path), raising=False)
+    p = resolve_video_provider()
+    assert isinstance(p, FacelessVideoProvider)
+    assert isinstance(p._visual, FakeVideoProvider)  # fell through to fake, no recursion
