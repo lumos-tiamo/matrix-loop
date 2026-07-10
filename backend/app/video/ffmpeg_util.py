@@ -13,7 +13,7 @@ def ffprobe_duration(path, run=None):
     runner = run or _default_run
     rc, out, err = runner(
         ["ffprobe", "-v", "error", "-show_entries", "format=duration",
-         "-of", "default=nw=1:np=1", path]
+         "-of", "default=nw=1:nk=1", path]
     )
     if rc != 0:
         raise RuntimeError(f"ffprobe failed rc={rc}: {(err or out or '').strip()[:200]}")
