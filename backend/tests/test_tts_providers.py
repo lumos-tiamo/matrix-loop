@@ -77,3 +77,38 @@ def test_openai_raises_on_http_error(tmp_path):
     with pytest.raises(RuntimeError, match="HTTP 503"):
         OpenAITTSProvider(base_url="https://r", api_key="k", model="tts-1",
                           output_dir=str(tmp_path), http_post=http_post).synthesize(text="x")
+
+
+def test_say_normalizes_unicode_punctuation():
+    from app.video.tts.say import _normalize
+    assert "—" not in _normalize("a — b")            # em-dash gone (the say-truncation trigger)
+    assert _normalize("“x’s…”") == '"x\'s..."'
+
+
+def test_say_truncation_guard_substitutes_full_length_silence(tmp_path):
+    import wave
+
+    # say "produces" 0.5s for a 30-word text -> 60 w/s -> impossible -> silent full-length fallback
+    class Run:
+        def __call__(self, cmd):
+            if cmd and cmd[0] == "ffprobe":
+                return 0, "0.50\n", ""
+            return 0, "", ""
+
+    text = " ".join(["word"] * 30)
+    r = SayTTSProvider(output_dir=str(tmp_path), run=Run()).synthesize(text=text)
+    assert abs(r.duration_seconds - round(30 / 2.7, 2)) < 0.01   # expected length, not the truncated 0.5
+    with wave.open(r.audio_path, "rb") as w:
+        assert w.getnframes() > 0
+
+
+def test_say_keeps_plausible_duration(tmp_path):
+    # 6 words in 3.0s = 2 w/s -> plausible -> kept as-is
+    class Run:
+        def __call__(self, cmd):
+            if cmd and cmd[0] == "ffprobe":
+                return 0, "3.00\n", ""
+            return 0, "", ""
+
+    r = SayTTSProvider(output_dir=str(tmp_path), run=Run()).synthesize(text="one two three four five six")
+    assert r.duration_seconds == 3.0
