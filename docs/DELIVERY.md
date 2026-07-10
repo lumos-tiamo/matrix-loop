@@ -30,7 +30,8 @@ MatrixLoop 是多平台矩阵账号的**自我修正 Loop + 内容生产流水�
 
 | 能力 | 现状 | 打开方法 |
 |---|---|---|
-| **真视频画面** | 三条 provider:`fake`(占位)/`seedance`(本地即梦 CLI,受账号 tier 门)/**`aitoearn`(推荐——复用 AiToEarn 视频生成,服务端持 Volcengine/Seedance/Sora 等 key,绕开即梦 tier 门)** | **推荐**:`MATRIXLOOP_VIDEO_PROVIDER=aitoearn` + `MATRIXLOOP_AITOEARN_AI_BASE_URL=http://<host>:8080/api/ai` + `MATRIXLOOP_AITOEARN_API_KEY=<key>` + `MATRIXLOOP_AITOEARN_VIDEO_MODEL=<GET /api/ai/models/video/generation 里的模型>`,`/video` 生成即出真 videoUrl。或本地 CLI:换高级即梦号 `dreamina login` + `MATRIXLOOP_VIDEO_PROVIDER=seedance` |
+| **真视频画面(纯 clip)** | 三条 provider:`fake`(占位)/`seedance`(本地即梦 CLI,受账号 tier 门)/**`aitoearn`(推荐——复用 AiToEarn 视频生成,服务端持 Volcengine/Seedance/Sora 等 key,绕开即梦 tier 门)** | **推荐**:`MATRIXLOOP_VIDEO_PROVIDER=aitoearn` + `MATRIXLOOP_AITOEARN_AI_BASE_URL=http://<host>:8080/api/ai` + `MATRIXLOOP_AITOEARN_API_KEY=<key>` + `MATRIXLOOP_AITOEARN_VIDEO_MODEL=<GET /api/ai/models/video/generation 里的模型>`,`/video` 生成即出真 videoUrl。或本地 CLI:换高级即梦号 `dreamina login` + `MATRIXLOOP_VIDEO_PROVIDER=seedance` |
+| **faceless 口播成片(画面+旁白+字幕)** | 第四条 provider `faceless`:AI clip 当背景 b-roll + TTS 旁白 + Pillow 烧录字幕,ffmpeg 合成竖版成片。**零 key 即可真出片**(默认 macOS `say` 旁白 + ffmpeg,本机已测通,`test_faceless_composes_real_playable_mp4` 真跑 ffmpeg 出音+画+字幕 mp4) | `MATRIXLOOP_VIDEO_PROVIDER=faceless` + `MATRIXLOOP_FACELESS_VISUAL=aitoearn\|seedance\|fake`(背景画面来源)+ `MATRIXLOOP_TTS_PROVIDER=auto`(默认 say,零 key)。**真人声旁白**:在中转上开一个 TTS 通道后设 `MATRIXLOOP_TTS_MODEL=<模型>`(复用 anthropic key/base;当前中转 103 模型无 TTS,需自行加通道),或 `MATRIXLOOP_TTS_BASE_URL`/`_API_KEY` 指向专用 TTS。字幕靠 ffmpeg `overlay`(本机 ffmpeg 无 libass,已改 Pillow 出 PNG 叠加,任意 ffmpeg 可跑) |
 | **CN 平台真实数据 + 真发布** | 代码+门控就绪;未联网 | 跑起 AiToEarn docker + 账号在其内连接 + 设 `MATRIXLOOP_AITOEARN_BASE_URL/API_KEY` + `POST /accounts/link-aitoearn`(或手动 external_ref) |
 | **X / YouTube / Instagram 真实数据** | 连接器就绪 | 设 `MATRIXLOOP_X_BEARER_TOKEN` / `MATRIXLOOP_YOUTUBE_API_KEY` / `MATRIXLOOP_INSTAGRAM_TOKEN`+`_BUSINESS_ID` |
 
@@ -49,8 +50,8 @@ VITE_API_BASE="http://127.0.0.1:8010" npx vite --host 127.0.0.1 --port 5173
 # 打开 http://127.0.0.1:5173 ；视频工作台在 /video
 
 # 测试
-cd backend && ./.venv/bin/python -m pytest -q        # 226 绿
-cd frontend && npx vitest run                        # 38 绿
+cd backend && ./.venv/bin/python -m pytest -q        # 295 绿
+cd frontend && npx vitest run                        # 43 绿
 ```
 
 ## `.env`(backend/.env,已 gitignore,勿提交)
@@ -60,7 +61,12 @@ MATRIXLOOP_ANTHROPIC_API_KEY=...            # 已配(newapi 中转)
 MATRIXLOOP_ANTHROPIC_BASE_URL=https://newapi.elevatesphere.com
 MATRIXLOOP_LLM_MODEL=claude-sonnet-4-6
 # 打开真视频:
-MATRIXLOOP_VIDEO_PROVIDER=seedance          # 默认 fake
+MATRIXLOOP_VIDEO_PROVIDER=seedance          # 默认 fake;可选 seedance | aitoearn | faceless
+# faceless 口播成片(画面+旁白+字幕,默认 say 零 key 即可真出片):
+MATRIXLOOP_VIDEO_PROVIDER=faceless
+MATRIXLOOP_FACELESS_VISUAL=aitoearn         # 背景画面来源:aitoearn | seedance | fake
+MATRIXLOOP_TTS_PROVIDER=auto                # auto(openai→say→fake)| say | openai | fake
+MATRIXLOOP_TTS_MODEL=                        # 中转开了 TTS 通道后填模型名 → 真人声(复用 anthropic key/base)
 # 打开 AiToEarn 发布/CN 数据:
 MATRIXLOOP_AITOEARN_BASE_URL=http://127.0.0.1:8080/api/v2
 MATRIXLOOP_AITOEARN_API_KEY=...
