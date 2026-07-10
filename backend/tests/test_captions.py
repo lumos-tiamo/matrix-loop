@@ -34,3 +34,16 @@ def test_build_ass_empty_chunks_header_only():
     ass = build_ass([], 10.0)
     assert "[Script Info]" in ass
     assert "Dialogue:" not in ass
+
+
+def test_render_caption_images_writes_opaque_text(tmp_path):
+    from app.video.captions import plan_caption_timings, render_caption_images
+    timings = plan_caption_timings(["hello world", "second caption line"], 6.0)
+    imgs = render_caption_images(timings, resolution=(1080, 1920), out_dir=str(tmp_path))
+    assert len(imgs) == 2
+    from PIL import Image
+    for path, _s, _e in imgs:
+        im = Image.open(path)
+        assert im.size == (1080, 1920)
+        # alpha channel has fully-opaque pixels -> text was actually drawn
+        assert im.split()[3].getextrema()[1] == 255

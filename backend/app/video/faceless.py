@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 
 from app.video.base import VideoResult
-from app.video.captions import build_ass, chunk_caption
+from app.video.captions import chunk_caption, plan_caption_timings, render_caption_images
 
 logger = logging.getLogger(__name__)
 
@@ -91,38 +91,29 @@ class FacelessVideoProvider:
             clip = self._visual.generate(script=script, brief=brief, params=params)
             bg = self._background(clip, duration, tmp)
             chunks = chunk_caption(narration)
-            ass_path = os.path.join(tmp, "captions.ass")
-            with open(ass_path, "w", encoding="utf-8") as f:
-                f.write(build_ass(chunks, duration, resolution=(self._w, self._h)))
+            timings = plan_caption_timings(chunks, duration)
+            cap_imgs = render_caption_images(timings, resolution=(self._w, self._h), out_dir=tmp)
             digest = hashlib.sha1(narration.encode("utf-8")).hexdigest()[:16]
             fname = f"faceless_{digest}.mp4"
             out_path = os.path.join(self._output_dir, fname)
-            scale_crop = (f"scale={self._w}:{self._h}:force_original_aspect_ratio=increase,"
-                          f"crop={self._w}:{self._h}")
-            # Quote the ASS path so ffmpeg's filtergraph parser does not treat '.'/'/' as
-            # option/graph separators.
-            ass_escaped = ass_path.replace("\\", "\\\\").replace(":", "\\:").replace("'", "\\'")
-            vf_with_captions = f"{scale_crop},ass=filename='{ass_escaped}'"
 
-            def _compose(vf):
-                return self._run([
-                    "ffmpeg", "-y", "-stream_loop", "-1", "-i", bg, "-i", tts_result.audio_path,
-                    "-vf", vf, "-map", "0:v:0", "-map", "1:a:0", "-t", str(duration),
-                    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", out_path,
-                ])
-
-            rc, o, e = _compose(vf_with_captions)
+            cmd = ["ffmpeg", "-y", "-stream_loop", "-1", "-i", bg, "-i", tts_result.audio_path]
+            for png, _, _ in cap_imgs:
+                cmd += ["-loop", "1", "-i", png]
+            fc = [f"[0:v]scale={self._w}:{self._h}:force_original_aspect_ratio=increase,"
+                  f"crop={self._w}:{self._h}[v0]"]
+            last = "v0"
+            for idx, (_png, start, end) in enumerate(cap_imgs):
+                inp = idx + 2  # inputs: 0=bg, 1=audio, 2.. = caption pngs
+                nxt = f"v{idx + 1}"
+                fc.append(f"[{last}][{inp}:v]overlay=0:0:enable='between(t,{start:.3f},{end:.3f})'[{nxt}]")
+                last = nxt
+            cmd += ["-filter_complex", ";".join(fc), "-map", f"[{last}]", "-map", "1:a:0",
+                    "-t", str(duration), "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                    "-c:a", "aac", "-shortest", out_path]
+            rc, o, e = self._run(cmd)
             if rc != 0:
-                # Some ffmpeg builds ship without libass (no `ass`/`subtitles` filter). Rather
-                # than fail the whole video, degrade gracefully to no burned captions — the
-                # voiceover + b-roll still produce a playable clip.
-                err_txt = (e or o or "")
-                if "No such filter" in err_txt or "ass" in err_txt.lower():
-                    logger.warning("faceless: burned-caption filter unavailable (%s); composing "
-                                   "without burned captions", err_txt.strip()[:120])
-                    rc, o, e = _compose(scale_crop)
-                if rc != 0:
-                    raise RuntimeError(f"faceless ffmpeg compose failed rc={rc}: {(e or o or '').strip()[:300]}")
+                raise RuntimeError(f"faceless ffmpeg compose failed rc={rc}: {(e or o or '').strip()[:300]}")
             return VideoResult(
                 media_url=f"{self._public_base}/media/{fname}",
                 duration=duration,
