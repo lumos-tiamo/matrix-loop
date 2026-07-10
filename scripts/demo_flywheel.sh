@@ -27,7 +27,7 @@ ok "真实爆款已作为选题种子(按子垂类喂给脚本生成)"
 
 c "② 定调 · 设频道 brief(web3 + crypto 子垂类 + 人设)"
 curl -s --max-time 6 -X POST "$B/accounts/$ACCT/brief" -H "Content-Type: application/json" \
-  -d '{"main_direction":"web3","sub_niches":["加密交易者","空投猎人","DeFi","Meme币玩家"],"tone":"punchy","language":"en","persona":"Nina","format":"faceless"}' >/dev/null
+  -d '{"main_direction":"web3","sub_niches":["加密交易者","空投猎人","DeFi","Meme币玩家"],"tone":"punchy","language":"en","persona":"Nina","format":"faceless","target_seconds":20}' >/dev/null
 BR=$(curl -s --max-time 5 "$B/accounts/$ACCT/brief")
 info "已保存定调：$(printf '%s' "$BR" | jqget "d['main_direction']+' · '+'、'.join(d['sub_niches'])+' · '+d['persona']")"
 ok "定调完成"
@@ -54,7 +54,7 @@ VID=""
 if [ -n "${SID:-}" ]; then
   curl -s -X POST "$B/drafts/$SID/status" -H "Content-Type: application/json" -d '{"review_status":"adopted"}' >/dev/null
   info "合成中(TTS 旁白 + 背景 b-roll + 烧录字幕 + ffmpeg,稍等)…"
-  VJSON=$(curl -s --max-time 120 -X POST "$B/accounts/$ACCT/generate-video" -H "Content-Type: application/json" -d "{\"script_draft_id\":$SID}")
+  VJSON=$(curl -s --max-time 240 -X POST "$B/accounts/$ACCT/generate-video" -H "Content-Type: application/json" -d "{\"script_draft_id\":$SID}")
   VID=$(printf '%s' "$VJSON" | jqget "d.get('id','')")
   printf '%s' "$VJSON" | $PY -c "import sys,json;v=json.load(sys.stdin);print('   成片：', {k:v.get(k) for k in ('id','provider','status','review_status','cost','media_url')})" 2>/dev/null
   PROV=$(printf '%s' "$VJSON" | jqget "d.get('provider','')")
