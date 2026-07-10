@@ -49,14 +49,25 @@ for r in d['loop_runs']:
   printf '\033[0m'; ok "真 LLM 脚本已生成(草稿 #$SID)"
 fi
 
-c "④ 视频 · 用量治理下生成(provider 门控 + 绝不发 fake)"
+c "④ 视频 · faceless 口播成片(画面+旁白+字幕,用量治理下生成)"
 VID=""
 if [ -n "${SID:-}" ]; then
   curl -s -X POST "$B/drafts/$SID/status" -H "Content-Type: application/json" -d '{"review_status":"adopted"}' >/dev/null
-  VJSON=$(curl -s --max-time 30 -X POST "$B/accounts/$ACCT/generate-video" -H "Content-Type: application/json" -d "{\"script_draft_id\":$SID}")
+  info "合成中(TTS 旁白 + 背景 b-roll + 烧录字幕 + ffmpeg,稍等)…"
+  VJSON=$(curl -s --max-time 120 -X POST "$B/accounts/$ACCT/generate-video" -H "Content-Type: application/json" -d "{\"script_draft_id\":$SID}")
   VID=$(printf '%s' "$VJSON" | jqget "d.get('id','')")
   printf '%s' "$VJSON" | $PY -c "import sys,json;v=json.load(sys.stdin);print('   成片：', {k:v.get(k) for k in ('id','provider','status','review_status','cost','media_url')})" 2>/dev/null
-  ok "成片已生成(provider=fake 为占位;配 seedance 后即真视频到 /media)"
+  PROV=$(printf '%s' "$VJSON" | jqget "d.get('provider','')")
+  MURL=$(printf '%s' "$VJSON" | jqget "d.get('media_url','')")
+  if printf '%s' "$MURL" | grep -q '/media/' && command -v ffprobe >/dev/null 2>&1; then
+    curl -s --max-time 30 "$MURL" -o /tmp/demo_clip.mp4
+    SZ=$(wc -c </tmp/demo_clip.mp4 2>/dev/null | tr -d ' ')
+    PROBE=$(ffprobe -v error -show_entries stream=codec_type -show_entries format=duration -of default=nw=1 /tmp/demo_clip.mp4 2>/dev/null | tr '\n' ' ')
+    info "拉取真成片 $MURL ($SZ bytes) → $PROBE"
+    ok "provider=$PROV:真 mp4 已出(TTS 旁白 + 竖版画面 + 烧录字幕),到 /media"
+  else
+    ok "provider=$PROV 为占位(fake);设 MATRIXLOOP_VIDEO_PROVIDER=faceless 即真出口播成片"
+  fi
 fi
 
 c "⑤ 发布 · 人在环 + autopilot(此处诚实展示门控)"

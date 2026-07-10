@@ -16,6 +16,16 @@ def _no_live_llm(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _fake_video_provider(monkeypatch):
+    # Keep the suite hermetic + fast: default to the instant fake video/TTS providers regardless of
+    # the operational .env (which may set video_provider=faceless for the running app). Tests that
+    # exercise a specific provider override these explicitly (e.g. test_video_factory.py).
+    from app.config import settings
+    monkeypatch.setattr(settings, "video_provider", "fake", raising=False)
+    monkeypatch.setattr(settings, "tts_provider", "fake", raising=False)
+
+
+@pytest.fixture(autouse=True)
 def _no_live_scheduler(monkeypatch):
     from app.config import settings
     monkeypatch.setattr(settings, "scheduler_autostart", False, raising=False)

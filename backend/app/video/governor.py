@@ -94,7 +94,11 @@ def generate_video(session: Session, account, script_draft, *, provider,
     asset = VideoAsset(account_id=account.id, script_draft_id=script_draft.id,
                        provider=provider.name, dedup_key=dedup_key, status="generating")
     session.add(asset)
-    session.flush()
+    # Commit the "generating" row BEFORE the (possibly slow — faceless is ~15-30s) generate() so we
+    # do not hold a write transaction open across it. On SQLite a long-held write lock makes
+    # concurrent writers (scheduler + a manual call, or two autopilot accounts) hit
+    # "database is locked". expire_on_commit=False keeps `asset` usable after commit.
+    session.commit()
     try:
         result = provider.generate(script=script, brief=brief, params={})
     except Exception as exc:  # noqa: BLE001 - isolate provider failures
