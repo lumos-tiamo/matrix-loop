@@ -22,14 +22,24 @@ export default {
         alert: "#FF5C7A",
         // keep `accent` alias so any lingering references still resolve to the lime
         accent: "#B6FF3C",
+        // glass design tokens (direction B) — appended, keeps BI colors above
+        blue1: "#2f7bff",
+        blue2: "#5ca8ff",
+        run: "#4CD4F0",
+        ok: "#38E08A",
+        block: "#FFB020",
+        err: "#FF5C7A",
+        txt: "#EAF0FA",
+        muted2: "#93A0B8",
+        dim2: "#5C6579",
       },
       borderRadius: {
         "2xl": "16px",
       },
       fontFamily: {
         display: ["Archivo", "Noto Sans SC", "sans-serif"],
-        mono: ["'IBM Plex Mono'", "monospace"],
-        sans: ["'Noto Sans SC'", "Archivo", "sans-serif"],
+        sans: ["Inter", "Noto Sans SC", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
       },
       backgroundImage: {
         // gradient card surface used across BI cards

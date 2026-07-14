@@ -1,0 +1,26 @@
+:root{
+  --blue1:#2f7bff; --blue2:#5ca8ff;
+  --cyan:#4CD4F0; --green:#38E08A; --amber:#FFB020; --red:#FF5C7A;
+  --lime:#B6FF3C; --violet:#A78BFA;
+  --txt:#EAF0FA; --muted:#93A0B8; --dim:#5C6579;
+  --glass:linear-gradient(160deg, rgba(255,255,255,0.075), rgba(255,255,255,0.028));
+  --stroke:rgba(255,255,255,0.10);
+  --glass-shadow:0 24px 48px -18px rgba(0,0,0,0.55);
+  --glass-inset:inset 0 1px 0 rgba(255,255,255,0.09);
+  --radius-glass:20px;
+}
+body{
+  background:
+    radial-gradient(1100px 620px at 12% -8%, rgba(47,123,255,0.22), transparent 60%),
+    radial-gradient(900px 560px at 108% 12%, rgba(167,139,250,0.16), transparent 58%),
+    radial-gradient(700px 700px at 60% 120%, rgba(76,212,240,0.10), transparent 60%),
+    #070b14;
+  color:var(--txt);
+}
+.glass{
+  background:var(--glass); border:1px solid var(--stroke); border-radius:var(--radius-glass);
+  backdrop-filter:blur(22px) saturate(140%);
+  box-shadow:var(--glass-shadow), var(--glass-inset);
+}
+@keyframes glasspulse{0%{box-shadow:0 0 0 0 rgba(76,212,240,0.55)}70%{box-shadow:0 0 0 7px rgba(76,212,240,0)}100%{box-shadow:0 0 0 0 rgba(76,212,240,0)}}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:glasspulse 1.8s infinite;}
