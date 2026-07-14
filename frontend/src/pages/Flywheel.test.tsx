@@ -2,23 +2,28 @@ import { it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { Flywheel } from "./Flywheel";
+import type { FlywheelAccountLive, FlywheelEventLive, FlywheelState } from "../api/types";
 
-const STATE = {
-  paused: false, autopilot_accounts: 1, pending_review: 2,
-  steps: [
-    { key: "crawl", label: "爬爆款", count: 0, status: "pending" },
-    { key: "brief", label: "定调", count: 6, status: "ok" },
-    { key: "script", label: "脚本", count: 3, status: "ok" },
-    { key: "video", label: "视频", count: 1, status: "ok" },
-    { key: "publish", label: "发布", count: 4, status: "ok" },
-    { key: "track", label: "追踪流量", count: 5, status: "ok" },
-    { key: "retro", label: "复盘", count: 2, status: "ok" },
-    { key: "evaluate", label: "账号评估", count: 6, status: "ok" },
-    { key: "improve", label: "改进建议", count: 3, status: "ok" },
-  ],
-  accounts: [{ id: 4, handle: "@money_talk", platform: "twitter", autopilot: false }],
-  events: [{ account_id: 4, step: "script", status: "ok", detail: "生成《Fed》", ts: "2026-07-09T21:02:00+00:00" }],
+const STATE: FlywheelState = {
+  paused: false, autopilot_accounts: 5, pending_review: 2,
+  steps: [], accounts: [], events: [],
+  today_cost: 1.18, status_counts: { running: 2, blocked: 1, ok: 2 },
 };
+
+const ACCOUNTS: FlywheelAccountLive[] = [
+  {
+    account_id: 4, platform: "twitter", handle: "@money_talk", autopilot: true,
+    status: "running", current_step: "video", step_index: 4, steps_done: 4,
+    elapsed_sec: 102, blocked_reason: null,
+    last_event: { step: "video", status: "running", detail: null, ts: "2026-07-09T21:02:00+00:00" },
+    kpis: { followers: 12400, followers_delta: 2.1, views_7d: 86200, score: 78 },
+    cost_cycle: 0.42, next_run_eta_sec: null, synced_at: "2026-07-09T21:00:00+00:00",
+  },
+];
+
+const EVENTS: FlywheelEventLive[] = [
+  { id: 9, account_id: 4, account_handle: "@money_talk", step: "script", status: "ok", detail: "生成《Fed》", ts: "2026-07-09T21:02:00+00:00" },
+];
 
 function stub(routes: (url: string, init?: RequestInit) => unknown) {
   vi.stubGlobal("fetch", vi.fn().mockImplementation((url: string, init?: RequestInit) => {
@@ -26,36 +31,45 @@ function stub(routes: (url: string, init?: RequestInit) => unknown) {
     return Promise.resolve(c !== undefined ? c : { ok: true, json: async () => ({}) });
   }));
 }
-beforeEach(() => { stub((url) => (url.endsWith("/flywheel") ? { ok: true, json: async () => STATE } : undefined)); });
+
+function defaultRoutes(url: string): unknown {
+  if (url.endsWith("/flywheel/accounts")) return { ok: true, json: async () => ACCOUNTS };
+  if (url.endsWith("/flywheel")) return { ok: true, json: async () => STATE };
+  if (url.includes("/flywheel/events")) return { ok: true, json: async () => EVENTS };
+  return undefined;
+}
+
+beforeEach(() => { stub(defaultRoutes); });
 afterEach(() => vi.unstubAllGlobals());
 
-it("renders the 9 flywheel steps + delivered count from /flywheel", async () => {
+it("renders account cards from /flywheel/accounts and header stats from /flywheel", async () => {
   render(<MemoryRouter><Flywheel /></MemoryRouter>);
-  expect(await screen.findByText("发布")).toBeInTheDocument();
-  expect(screen.getByText("追踪流量")).toBeInTheDocument();
-  // delivered = publish count = 4 shown in core
-  await waitFor(() => expect(screen.getByTestId("fw-delivered")).toHaveTextContent("4"));
+  // header stats (unique to /flywheel)
+  expect(await screen.findByText("$1.18")).toBeInTheDocument();
+  // account handle appears in the card (and in the feed) -> at least one
+  expect(screen.getAllByText("@money_talk").length).toBeGreaterThan(0);
+  await waitFor(() => expect(screen.getByText("实时 · 4s")).toBeInTheDocument());
 });
 
-it("toggling an account calls POST /accounts/{id}/autopilot", async () => {
-  const calls: string[] = [];
-  stub((url, init) => {
-    if (url.endsWith("/flywheel")) return { ok: true, json: async () => STATE };
-    if (url.match(/\/accounts\/4\/autopilot$/) && init?.method === "POST") { calls.push(String(init?.body)); return { ok: true, json: async () => ({ account_id: 4, autopilot: true }) }; }
-    return undefined;
+it("renders live events from /flywheel/events", async () => {
+  render(<MemoryRouter><Flywheel /></MemoryRouter>);
+  expect(await screen.findByText(/生成《Fed》/)).toBeInTheDocument();
+});
+
+it("shows empty state when there are no autopilot accounts", async () => {
+  stub((url) => {
+    if (url.endsWith("/flywheel/accounts")) return { ok: true, json: async () => [] };
+    return defaultRoutes(url);
   });
   render(<MemoryRouter><Flywheel /></MemoryRouter>);
-  fireEvent.click(await screen.findByRole("button", { name: /切换 @money_talk 自动驾驶/ }));
-  await waitFor(() => expect(calls.length).toBe(1));
-  expect(calls[0]).toContain("true");
+  expect(await screen.findByText("暂无自动驾驶账号")).toBeInTheDocument();
 });
 
 it("pause button calls POST /flywheel/pause", async () => {
   const calls: string[] = [];
   stub((url, init) => {
-    if (url.endsWith("/flywheel")) return { ok: true, json: async () => STATE };
     if (url.endsWith("/flywheel/pause") && init?.method === "POST") { calls.push("pause"); return { ok: true, json: async () => ({ paused: true }) }; }
-    return undefined;
+    return defaultRoutes(url);
   });
   render(<MemoryRouter><Flywheel /></MemoryRouter>);
   fireEvent.click(await screen.findByRole("button", { name: /暂停或恢复飞轮/ }));

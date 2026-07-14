@@ -193,6 +193,8 @@ export interface FlywheelState {
   steps: FlywheelStep[];
   accounts: FlywheelAccount[];
   events: FlywheelEventOut[];
+  today_cost: number;
+  status_counts: Record<string, number>;
 }
 
 // ---- Flywheel live (GET /flywheel/accounts, GET /flywheel/events) ----
