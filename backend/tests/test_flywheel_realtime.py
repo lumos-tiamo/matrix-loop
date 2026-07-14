@@ -47,3 +47,14 @@ def test_flywheel_events_since_and_filter(session):
     max_id = max(e["id"] for e in all_ev)
     assert flywheel_events_since(session, since_id=max_id, account_id=None, limit=50) == []
     assert len(flywheel_events_since(session, since_id=None, account_id=a.id, limit=50)) == 3
+
+
+def test_flywheel_state_has_today_cost_and_counts(session):
+    from app.models import Account, VideoAsset
+    from app.orchestrator.state import flywheel_state
+    a = Account(platform="tiktok", handle="@n", autopilot=True); session.add(a); session.flush()
+    session.add(VideoAsset(account_id=a.id, provider="faceless", cost=0.42, status="ready"))
+    session.commit()
+    st = flywheel_state(session)
+    assert "today_cost" in st and st["today_cost"] >= 0.42
+    assert "status_counts" in st

@@ -63,8 +63,18 @@ def flywheel_state(session: Session, *, event_limit: int = 20) -> dict:
     ).all()
     events = [{"account_id": e.account_id, "step": e.step, "status": e.status,
                "detail": e.detail, "ts": e.ts.isoformat() if e.ts else None} for e in evs]
+    # 今日成本 + 全局状态计数
+    from datetime import datetime, timezone
+    day_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_cost = float(session.scalar(
+        _select(func.coalesce(func.sum(VideoAsset.cost), 0.0)).where(VideoAsset.created_at >= day_start)
+    ) or 0.0)
+    status_counts: dict[str, int] = {}
+    for _row in flywheel_accounts(session):
+        status_counts[_row["status"]] = status_counts.get(_row["status"], 0) + 1
     return {"paused": is_paused(session), "autopilot_accounts": autopilot_n,
-            "steps": steps, "accounts": accts, "events": events, "pending_review": pending_vid}
+            "steps": steps, "accounts": accts, "events": events, "pending_review": pending_vid,
+            "today_cost": round(today_cost, 2), "status_counts": status_counts}
 
 
 STEP_ORDER = ["sync", "evaluate", "topic", "script", "video", "approve", "publish", "track"]
