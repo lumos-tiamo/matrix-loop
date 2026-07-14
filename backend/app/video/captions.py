@@ -81,7 +81,19 @@ def build_ass(chunks: list[str], total_seconds: float, *, resolution: tuple[int,
 
 def _load_font(size: int):
     from PIL import ImageFont
+    # CJK-capable fonts FIRST: these also carry Latin glyphs, so they render the
+    # Aurea 繁中 captions AND the English-account captions. Latin-only fonts (Arial/
+    # DejaVu) drop to fallback — they turn CJK into ☐ tofu boxes (bug fixed 2026-07).
     for p in (
+        # macOS CJK (cover zh-Hant/zh-Hans + Latin)
+        "/System/Library/Fonts/PingFang.ttc",
+        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+        "/System/Library/Fonts/Hiragino Sans GB.ttc",
+        "/System/Library/Fonts/STHeiti Medium.ttc",
+        # Linux CJK (Noto) — for server/CI deploys
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        # Latin-only fallbacks (fine for English-only captions)
         "/System/Library/Fonts/Helvetica.ttc",
         "/System/Library/Fonts/Supplemental/Arial.ttf",
         "/Library/Fonts/Arial.ttf",
@@ -93,7 +105,8 @@ def _load_font(size: int):
         except OSError:
             continue
     logger.warning("no truetype font found; captions fall back to the bitmap default "
-                   "and will not size/wrap correctly — install a .ttf (e.g. DejaVuSans)")
+                   "and will not size/wrap correctly — install a CJK-capable .ttf "
+                   "(e.g. Noto Sans CJK / PingFang)")
     return ImageFont.load_default()
 
 

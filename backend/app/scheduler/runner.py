@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def _run_autopilot(session_factory: Callable) -> None:
     from app.orchestrator.engine import run_autopilot_cycle, OrchestratorConfig
     from app.analysis.factory import resolve_llm_client
-    from app.video.factory import resolve_video_provider
+    from app.video.factory import make_account_provider_resolver
     from app.config import settings as cfg
     session = session_factory()
     try:
@@ -26,7 +26,7 @@ def _run_autopilot(session_factory: Callable) -> None:
             max_accounts=cfg.schedule_max_accounts,
         )
         rep = run_autopilot_cycle(session, llm=resolve_llm_client(),
-                                  video=resolve_video_provider(), aitoearn=aitoearn, sync=True,
+                                  video=make_account_provider_resolver(), aitoearn=aitoearn, sync=True,
                                   cfg=orchestrator_cfg)
         logger.info("autopilot cycle: paused=%s processed=%s errors=%s",
                     rep.get("paused"), rep.get("processed"), len(rep.get("errors", [])))

@@ -108,12 +108,14 @@ def advance_account(session: Session, account, *, llm=None, video=None, aitoearn
     session.add(script); session.commit()
     mark("script", "ok")
 
-    # ④ video (governed)
-    if video is None:
+    # ④ video (governed). `video` may be a provider or a per-account resolver
+    # callable(account)->provider (lets one cycle route Aurea→avatar, X/IG→other).
+    provider = video(account) if callable(video) else video
+    if provider is None:
         mark("video", "blocked", "no video provider"); session.commit()
         return {"account_id": account.id, "reached_step": reached, "actions": actions, "errors": []}
     try:
-        asset = generate_video(session, account, script, provider=video)
+        asset = generate_video(session, account, script, provider=provider)
     except (VideoQuotaExceeded, NearDuplicateScript) as exc:
         mark("video", "blocked", str(exc)); session.commit()
         return {"account_id": account.id, "reached_step": reached, "actions": actions, "errors": []}

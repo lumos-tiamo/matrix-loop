@@ -38,15 +38,27 @@ def resolve_tts_provider(settings=None, *, run=None, http_post=None):
         from app.video.tts.say import SayTTSProvider
         return SayTTSProvider(output_dir=out_dir, run=run)  # system default voice
 
+    def _edge():
+        try:
+            import edge_tts  # noqa: F401
+        except ImportError:
+            return None
+        from app.video.tts.edge import EdgeTTSProvider
+        voice = getattr(settings, "tts_voice", "") or "zh-TW-HsiaoChenNeural"
+        return EdgeTTSProvider(output_dir=out_dir, voice=voice, run=run)
+
     try:
+        if choice == "edge":
+            return _edge() or FakeTTSProvider(output_dir=out_dir)
         if choice == "openai":
             return _openai() or FakeTTSProvider(output_dir=out_dir)
         if choice == "say":
             return _say() or FakeTTSProvider(output_dir=out_dir)
         if choice == "fake":
             return FakeTTSProvider(output_dir=out_dir)
-        # auto
-        return _openai() or _say() or FakeTTSProvider(output_dir=out_dir)
+        # auto: honor a provisioned OpenAI-compatible TTS first (explicit paid config),
+        # else edge (free neural, no key — Aurea 繁中) -> say -> fake.
+        return _openai() or _edge() or _say() or FakeTTSProvider(output_dir=out_dir)
     except Exception as exc:  # noqa: BLE001 - never break video-gen on a misconfigured TTS
         logger.warning("tts provider init failed (%s: %s); falling back to fake",
                        exc.__class__.__name__, exc)

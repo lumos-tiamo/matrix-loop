@@ -72,12 +72,43 @@ class FacelessVideoProvider:
             raise RuntimeError(msg) from exc
         return out
 
+    def _still_bg(self, image_path: str, duration: float, tmp: str) -> str:
+        """Turn a single still image (e.g. an Aurea key visual) into a full-length
+        vertical background with a slow zoom (Ken Burns), so a static image becomes a
+        living talking-head backdrop under the voiceover + captions."""
+        out = os.path.join(tmp, "bg.mp4")
+        fps = 30
+        frames = max(1, int(duration * fps))
+        # scale to cover, then a gentle 1.0->1.08 zoom over the clip
+        vf = (
+            f"scale={self._w}:{self._h}:force_original_aspect_ratio=increase,"
+            f"crop={self._w}:{self._h},"
+            f"zoompan=z='min(zoom+0.0006,1.08)':d={frames}:"
+            f"s={self._w}x{self._h}:fps={fps}"
+        )
+        rc, o, e = self._run([
+            "ffmpeg", "-y", "-loop", "1", "-i", image_path,
+            "-vf", vf, "-t", str(duration), "-pix_fmt", "yuv420p", out,
+        ])
+        if rc != 0:
+            msg = f"faceless still bg failed rc={rc}: {(e or o or '').strip()[:200]}"
+            logger.error(msg)
+            raise RuntimeError(msg)
+        return out
+
     def _background(self, clip, duration: float, tmp: str) -> str:
         if getattr(clip, "provider", "") == "fake":
             return self._gradient_bg(duration, tmp)
+        if getattr(clip, "provider", "") == "still":
+            path = (clip.metadata or {}).get("path") or clip.media_url
+            if not os.path.exists(path):
+                raise RuntimeError(f"faceless: still image not found: {path}")
+            return self._still_bg(path, duration, tmp)
         url = clip.media_url
         if url.startswith("http://") or url.startswith("https://"):
             return self._download(url, tmp)
+        if os.path.isabs(url) and os.path.exists(url):
+            return url  # a same-machine clip (e.g. waoowaoo b-roll) — use it in place
         fname = os.path.basename(url.rsplit("/", 1)[-1])
         local = os.path.join(self._output_dir, fname)
         if os.path.exists(local):
