@@ -36,7 +36,7 @@ from app.connectors.aitoearn_client import AiToEarnClient
 from app.connectors.linking import link_aitoearn_accounts
 from app.analysis.performance import content_performance, performance_prompt_block
 from app.analysis.trends import trend_prompt_block
-from app.orchestrator.state import is_paused, set_paused, flywheel_state, flywheel_accounts
+from app.orchestrator.state import is_paused, set_paused, flywheel_state, flywheel_accounts, flywheel_events_since
 from app.scheduler.control import start_scheduler, stop_scheduler, scheduler_running
 
 router = APIRouter()
@@ -590,6 +590,12 @@ def scheduler_stop() -> dict:
 @router.get("/flywheel/accounts")
 def flywheel_accounts_route(db: Session = Depends(get_db)) -> list[dict]:
     return flywheel_accounts(db)
+
+
+@router.get("/flywheel/events")
+def flywheel_events_route(since_id: int | None = None, account_id: int | None = None,
+                          limit: int = 50, db: Session = Depends(get_db)) -> list[dict]:
+    return flywheel_events_since(db, since_id=since_id, account_id=account_id, limit=min(limit, 200))
 
 
 @router.get("/flywheel")

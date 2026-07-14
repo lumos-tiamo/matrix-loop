@@ -149,3 +149,19 @@ def flywheel_accounts(session) -> list[dict]:
             "synced_at": latest.ts.isoformat() if latest else None,
         })
     return out
+
+
+def flywheel_events_since(session, *, since_id=None, account_id=None, limit=50) -> list[dict]:
+    from app.models import FlywheelEvent, Account
+    stmt = select(FlywheelEvent, Account.handle).join(
+        Account, Account.id == FlywheelEvent.account_id, isouter=True
+    )
+    if since_id is not None:
+        stmt = stmt.where(FlywheelEvent.id > since_id)
+    if account_id is not None:
+        stmt = stmt.where(FlywheelEvent.account_id == account_id)
+    stmt = stmt.order_by(FlywheelEvent.id.asc()).limit(limit)
+    rows = session.execute(stmt).all()
+    return [{"id": e.id, "account_id": e.account_id, "account_handle": handle,
+             "step": e.step, "status": e.status, "detail": e.detail,
+             "ts": e.ts.isoformat()} for (e, handle) in rows]

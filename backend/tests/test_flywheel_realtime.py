@@ -32,3 +32,18 @@ def test_flywheel_accounts_only_autopilot(session):
     from app.models import Account
     session.add(Account(platform="yt", handle="@manual", autopilot=False)); session.commit()
     assert all(r["handle"] != "@manual" for r in flywheel_accounts(session))
+
+
+def test_flywheel_events_since_and_filter(session):
+    from app.models import Account, FlywheelEvent
+    from app.orchestrator.state import flywheel_events_since
+    a = Account(platform="tiktok", handle="@n", autopilot=True); session.add(a); session.flush()
+    for step in ["sync", "evaluate", "topic"]:
+        session.add(FlywheelEvent(account_id=a.id, cycle_id="c", step=step, status="ok"))
+    session.commit()
+    all_ev = flywheel_events_since(session, since_id=None, account_id=None, limit=50)
+    assert len(all_ev) == 3
+    assert all_ev[0]["account_handle"] == "@n"
+    max_id = max(e["id"] for e in all_ev)
+    assert flywheel_events_since(session, since_id=max_id, account_id=None, limit=50) == []
+    assert len(flywheel_events_since(session, since_id=None, account_id=a.id, limit=50)) == 3
