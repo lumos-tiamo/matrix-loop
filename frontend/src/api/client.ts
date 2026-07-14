@@ -10,6 +10,19 @@ import type {
 
 const BASE = (import.meta.env.VITE_API_BASE as string) ?? "http://localhost:8000";
 
+export const API_BASE = BASE;
+
+/** Resolve a playable media URL. Backend serves files at `{API}/media/...` but older
+ *  assets baked a wrong host (e.g. :8010) into media_url — rewrite any `/media/...` to our
+ *  API origin so playback works for both old and new assets. External URLs pass through. */
+export function mediaSrc(url?: string | null): string | null {
+  if (!url) return null;
+  const i = url.indexOf("/media/");
+  if (i >= 0) return `${BASE}${url.slice(i)}`;
+  if (/^https?:\/\//.test(url)) return url;
+  return `${BASE}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     headers: { "Content-Type": "application/json" },

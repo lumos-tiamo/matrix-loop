@@ -19,9 +19,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-line bg-bg/80 px-6 py-3 backdrop-blur">
-        <Link to="/" className="font-display text-lg font-extrabold tracking-tight">
-          Matrix<span className="text-lime">Loop</span>
+        <Link to="/" className="flex flex-col leading-none">
+          <span className="font-display text-lg font-extrabold tracking-tight">
+            Matrix<span className="text-lime">Loop</span>
+          </span>
+          <span className="mt-[2px] hidden font-mono text-[10px] text-dim sm:inline">
+            矩阵账号 · 自我修正指挥台
+          </span>
         </Link>
+        <div className="mx-1 hidden h-8 w-px bg-line md:block" />
         <nav className="flex items-center gap-1">
           {NAV.map((n) => {
             const active = n.to === "/" ? pathname === "/" : (pathname === n.to || pathname.startsWith(n.to + "/"));
@@ -38,7 +44,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <span className="hidden font-mono text-xs text-muted lg:inline">矩阵账号 · 自我修正指挥台</span>
         <div className="flex-1" />
         <OpsBar accounts={accounts.data ?? []} onDone={() => accounts.reload()} />
       </header>

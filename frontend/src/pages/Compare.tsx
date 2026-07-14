@@ -40,7 +40,7 @@ function parseIds(raw: string | null): number[] {
 
 /** One account column: value-score ring + KPIs + evaluation radar. */
 function CompareColumn({ id, delay }: { id: number; delay: number }) {
-  const { data, loading, error } = useAsync(() => api.getAccount(id), [id]);
+  const { data, loading, error, updatedAt } = useAsync(() => api.getAccount(id), [id], 15000);
 
   if (loading) return <ChartCard className="rise" style={{ animationDelay: `${delay}ms` }}><p className="font-mono text-xs text-muted">加载中…</p></ChartCard>;
   if (error || !data) return <ChartCard className="rise" style={{ animationDelay: `${delay}ms` }}><p className="font-mono text-xs text-alert">加载失败：{error}</p></ChartCard>;
@@ -70,6 +70,12 @@ function CompareColumn({ id, delay }: { id: number; delay: number }) {
             {d.vertical ? ` · ${d.vertical}` : ""}
           </div>
         </div>
+        {updatedAt && (
+          <span className="flex items-center gap-1 self-start font-mono text-[9px] text-dim" title="每 15 秒自动刷新">
+            <span className="h-[6px] w-[6px] animate-pulse rounded-full bg-good" />
+            {new Date(updatedAt).toLocaleTimeString()}
+          </span>
+        )}
       </div>
 
       {/* KPIs */}
@@ -105,7 +111,7 @@ function Kpi({ label, value, tone }: { label: string; value: string; tone: strin
 export function Compare() {
   const [params, setParams] = useSearchParams();
   const selected = useMemo(() => parseIds(params.get("ids")), [params]);
-  const accounts = useAsync(() => api.listAccounts(), []);
+  const accounts = useAsync(() => api.listAccounts(), [], 15000);
   const acctList = useMemo(() => accounts.data ?? [], [accounts.data]);
 
   function toggle(id: number) {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { api } from "../api/client";
+import { api, mediaSrc } from "../api/client";
 import { useAsync } from "../api/hooks";
 import type { DraftOut, VideoAssetOut } from "../api/types";
 import { ChartCard } from "../components/ChartCard";
@@ -167,18 +167,35 @@ function BriefEditor({ accountId }: { accountId: number }) {
     </ChartCard>
   );
 }
+const DRAFTS_PAGE_SIZE = 6;
+
 function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenerated: () => void }) {
   const detail = useAsync(() => api.getAccount(accountId), [accountId]);
   const [busy, setBusy] = useState<number | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [isErr, setIsErr] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const [page, setPage] = useState(0);
+
+  // Reset to first page when switching accounts.
+  useEffect(() => { setPage(0); }, [accountId]);
 
   const drafts: DraftOut[] = useMemo(() => {
     const runs = detail.data?.loop_runs ?? [];
     const all = runs.flatMap((r) => r.drafts ?? []);
-    return [...all].reverse();   // newest first
+    // 热点爆款推荐靠前: pending topic drafts are the fresh recommendations (the loop returns
+    // suggested_topics in priority order) — float them to the top, newest first; everything
+    // else (scripts, adopted/rejected) follows, newest first.
+    const rank = (d: DraftOut) => (d.kind === "topic" && d.review_status === "pending" ? 0 : 1);
+    return all
+      .map((d, i) => ({ d, i }))
+      .sort((a, b) => rank(a.d) - rank(b.d) || b.i - a.i)
+      .map((x) => x.d);
   }, [detail.data]);
+
+  const pageCount = Math.max(1, Math.ceil(drafts.length / DRAFTS_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const pageDrafts = drafts.slice(safePage * DRAFTS_PAGE_SIZE, safePage * DRAFTS_PAGE_SIZE + DRAFTS_PAGE_SIZE);
 
   async function act(key: number, fn: () => Promise<unknown>, done: string) {
     setBusy(key);
@@ -197,11 +214,13 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
         </p>
       )}
       <div className="space-y-[8px]">
-        {drafts.map((d) => {
+        {pageDrafts.map((d) => {
           const adopted = d.review_status === "adopted";
+          const hot = d.kind === "topic" && d.review_status === "pending";
           return (
             <div key={d.id} className="rounded-lg border border-line bg-panel px-3 py-2">
               <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider">
+                {hot && <span className="rounded bg-warn/[.15] px-[5px] py-[1px] text-warn">🔥 推荐</span>}
                 <span className={d.kind === "script" ? "text-cyan" : "text-lime"}>{d.kind}</span>
                 <span className="text-dim">#{d.id}</span>
                 <span className="text-muted">{d.review_status}</span>
@@ -231,7 +250,7 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
                 {adopted && d.kind === "script" && (
                   <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet hover:bg-violet/[.18]`} disabled={busy === d.id}
                     onClick={() => act(d.id, () => api.generateVideo(accountId, d.id), "已生成视频")}>
-                    {busy === d.id ? "生成中…" : "生成视频"}
+                    {busy === d.id ? "生成中…(约3-6分钟)" : "生成视频"}
                   </button>
                 )}
               </div>
@@ -239,14 +258,67 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
           );
         })}
       </div>
+      {pageCount > 1 && (
+        <div className="mt-[10px] flex items-center justify-center gap-3 font-mono text-[11px] text-muted">
+          <button className={`${btn} border-line disabled:opacity-40`} disabled={safePage === 0}
+            onClick={() => setPage(safePage - 1)}>← 上一页</button>
+          <span>第 {safePage + 1} / {pageCount} 页</span>
+          <button className={`${btn} border-line disabled:opacity-40`} disabled={safePage >= pageCount - 1}
+            onClick={() => setPage(safePage + 1)}>下一页 →</button>
+        </div>
+      )}
       {msg && <p className={isErr ? "mt-2 font-mono text-[11px] text-alert" : "mt-2 font-mono text-[11px] text-muted"}>{msg}</p>}
     </ChartCard>
   );
 }
+// Rough expectation for the generation progress bar (SF i2v + concat + TTS ~ minutes).
+const GEN_EXPECTED_MS = 300_000;
+
+function GenProgress({ createdAt, now }: { createdAt: string; now: number }) {
+  const elapsed = Math.max(0, now - new Date(createdAt).getTime());
+  const pct = Math.min(92, (elapsed / GEN_EXPECTED_MS) * 100);   // cap <100 until it flips to ready
+  const mm = Math.floor(elapsed / 60000);
+  const ss = String(Math.floor((elapsed % 60000) / 1000)).padStart(2, "0");
+  return (
+    <div className="mt-[6px] w-full">
+      <div className="mb-[3px] flex justify-between font-mono text-[10px] text-muted">
+        <span className="text-warn">生成中…（文本→分镜→出图→生视频→合成）</span>
+        <span>{mm}:{ss} · 通常 3–6 分钟</span>
+      </div>
+      <div className="h-[6px] w-full overflow-hidden rounded-full bg-line">
+        <div className="h-full rounded-full bg-gradient-to-r from-violet to-cyan transition-[width] duration-1000 ease-linear"
+          style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
 function ReviewQueue({ accountId, genNonce, className }: { accountId: number; genNonce: number; className?: string }) {
   const assets = useAsync(() => api.listVideoAssets({ account_id: accountId }), [accountId, genNonce]);
   const [busy, setBusy] = useState<number | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  const rows: VideoAssetOut[] = assets.data ?? [];
+  const hasGenerating = rows.some((r) => r.status === "generating");
+
+  // Live-poll while a video is generating (the generate-video request blocks for minutes on a
+  // separate connection; this independent poll surfaces the "generating" asset + progress).
+  useEffect(() => {
+    if (!hasGenerating) return;
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    const poll = setInterval(() => assets.reload(), 4000);
+    return () => { clearInterval(tick); clearInterval(poll); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasGenerating]);
+
+  // Give the just-clicked generation a chance to appear as "generating" even before it lands.
+  useEffect(() => {
+    if (genNonce === 0) return;
+    const t = setTimeout(() => assets.reload(), 2500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [genNonce]);
 
   async function review(id: number, status: string) {
     setBusy(id);
@@ -262,43 +334,65 @@ function ReviewQueue({ accountId, genNonce, className }: { accountId: number; ge
     finally { setBusy(null); }
   }
 
-  const rows: VideoAssetOut[] = assets.data ?? [];
   const badge: Record<string, string> = {
     pending: "text-warn", approved: "text-good", rejected: "text-alert",
   };
   const btn = "rounded-md border px-[10px] py-[4px] font-mono text-[11px] transition-colors disabled:opacity-50";
 
   return (
-    <ChartCard title="🎬 成片审核" pill={`${rows.length} 条`} className={className}>
+    <ChartCard title="🎬 成片审核" pill={hasGenerating ? "生成中…" : `${rows.length} 条`} className={className}>
       {rows.length === 0 && (
         <p className="py-6 text-center font-mono text-[11px] text-muted">该账号还没有成片。生成后在这里审核。</p>
       )}
       <div className="space-y-[8px]">
-        {rows.map((v) => (
-          <div key={v.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-panel px-3 py-2">
-            <span className="font-mono text-[11px] text-dim">#{v.id}</span>
-            <span className="font-mono text-[11px] text-muted">{v.provider}</span>
-            <span className={`font-mono text-[11px] ${badge[v.review_status] ?? "text-muted"}`}>{v.review_status}</span>
-            <span className="font-mono text-[10px] text-dim">成本 {v.cost}</span>
-            {v.media_url && /^https?:\/\//.test(v.media_url) && (
-              <a href={v.media_url} target="_blank" rel="noreferrer"
-                className="font-mono text-[11px] text-cyan underline decoration-dotted hover:text-cyan/80">看成片</a>
-            )}
-            <div className="flex-1" />
-            {v.review_status === "pending" && (
-              <>
-                <button className={`${btn} border-good/50 bg-good/[.08] text-good`} disabled={busy === v.id}
-                  onClick={() => review(v.id, "approved")}>通过</button>
-                <button className={`${btn} border-alert/50 bg-alert/[.08] text-alert`} disabled={busy === v.id}
-                  onClick={() => review(v.id, "rejected")}>否决</button>
-              </>
-            )}
-            {v.review_status === "approved" && (
-              <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet`} disabled={busy === v.id}
-                onClick={() => publish(v.id)}>{busy === v.id ? "发布中…" : "发布/排期"}</button>
-            )}
-          </div>
-        ))}
+        {rows.map((v) => {
+          const src = mediaSrc(v.media_url);
+          const generating = v.status === "generating";
+          const failed = v.status === "failed";
+          return (
+            <div key={v.id} className="rounded-lg border border-line bg-panel px-3 py-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="font-mono text-[11px] text-dim">#{v.id}</span>
+                <span className="font-mono text-[11px] text-muted">{v.provider}</span>
+                {failed ? (
+                  <span className="font-mono text-[11px] text-alert">生成失败</span>
+                ) : generating ? (
+                  <span className="font-mono text-[11px] text-warn">generating</span>
+                ) : (
+                  <span className={`font-mono text-[11px] ${badge[v.review_status] ?? "text-muted"}`}>{v.review_status}</span>
+                )}
+                <span className="font-mono text-[10px] text-dim">成本 {v.cost}</span>
+                <div className="flex-1" />
+                {!generating && v.review_status === "pending" && (
+                  <>
+                    <button className={`${btn} border-good/50 bg-good/[.08] text-good`} disabled={busy === v.id}
+                      onClick={() => review(v.id, "approved")}>通过</button>
+                    <button className={`${btn} border-alert/50 bg-alert/[.08] text-alert`} disabled={busy === v.id}
+                      onClick={() => review(v.id, "rejected")}>否决</button>
+                  </>
+                )}
+                {!generating && v.review_status === "approved" && (
+                  <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet`} disabled={busy === v.id}
+                    onClick={() => publish(v.id)}>{busy === v.id ? "发布中…" : "发布/排期"}</button>
+                )}
+              </div>
+              {generating && <GenProgress createdAt={v.created_at} now={now} />}
+              {!generating && src && (
+                <div className="mt-[8px]">
+                  <video controls preload="metadata" src={src}
+                    className="w-full max-w-[220px] rounded-md border border-line bg-black" />
+                  <a href={src} target="_blank" rel="noreferrer"
+                    className="ml-2 font-mono text-[11px] text-cyan underline decoration-dotted hover:text-cyan/80">
+                    新窗口打开
+                  </a>
+                </div>
+              )}
+              {!generating && !src && !failed && (
+                <p className="mt-[6px] font-mono text-[10px] text-dim">无成片文件 URL</p>
+              )}
+            </div>
+          );
+        })}
       </div>
       {msg && <p className="mt-2 font-mono text-[11px] text-alert">{msg}</p>}
     </ChartCard>
