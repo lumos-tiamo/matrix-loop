@@ -8,7 +8,7 @@ import { TrendCard } from "../components/TrendCard";
 import { AlertCenter } from "../components/AlertCenter";
 import { MoversCard } from "../components/MoversCard";
 import { PositioningDonut } from "../components/PositioningDonut";
-import { AccountCard } from "../components/AccountCard";
+import { AccountValueCard } from "../components/AccountValueCard";
 import { FilterBar, type SortKey } from "../components/FilterBar";
 
 const PLATFORM_LABEL: Record<string, string> = {
@@ -198,7 +198,7 @@ export function Overview() {
           ) : (
             <div className="grid gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((a: AccountListItem, i) => (
-                <AccountCard key={a.id} account={a} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }} />
+                <AccountValueCard key={a.id} account={a} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }} />
               ))}
             </div>
           )}

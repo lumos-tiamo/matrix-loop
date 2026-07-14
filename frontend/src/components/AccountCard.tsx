@@ -1,107 +1,51 @@
-import { Link } from "react-router-dom";
-import ReactECharts from "echarts-for-react";
-import type { AccountListItem } from "../api/types";
+import type { FlywheelAccountLive } from "../api/types";
+import { StatusPill } from "./StatusPill";
+import { StepTracker } from "./StepTracker";
 
-const PLATFORM_LABEL: Record<string, string> = {
-  xiaohongshu: "小红书",
-  douyin: "抖音",
-  tiktok: "TikTok",
-  twitter: "X",
-  x: "X",
-  weixin_video: "视频号",
-  wechat_video: "视频号",
-};
+const PLAT: Record<string, string> = { tiktok: "♪ TikTok", twitter: "𝕏 Twitter", youtube: "▶ YouTube", instagram: "✦ Instagram" };
+const fmtDur = (s: number | null) => s == null ? "—" : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-const STATUS_TAG: Record<string, { label: string; bg: string; color: string }> = {
-  ok: { label: "见效", bg: "rgba(56,224,138,.15)", color: "#38E08A" },
-  adopted: { label: "见效", bg: "rgba(56,224,138,.15)", color: "#38E08A" },
-  no_progress: { label: "需介入", bg: "rgba(255,176,32,.16)", color: "#FFB020" },
-  error: { label: "错误", bg: "rgba(255,92,122,.16)", color: "#FF5C7A" },
-  budget_stop: { label: "超预算", bg: "rgba(255,92,122,.16)", color: "#FF5C7A" },
-};
-
-/** ring color follows score: lime (good) -> cyan (mid) -> warn (low). */
-function ringColor(score: number): string {
-  if (score >= 70) return "#B6FF3C";
-  if (score >= 50) return "#4CD4F0";
-  return "#FFB020";
-}
-
-function fmtFollowers(n: number | null): string {
-  if (n == null) return "—";
-  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}K`;
-  return String(n);
-}
-
-/** Deterministic pseudo-sparkline seeded from the account id, trending toward the score. */
-function sparkFor(a: AccountListItem): number[] {
-  const base = a.latest_composite_score ?? 40;
-  const seed = a.id * 9301 + 49297;
-  return Array.from({ length: 7 }, (_, i) => {
-    const wobble = (((seed + i * 233) % 100) / 100 - 0.5) * 12;
-    const drift = (i / 6) * (base - 40) * 0.4;
-    return Math.max(0, base - 20 + drift + wobble);
-  });
-}
-
-export function AccountCard({ account, style }: { account: AccountListItem; style?: React.CSSProperties }) {
-  const score = account.latest_composite_score ?? 0;
-  const color = ringColor(score);
-  const status = account.latest_loop_status ?? "";
-  const tag = STATUS_TAG[status];
-  const attention = status === "no_progress" || status === "error" || status === "budget_stop";
-  const spark = sparkFor(account);
-
-  const sparkOption = {
-    backgroundColor: "transparent",
-    grid: { top: 4, right: 2, bottom: 2, left: 2 },
-    xAxis: { type: "category", show: false, boundaryGap: false, data: spark.map((_, i) => i) },
-    yAxis: { type: "value", show: false, scale: true },
-    series: [
-      { type: "line", data: spark, smooth: true, symbol: "none", lineStyle: { color, width: 2 }, areaStyle: { color, opacity: 0.1 } },
-    ],
-  };
-
+export function AccountCard({ a }: { a: FlywheelAccountLive }) {
+  const plat = PLAT[a.platform] ?? a.platform;
+  if (a.status === "ok" || a.status === "idle") {
+    return (
+      <div className="glass flex items-center gap-3 px-4 py-3">
+        <span className="font-semibold text-[14px]">{a.handle}</span>
+        <span className="text-[10.5px] text-muted2 border border-white/10 rounded-lg px-2 py-0.5">{plat}</span>
+        <StatusPill status={a.status} />
+        <span className="ml-auto flex gap-4 items-center text-[11.5px] text-muted2">
+          <span>综合分 <b className="text-lime">{a.kpis.score ?? "—"}</b></span>
+          <span>本轮 <b className="text-lime">${a.cost_cycle}</b></span>
+          <span className="font-mono">下一轮 {fmtDur(a.next_run_eta_sec)}</span>
+        </span>
+      </div>
+    );
+  }
+  const borderCls = a.status === "running" ? "border-run/34" : a.status === "blocked" ? "border-block/34" : "border-err/34";
   return (
-    <Link
-      to={`/accounts/${account.id}`}
-      className="block rounded-2xl border bg-gradient-to-b from-panel2 to-panel p-4 rise transition-colors hover:border-line/80"
-      style={{ borderColor: attention ? "rgba(255,176,32,.4)" : undefined, ...style }}
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className="flex h-[52px] w-[52px] items-center justify-center rounded-full"
-          style={{ background: `conic-gradient(${color} ${score}%, #232B3C 0)` }}
-        >
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-panel font-mono text-sm font-semibold tabnums">
-            {Math.round(score)}
-          </span>
+    <div className={`glass p-[18px] ${borderCls}`}>
+      <div className="flex items-center gap-2.5 mb-3.5">
+        <span className="font-semibold text-[14px]">{a.handle}</span>
+        <span className="text-[10.5px] text-muted2 border border-white/10 rounded-lg px-2 py-0.5">{plat}</span>
+        <StatusPill status={a.status} />
+        <span className="ml-auto font-mono text-[11.5px] text-muted2 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1">
+          ⏱ {a.status === "blocked" ? `卡 ${fmtDur(a.elapsed_sec)}` : fmtDur(a.elapsed_sec)}
+        </span>
+      </div>
+      <StepTracker stepIndex={a.step_index} status={a.status} />
+      <div className="flex items-end gap-5 mt-3.5 text-[11px]">
+        <div><div className="text-muted2">粉丝</div><div className="font-bold text-[14px]">{(a.kpis.followers ?? 0).toLocaleString()} {a.kpis.followers_delta != null && <small className="text-ok">▲{a.kpis.followers_delta}%</small>}</div></div>
+        <div><div className="text-muted2">近7日播放</div><div className="font-bold text-[14px]">{(a.kpis.views_7d ?? 0).toLocaleString()}</div></div>
+        <div><div className="text-muted2">综合分</div><div className="font-bold text-[14px] text-lime">{a.kpis.score ?? "—"}</div></div>
+        <div><div className="text-muted2">本轮成本</div><div className="font-bold text-[14px] text-lime">${a.cost_cycle}</div></div>
+        <div className="ml-auto text-right"><div className="text-muted2">数据同步</div><div className="text-muted2 text-[12px]">{a.synced_at ? new Date(a.synced_at).toLocaleTimeString() : "—"}</div></div>
+      </div>
+      {a.status === "blocked" && (
+        <div className="mt-3 text-[11.5px] text-block bg-block/8 border border-block/20 rounded-xl px-3 py-2 flex items-center gap-2">
+          ⏸ {a.blocked_reason ?? "等待处理"} · 卡在 {a.current_step} 步
+          <a href="/video" className="ml-auto underline cursor-pointer">→ 去成片审核</a>
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <b className="truncate">{account.handle}</b>
-            {tag && (
-              <span
-                className="shrink-0 rounded-md px-[7px] py-[2px] font-mono text-[10px]"
-                style={{ background: tag.bg, color: tag.color }}
-              >
-                {tag.label}
-              </span>
-            )}
-          </div>
-          <div className="mt-[2px] truncate font-mono text-[10px] uppercase text-muted">
-            {PLATFORM_LABEL[account.platform] ?? account.platform}
-            {account.vertical ? ` · ${account.vertical}` : ""}
-          </div>
-        </div>
-      </div>
-      <div className="mt-3 flex items-center gap-[14px] font-mono text-[11px] text-muted tabnums">
-        <span>粉丝 {fmtFollowers(account.latest_followers)}</span>
-        <span className="text-muted">数据 {account.source_tier ?? "—"}</span>
-      </div>
-      <div className="mt-2 h-[34px]">
-        <ReactECharts option={sparkOption} style={{ height: 34 }} opts={{ renderer: "svg" }} />
-      </div>
-    </Link>
+      )}
+    </div>
   );
 }
