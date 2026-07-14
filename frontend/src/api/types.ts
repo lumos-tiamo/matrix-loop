@@ -194,3 +194,18 @@ export interface FlywheelState {
   accounts: FlywheelAccount[];
   events: FlywheelEventOut[];
 }
+
+// ---- Flywheel live (GET /flywheel/accounts, GET /flywheel/events) ----
+export interface FlywheelAccountLive {
+  account_id: number; platform: string; handle: string; autopilot: boolean;
+  status: "running" | "blocked" | "ok" | "error" | "idle";
+  current_step: string; step_index: number; steps_done: number;
+  elapsed_sec: number | null; blocked_reason: string | null;
+  last_event: { step: string; status: string; detail: string | null; ts: string } | null;
+  kpis: { followers: number | null; followers_delta: number | null; views_7d: number | null; score: number | null };
+  cost_cycle: number; next_run_eta_sec: number | null; synced_at: string | null;
+}
+export interface FlywheelEventLive {
+  id: number; account_id: number | null; account_handle: string | null;
+  step: string; status: string; detail: string | null; ts: string;
+}

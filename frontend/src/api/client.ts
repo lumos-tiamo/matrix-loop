@@ -5,6 +5,7 @@ import type {
   ChannelBriefOut, VideoAssetOut, VideoUsage, SetBriefIn,
   PublishDispatchOut,
   FlywheelState,
+  FlywheelAccountLive, FlywheelEventLive,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE as string) ?? "http://localhost:8000";
@@ -121,4 +122,7 @@ export const api = {
     req<{ account_id: number; autopilot: boolean }>(`/accounts/${accountId}/autopilot`, {
       method: "POST", body: JSON.stringify({ enabled }),
     }),
+  getFlywheelAccounts: () => req<FlywheelAccountLive[]>("/flywheel/accounts"),
+  getFlywheelEvents: (sinceId?: number) =>
+    req<FlywheelEventLive[]>(`/flywheel/events${sinceId ? `?since_id=${sinceId}` : ""}`),
 };
