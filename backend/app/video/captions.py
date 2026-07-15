@@ -16,16 +16,32 @@ def _is_cjk(s: str) -> bool:
 
 
 def _chunk_cjk(sentence: str, max_chars: int) -> list[str]:
-    """Pack a space-less CJK sentence into <= max_chars pieces, preferring to break right
-    after a secondary punctuation mark once the piece is at least ~60% full."""
+    """Chunk a space-less CJK sentence into <= max_chars lines, breaking at punctuation/clause
+    boundaries where possible (so lines don't end mid-phrase). Splits into clauses at secondary
+    punctuation first, merges adjacent short clauses up to max_chars, and only hard-wraps a
+    single clause that is itself longer than max_chars."""
     s = sentence.replace(" ", "").replace("　", "")
+    # split AFTER each clause-ending punctuation, keeping the mark on its clause
+    clauses = [c for c in (p.strip() for p in re.split(r"(?<=[，,、；;：:—…])", s)) if c]
     out: list[str] = []
     cur = ""
-    for ch in s:
-        cur += ch
-        if len(cur) >= max_chars or (ch in _CJK_BREAKERS and len(cur) >= max_chars * 0.6):
+    for cl in clauses:
+        if len(cl) > max_chars:                      # clause too long -> hard-wrap by chars
+            if cur:
+                out.append(cur.strip(_CJK_BREAKERS))
+                cur = ""
+            for i in range(0, len(cl), max_chars):
+                piece = cl[i:i + max_chars].strip(_CJK_BREAKERS)
+                if piece:
+                    out.append(piece)
+            continue
+        if not cur:
+            cur = cl
+        elif len(cur) + len(cl) <= max_chars:        # merge short adjacent clauses onto one line
+            cur += cl
+        else:
             out.append(cur.strip(_CJK_BREAKERS))
-            cur = ""
+            cur = cl
     if cur.strip(_CJK_BREAKERS):
         out.append(cur.strip(_CJK_BREAKERS))
     return [c for c in out if c]
