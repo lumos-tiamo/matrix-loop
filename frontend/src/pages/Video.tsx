@@ -183,10 +183,10 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
   const drafts: DraftOut[] = useMemo(() => {
     const runs = detail.data?.loop_runs ?? [];
     const all = runs.flatMap((r) => r.drafts ?? []);
-    // 热点爆款推荐靠前: pending topic drafts are the fresh recommendations (the loop returns
-    // suggested_topics in priority order) — float them to the top, newest first; everything
-    // else (scripts, adopted/rejected) follows, newest first.
-    const rank = (d: DraftOut) => (d.kind === "topic" && d.review_status === "pending" ? 0 : 1);
+    // 选题在上、脚本在下,各自最新在前。按 kind 排(不按 review_status),这样"采纳选题"后
+    // 它仍是 topic、位置不变——按钮就地从『采纳』变成『生成脚本』,不会跳走。pending 选题
+    // 仍打 🔥推荐 徽标(热点爆款靠前)。
+    const rank = (d: DraftOut) => (d.kind === "topic" ? 0 : 1);
     return all
       .map((d, i) => ({ d, i }))
       .sort((a, b) => rank(a.d) - rank(b.d) || b.i - a.i)
@@ -271,23 +271,28 @@ function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenera
     </ChartCard>
   );
 }
-// Rough expectation for the generation progress bar (SF i2v + concat + TTS ~ minutes).
-const GEN_EXPECTED_MS = 300_000;
-
-function GenProgress({ createdAt, now }: { createdAt: string; now: number }) {
+function GenProgress({ createdAt, now, stage, progress }: {
+  createdAt: string; now: number; stage?: string | null; progress?: number;
+}) {
   const elapsed = Math.max(0, now - new Date(createdAt).getTime());
-  const pct = Math.min(92, (elapsed / GEN_EXPECTED_MS) * 100);   // cap <100 until it flips to ready
   const mm = Math.floor(elapsed / 60000);
   const ss = String(Math.floor((elapsed % 60000) / 1000)).padStart(2, "0");
+  const pct = Math.max(0, Math.min(100, progress ?? 0));   // REAL backend progress
+  const started = pct > 0 || !!stage;                       // before first real update: indeterminate
   return (
     <div className="mt-[6px] w-full">
       <div className="mb-[3px] flex justify-between font-mono text-[10px] text-muted">
-        <span className="text-warn">生成中…（文本→分镜→出图→生视频→合成）</span>
-        <span>{mm}:{ss} · 通常 3–6 分钟</span>
+        <span className="text-warn">{stage ? `⚙ ${stage}` : "排队中…"}</span>
+        <span>{started ? `${pct}% · ` : ""}{mm}:{ss}</span>
       </div>
       <div className="h-[6px] w-full overflow-hidden rounded-full bg-line">
-        <div className="h-full rounded-full bg-gradient-to-r from-violet to-cyan transition-[width] duration-1000 ease-linear"
-          style={{ width: `${pct}%` }} />
+        {started ? (
+          <div className="h-full rounded-full bg-gradient-to-r from-violet to-cyan transition-[width] duration-700 ease-out"
+            style={{ width: `${Math.max(3, pct)}%` }} />
+        ) : (
+          // no real signal yet → honest indeterminate shimmer, not a fake fill
+          <div className="h-full w-1/3 animate-pulse rounded-full bg-gradient-to-r from-violet to-cyan" />
+        )}
       </div>
     </div>
   );
@@ -376,7 +381,7 @@ function ReviewQueue({ accountId, genNonce, className }: { accountId: number; ge
                     onClick={() => publish(v.id)}>{busy === v.id ? "发布中…" : "发布/排期"}</button>
                 )}
               </div>
-              {generating && <GenProgress createdAt={v.created_at} now={now} />}
+              {generating && <GenProgress createdAt={v.created_at} now={now} stage={v.stage} progress={v.progress} />}
               {!generating && src && (
                 <div className="mt-[8px]">
                   <video controls preload="metadata" src={src}

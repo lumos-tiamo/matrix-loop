@@ -73,7 +73,17 @@ export function Overview() {
   async function runBatch() {
     setRunning(true);
     try {
-      await api.batchRun(true);
+      // Background mode: returns 202 immediately, then poll — the page stays responsive
+      // (no multi-minute frozen request) and per-account "跑一轮" buttons keep working.
+      const res = await api.batchRun(true, { background: true });
+      const runId = res.run_id;
+      if (runId) {
+        for (;;) {
+          await new Promise((r) => setTimeout(r, 2000));
+          const st = await api.getBatchRun(runId);
+          if (st.status !== "running") break;
+        }
+      }
       overview.reload();
       accounts.reload();
     } catch (e) {
@@ -198,7 +208,8 @@ export function Overview() {
           ) : (
             <div className="grid gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((a: AccountListItem, i) => (
-                <AccountValueCard key={a.id} account={a} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }} />
+                <AccountValueCard key={a.id} account={a} style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
+                  onRan={() => { overview.reload(); accounts.reload(); }} />
               ))}
             </div>
           )}

@@ -174,6 +174,8 @@ class VideoAssetOut(BaseModel):
     cost: float
     status: str
     review_status: str
+    stage: str | None = None
+    progress: int = 0
     created_at: datetime
 
 

@@ -29,8 +29,17 @@ export function OpsBar({
   async function runBatch() {
     setBusy("batch");
     try {
-      const r = await api.batchRun(true);
-      const total = (r?.total ?? r?.accounts ?? "") as string | number;
+      // Background mode: 202 immediately + poll, so the whole batch doesn't freeze the UI.
+      const res = await api.batchRun(true, { background: true });
+      let report: Record<string, unknown> | null = null;
+      if (res.run_id) {
+        for (;;) {
+          await new Promise((r) => setTimeout(r, 2000));
+          const st = await api.getBatchRun(res.run_id);
+          if (st.status !== "running") { report = st.report; break; }
+        }
+      }
+      const total = (report?.processed ?? "") as string | number;
       flash({ tone: "ok", text: `批量已跑完${total !== "" ? `（${total} 账号）` : ""}` });
       onDone?.();
     } catch (e) {

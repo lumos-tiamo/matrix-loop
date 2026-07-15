@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import ReactECharts from "echarts-for-react";
+import { api } from "../api/client";
 import type { AccountListItem } from "../api/types";
 
 const PLATFORM_LABEL: Record<string, string> = {
@@ -44,7 +46,21 @@ function sparkFor(a: AccountListItem): number[] {
   });
 }
 
-export function AccountValueCard({ account, style }: { account: AccountListItem; style?: React.CSSProperties }) {
+export function AccountValueCard({ account, style, onRan }: { account: AccountListItem; style?: React.CSSProperties; onRan?: () => void }) {
+  const [running, setRunning] = useState(false);
+
+  // Run one account's Loop without leaving the card (the card is a <Link>, so stop the click
+  // from navigating). Each card runs independently — you can fire several accounts at once.
+  async function runOne(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (running) return;
+    setRunning(true);
+    try { await api.triggerLoop(account.id); onRan?.(); }
+    catch { /* surfaced by the list on reload */ }
+    finally { setRunning(false); }
+  }
+
   const score = account.latest_composite_score ?? 0;
   const color = ringColor(score);
   const status = account.latest_loop_status ?? "";
@@ -98,6 +114,15 @@ export function AccountValueCard({ account, style }: { account: AccountListItem;
       <div className="mt-3 flex items-center gap-[14px] font-mono text-[11px] text-muted tabnums">
         <span>粉丝 {fmtFollowers(account.latest_followers)}</span>
         <span className="text-muted">数据 {account.source_tier ?? "—"}</span>
+        <span className="flex-1" />
+        <button
+          onClick={runOne}
+          disabled={running}
+          title="只跑这个账号一轮 Loop"
+          className="rounded-md border border-lime/50 bg-lime/[.08] px-[9px] py-[3px] font-mono text-[10px] text-lime transition-colors hover:bg-lime/[.16] disabled:opacity-50"
+        >
+          {running ? "⏳ 跑…" : "⚡ 跑一轮"}
+        </button>
       </div>
       <div className="mt-2 h-[34px]">
         <ReactECharts option={sparkOption} style={{ height: 34 }} opts={{ renderer: "svg" }} />

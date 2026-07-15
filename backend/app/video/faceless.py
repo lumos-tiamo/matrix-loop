@@ -119,13 +119,22 @@ class FacelessVideoProvider:
 
     def generate(self, *, script: str, brief, params: dict) -> VideoResult:
         params = params or {}
+        _on_progress = params.get("on_progress")
+
+        def rep(stage: str, pct: int) -> None:
+            if _on_progress:
+                try: _on_progress(stage, pct)
+                except Exception: pass  # noqa: BLE001 - progress must not break generation
+
+        rep("配音生成", 5)
         narration = self._narration(script)
         tts_result = self._tts.synthesize(text=narration, voice=params.get("voice"))
         duration = round(float(tts_result.duration_seconds), 2)
         os.makedirs(self._output_dir, exist_ok=True)
         tmp = tempfile.mkdtemp(prefix="faceless_")
         try:
-            clip = self._visual.generate(script=script, brief=brief, params=params)
+            clip = self._visual.generate(script=script, brief=brief, params=params)  # visual reports 10→88
+            rep("字幕 + 合成", 90)
             bg = self._background(clip, duration, tmp)
             chunks = chunk_caption(narration)
             timings = plan_caption_timings(chunks, duration)
@@ -153,6 +162,7 @@ class FacelessVideoProvider:
                 msg = f"faceless ffmpeg compose failed rc={rc}: {(e or o or '').strip()[:300]}"
                 logger.error(msg)
                 raise RuntimeError(msg)
+            rep("完成合成", 99)
             return VideoResult(
                 media_url=f"{self._public_base}/media/{fname}",
                 duration=duration,

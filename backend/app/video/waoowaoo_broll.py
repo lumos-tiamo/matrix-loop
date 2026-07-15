@@ -133,24 +133,37 @@ class WaoowaooBrollProvider:
         if not self.sf_api_key:
             raise RuntimeError("waoowaoo: sf_api_key not configured (SiliconFlow i2v)")
 
+        on_progress = (params or {}).get("on_progress")
+
+        def rep(stage: str, pct: int) -> None:
+            if on_progress:
+                try: on_progress(stage, pct)
+                except Exception: pass  # noqa: BLE001 - progress must not break generation
+
+        rep("准备剧情文本", 10)
         story = self._build_story(script, brief)
         project_id = self._create_project(brief)
         episode_id = self._create_episode(project_id, story)
         logger.info("waoowaoo: project=%s episode=%s", project_id, episode_id)
 
+        rep("AI 分析剧本", 25)
         self._run_task(project_id, "story-to-script-stream",
                        {"episodeId": episode_id, "content": story, "locale": self.locale})
+        rep("生成分镜脚本", 40)
         self._run_task(project_id, "script-to-storyboard-stream",
                        {"episodeId": episode_id, "locale": self.locale})
 
         panel_ids = self._panel_ids(project_id, episode_id)[: self.panels]
         if not panel_ids:
             raise RuntimeError(f"waoowaoo: storyboard produced no panels (episode {episode_id})")
+        rep(f"生成分镜图 (0/{len(panel_ids)})", 55)
         self._generate_panel_images(project_id, episode_id, panel_ids)
 
-        clip_urls = self._panel_clip_urls(project_id, episode_id, panel_ids)
+        rep(f"生成分镜视频 (0/{len(panel_ids)})", 65)
+        clip_urls = self._panel_clip_urls(project_id, episode_id, panel_ids, rep=rep)
         if not clip_urls:
             raise RuntimeError(f"waoowaoo: no panel clips for episode {episode_id}")
+        rep("拼接剧情片段", 88)
         broll_path, duration = self._concat_clips(clip_urls, episode_id)
 
         return VideoResult(
@@ -249,19 +262,23 @@ class WaoowaooBrollProvider:
             label="panel images",
         )
 
-    def _panel_clip_urls(self, project_id: str, episode_id: str, panel_ids: list[str]) -> list[str]:
+    def _panel_clip_urls(self, project_id: str, episode_id: str, panel_ids: list[str], rep=None) -> list[str]:
         """Generate one i2v clip per panel via SiliconFlow, in panel order.
         Each panel's waoowaoo image is base64'd (SiliconFlow rejects fetch-by-URL) and its
-        storyboard video_prompt drives the motion. Returns downloadable SiliconFlow clip URLs."""
+        storyboard video_prompt drives the motion. Returns downloadable SiliconFlow clip URLs.
+        Reports real per-panel progress (65→85) via the optional `rep` callback."""
         wanted = set(panel_ids)
         panels = [p for p in self._panels(project_id, episode_id)
                   if p.get("id") in wanted and p.get("imageUrl")]
+        total = len(panels) or 1
         urls: list[str] = []
-        for p in panels:
+        for i, p in enumerate(panels):
             image = self._fetch_image_datauri(str(p["imageUrl"]))
             prompt = (p.get("videoPrompt") or p.get("video_prompt") or p.get("description")
                       or "subtle cinematic motion, the scene gently comes alive")
             urls.append(self._siliconflow_i2v(image, str(prompt)[:800]))
+            if rep:
+                rep(f"生成分镜视频 ({i + 1}/{total})", 65 + int(20 * (i + 1) / total))
         return urls
 
     def _fetch_image_datauri(self, image_url: str) -> str:

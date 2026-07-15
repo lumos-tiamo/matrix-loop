@@ -141,6 +141,8 @@ export interface VideoAssetOut {
   cost: number;
   status: string;
   review_status: string;
+  stage?: string | null;
+  progress?: number;
   created_at: string;
 }
 

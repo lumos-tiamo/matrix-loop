@@ -99,8 +99,20 @@ def generate_video(session: Session, account, script_draft, *, provider,
     # concurrent writers (scheduler + a manual call, or two autopilot accounts) hit
     # "database is locked". expire_on_commit=False keeps `asset` usable after commit.
     session.commit()
+
+    # Real progress: providers call on_progress(stage_label, pct) as they move through their
+    # pipeline; we persist it on the (already-committed) row so the UI polls actual progress,
+    # not a fake timer. Quick commits release the SQLite write lock immediately.
+    def on_progress(stage: str, pct: int) -> None:
+        try:
+            asset.stage = (stage or "")[:48]
+            asset.progress = max(0, min(99, int(pct)))
+            session.commit()
+        except Exception:  # noqa: BLE001 - progress reporting must never break generation
+            session.rollback()
+
     try:
-        result = provider.generate(script=script, brief=brief, params={})
+        result = provider.generate(script=script, brief=brief, params={"on_progress": on_progress})
     except Exception as exc:  # noqa: BLE001 - isolate provider failures
         asset.status = "failed"
         session.commit()
@@ -111,6 +123,8 @@ def generate_video(session: Session, account, script_draft, *, provider,
     asset.cost = result.cost
     # We keep our account-scoped dedup_key (not result.dedup_key). A real provider's job/content id (result.dedup_key) is intentionally not persisted yet; add a provider_job_id column when wiring Seedance.
     asset.status = "ready"
+    asset.stage = "done"
+    asset.progress = 100
     session.commit()
     return asset
 

@@ -50,11 +50,16 @@ export const api = {
     const q = qs.toString();
     return req<ContentLibraryItem[]>(`/content${q ? `?${q}` : ""}`);
   },
-  batchRun: (sync = true, maxAccounts?: number) => {
+  batchRun: (sync = true, opts?: { maxAccounts?: number; background?: boolean }) => {
     const qs = new URLSearchParams({ sync: String(sync) });
-    if (maxAccounts != null) qs.set("max_accounts", String(maxAccounts));
-    return req<Record<string, unknown>>(`/batch/run?${qs.toString()}`, { method: "POST" });
+    if (opts?.maxAccounts != null) qs.set("max_accounts", String(opts.maxAccounts));
+    if (opts?.background) qs.set("background", "true");
+    return req<{ run_id?: string; status?: string } & Record<string, unknown>>(
+      `/batch/run?${qs.toString()}`, { method: "POST" });
   },
+  getBatchRun: (runId: string) =>
+    req<{ run_id: string; status: string; report: Record<string, unknown> | null; error: string | null }>(
+      `/batch/runs/${runId}`),
   importSnapshots: (csv: string) =>
     req<Record<string, unknown>>("/import/snapshots", { method: "POST", body: JSON.stringify({ csv }) }),
   syncAccount: (id: number) =>
