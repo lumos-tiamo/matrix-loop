@@ -397,7 +397,8 @@ def generate_script_route(draft_id: int, db: Session = Depends(get_db)) -> Draft
     perf_block = performance_prompt_block(content_performance(db, lr.account_id))
     trend_block = trend_prompt_block(db, brief.sub_niches) if brief else ""
     text = generate_script(topic.content, brief, client, performance=perf_block, trends=trend_block or None)
-    script = Draft(loop_run_id=topic.loop_run_id, kind="script", content=text, review_status="pending")
+    script = Draft(loop_run_id=topic.loop_run_id, kind="script", content=text,
+                   review_status="pending", parent_id=topic.id)
     db.add(script)
     db.commit()
     return script

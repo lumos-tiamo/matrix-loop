@@ -14,7 +14,6 @@ export function Video() {
   const accounts = useAsync(() => api.listAccounts(), []);
   const usage = useAsync(() => api.getVideoUsage(), []);
   const [acctId, setAcctId] = useState<number | "">("");
-  const [genNonce, setGenNonce] = useState(0);
 
   const u = usage.data;
 
@@ -66,17 +65,15 @@ export function Video() {
           <p className="py-8 text-center font-mono text-xs text-muted">选择账号后可设定调、生成脚本/视频、审核成片。</p>
         </ChartCard>
       ) : (
-        <div className="grid gap-[14px] lg:grid-cols-2">
+        <div className="grid gap-[14px]">
           <BriefEditor accountId={acctId} />
-          <DraftWorkflow accountId={acctId} onGenerated={() => { usage.reload(); setGenNonce((n) => n + 1); }} />
-          <ReviewQueue accountId={acctId} genNonce={genNonce} className="lg:col-span-2" />
+          <Workbench accountId={acctId} onChange={() => usage.reload()} />
         </div>
       )}
     </div>
   );
 }
 
-// Placeholder sub-components — implemented in Tasks 3-5.
 function BriefEditor({ accountId }: { accountId: number }) {
   const brief = useAsync(
     () => api.getBrief(accountId).catch((e: Error & { status?: number }) => {
@@ -167,110 +164,7 @@ function BriefEditor({ accountId }: { accountId: number }) {
     </ChartCard>
   );
 }
-const DRAFTS_PAGE_SIZE = 6;
 
-function DraftWorkflow({ accountId, onGenerated }: { accountId: number; onGenerated: () => void }) {
-  const detail = useAsync(() => api.getAccount(accountId), [accountId]);
-  const [busy, setBusy] = useState<number | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
-  const [isErr, setIsErr] = useState(false);
-  const [expanded, setExpanded] = useState<Set<number>>(new Set());
-  const [page, setPage] = useState(0);
-
-  // Reset to first page when switching accounts.
-  useEffect(() => { setPage(0); }, [accountId]);
-
-  const drafts: DraftOut[] = useMemo(() => {
-    const runs = detail.data?.loop_runs ?? [];
-    const all = runs.flatMap((r) => r.drafts ?? []);
-    // 选题在上、脚本在下,各自最新在前。按 kind 排(不按 review_status),这样"采纳选题"后
-    // 它仍是 topic、位置不变——按钮就地从『采纳』变成『生成脚本』,不会跳走。pending 选题
-    // 仍打 🔥推荐 徽标(热点爆款靠前)。
-    const rank = (d: DraftOut) => (d.kind === "topic" ? 0 : 1);
-    return all
-      .map((d, i) => ({ d, i }))
-      .sort((a, b) => rank(a.d) - rank(b.d) || b.i - a.i)
-      .map((x) => x.d);
-  }, [detail.data]);
-
-  const pageCount = Math.max(1, Math.ceil(drafts.length / DRAFTS_PAGE_SIZE));
-  const safePage = Math.min(page, pageCount - 1);
-  const pageDrafts = drafts.slice(safePage * DRAFTS_PAGE_SIZE, safePage * DRAFTS_PAGE_SIZE + DRAFTS_PAGE_SIZE);
-
-  async function act(key: number, fn: () => Promise<unknown>, done: string) {
-    setBusy(key);
-    try { await fn(); setIsErr(false); setMsg(done); detail.reload(); onGenerated(); }
-    catch (e) { setIsErr(true); setMsg(String(e)); }
-    finally { setBusy(null); }
-  }
-
-  const btn = "rounded-md border px-[10px] py-[4px] font-mono text-[11px] transition-colors disabled:opacity-50";
-
-  return (
-    <ChartCard title="✍️ 选题 · 脚本 · 视频" pill={`${drafts.length} 草稿`}>
-      {drafts.length === 0 && (
-        <p className="py-6 text-center font-mono text-[11px] text-muted">
-          还没有草稿。先在总览/下钻里对该账号跑一轮 Loop 生成选题。
-        </p>
-      )}
-      <div className="space-y-[8px]">
-        {pageDrafts.map((d) => {
-          const adopted = d.review_status === "adopted";
-          const hot = d.kind === "topic" && d.review_status === "pending";
-          return (
-            <div key={d.id} className="rounded-lg border border-line bg-panel px-3 py-2">
-              <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider">
-                {hot && <span className="rounded bg-warn/[.15] px-[5px] py-[1px] text-warn">🔥 推荐</span>}
-                <span className={d.kind === "script" ? "text-cyan" : "text-lime"}>{d.kind}</span>
-                <span className="text-dim">#{d.id}</span>
-                <span className="text-muted">{d.review_status}</span>
-              </div>
-              <p className="mb-2 whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-text">
-                {expanded.has(d.id) ? d.content : d.content.slice(0, 200)}
-                {d.content.length > 200 && (
-                  <button className="ml-1 text-cyan hover:underline"
-                    onClick={() => setExpanded((s) => { const n = new Set(s); if (n.has(d.id)) n.delete(d.id); else n.add(d.id); return n; })}>
-                    {expanded.has(d.id) ? " 收起" : " …展开全文"}
-                  </button>
-                )}
-              </p>
-              <div className="flex gap-2">
-                {!adopted && (
-                  <button className={`${btn} border-muted/40 text-muted hover:text-text`} disabled={busy === d.id}
-                    onClick={() => act(d.id, () => api.setDraftStatus(d.id, "adopted"), "已采纳")}>
-                    采纳{d.kind === "script" ? "脚本" : "选题"}
-                  </button>
-                )}
-                {adopted && d.kind === "topic" && (
-                  <button className={`${btn} border-cyan/50 bg-cyan/[.08] text-cyan hover:bg-cyan/[.16]`} disabled={busy === d.id}
-                    onClick={() => act(d.id, () => api.generateScript(d.id), "已生成脚本")}>
-                    {busy === d.id ? "生成中…" : "生成脚本"}
-                  </button>
-                )}
-                {adopted && d.kind === "script" && (
-                  <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet hover:bg-violet/[.18]`} disabled={busy === d.id}
-                    onClick={() => act(d.id, () => api.generateVideo(accountId, d.id), "已生成视频")}>
-                    {busy === d.id ? "生成中…(约3-6分钟)" : "生成视频"}
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      {pageCount > 1 && (
-        <div className="mt-[10px] flex items-center justify-center gap-3 font-mono text-[11px] text-muted">
-          <button className={`${btn} border-line disabled:opacity-40`} disabled={safePage === 0}
-            onClick={() => setPage(safePage - 1)}>← 上一页</button>
-          <span>第 {safePage + 1} / {pageCount} 页</span>
-          <button className={`${btn} border-line disabled:opacity-40`} disabled={safePage >= pageCount - 1}
-            onClick={() => setPage(safePage + 1)}>下一页 →</button>
-        </div>
-      )}
-      {msg && <p className={isErr ? "mt-2 font-mono text-[11px] text-alert" : "mt-2 font-mono text-[11px] text-muted"}>{msg}</p>}
-    </ChartCard>
-  );
-}
 function GenProgress({ createdAt, now, stage, progress }: {
   createdAt: string; now: number; stage?: string | null; progress?: number;
 }) {
@@ -298,108 +192,237 @@ function GenProgress({ createdAt, now, stage, progress }: {
   );
 }
 
-function ReviewQueue({ accountId, genNonce, className }: { accountId: number; genNonce: number; className?: string }) {
-  const assets = useAsync(() => api.listVideoAssets({ account_id: accountId }), [accountId, genNonce]);
-  const [busy, setBusy] = useState<number | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
+// ---- pipeline stage label for a topic's card header ----------------------------------------
+function pipelineStage(hasScript: boolean, scriptAdopted: boolean, asset?: VideoAssetOut) {
+  if (!hasScript) return { label: "① 待脚本", tone: "text-lime" };
+  if (!scriptAdopted) return { label: "② 待采纳", tone: "text-cyan" };
+  if (!asset) return { label: "③ 待出片", tone: "text-violet" };
+  if (asset.status === "generating") return { label: `④ 渲染中 ${asset.progress ?? 0}%`, tone: "text-warn" };
+  if (asset.status === "failed") return { label: "✖ 失败", tone: "text-alert" };
+  if (asset.review_status === "approved") return { label: "✅ 已通过", tone: "text-good" };
+  if (asset.review_status === "rejected") return { label: "⊘ 已否决", tone: "text-alert" };
+  return { label: "⑤ 待审核", tone: "text-warn" };
+}
+
+const GEN_POLL_MS = 4000;
+
+/** Video workbench — two lists of collapsible pipeline cards (Seedance/RunningHub job-card style):
+ *  选题池 = recommendations to adopt; 制作中 = adopted topics, each card holding its whole
+ *  pipeline (选题 → 脚本 → 视频). Adopting moves a card between lists; generating a script/video
+ *  updates the SAME card in place — nothing jumps to the bottom. */
+function Workbench({ accountId, onChange }: { accountId: number; onChange: () => void }) {
+  const detail = useAsync(() => api.getAccount(accountId), [accountId]);
+  const assetsQ = useAsync(() => api.listVideoAssets({ account_id: accountId }), [accountId]);
   const [now, setNow] = useState(() => Date.now());
+  const [msg, setMsg] = useState<string | null>(null);
 
-  const rows: VideoAssetOut[] = assets.data ?? [];
-  const hasGenerating = rows.some((r) => r.status === "generating");
+  const assets: VideoAssetOut[] = useMemo(() => assetsQ.data ?? [], [assetsQ.data]);
+  const hasGenerating = assets.some((a) => a.status === "generating");
 
-  // Live-poll while a video is generating (the generate-video request blocks for minutes on a
-  // separate connection; this independent poll surfaces the "generating" asset + progress).
+  // live poll (asset progress + storyboard/script landing) while anything is generating
   useEffect(() => {
     if (!hasGenerating) return;
     const tick = setInterval(() => setNow(Date.now()), 1000);
-    const poll = setInterval(() => assets.reload(), 4000);
+    const poll = setInterval(() => { assetsQ.reload(); detail.reload(); }, GEN_POLL_MS);
     return () => { clearInterval(tick); clearInterval(poll); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasGenerating]);
 
-  // Give the just-clicked generation a chance to appear as "generating" even before it lands.
-  useEffect(() => {
-    if (genNonce === 0) return;
-    const t = setTimeout(() => assets.reload(), 2500);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [genNonce]);
+  const { topics, scriptByTopic, assetByScript } = useMemo(() => {
+    const runs = detail.data?.loop_runs ?? [];
+    const all = runs.flatMap((r) => r.drafts ?? []);
+    const topics = all.filter((d) => d.kind === "topic");
+    const scriptByTopic = new Map<number, DraftOut>();
+    for (const s of all) {
+      if (s.kind === "script" && s.parent_id != null) {
+        const cur = scriptByTopic.get(s.parent_id);
+        if (!cur || s.id > cur.id) scriptByTopic.set(s.parent_id, s);   // latest script per topic
+      }
+    }
+    const assetByScript = new Map<number, VideoAssetOut>();
+    for (const a of assets) {
+      if (a.script_draft_id != null) {
+        const cur = assetByScript.get(a.script_draft_id);
+        if (!cur || a.id > cur.id) assetByScript.set(a.script_draft_id, a);  // latest asset per script
+      }
+    }
+    return { topics, scriptByTopic, assetByScript };
+  }, [detail.data, assets]);
 
-  async function review(id: number, status: string) {
-    setBusy(id);
-    try { await api.setVideoReview(id, status); assets.reload(); }
+  // stable sort (newest topic first); status changes never reorder within a list
+  const pending = topics.filter((t) => t.review_status !== "adopted").slice().sort((a, b) => b.id - a.id);
+  const inProd = topics.filter((t) => t.review_status === "adopted").slice().sort((a, b) => b.id - a.id);
+
+  async function run(fn: () => Promise<unknown>) {
+    setMsg(null);
+    try { await fn(); detail.reload(); assetsQ.reload(); onChange(); }
     catch (e) { setMsg(String(e)); }
-    finally { setBusy(null); }
   }
 
-  async function publish(assetId: number) {
-    setBusy(assetId); setMsg(null);
-    try { await api.publish(accountId, assetId); setMsg("已提交发布(见 AiToEarn)"); assets.reload(); }
-    catch (e) { setMsg(String(e)); }
-    finally { setBusy(null); }
-  }
+  return (
+    <div className="grid gap-[14px] lg:grid-cols-2">
+      <ChartCard title="🔥 选题池" pill={`${pending.length}`}>
+        {pending.length === 0 && (
+          <p className="py-6 text-center font-mono text-[11px] text-muted">
+            没有待处理选题。在总览/账号页点「⚡ 跑一轮」生成选题。
+          </p>
+        )}
+        <div className="space-y-[8px]">
+          {pending.map((t) => (
+            <TopicCard key={t.id} topic={t} script={scriptByTopic.get(t.id)} asset={undefined}
+              accountId={accountId} now={now} run={run} defaultOpen={false} />
+          ))}
+        </div>
+      </ChartCard>
 
-  const badge: Record<string, string> = {
-    pending: "text-warn", approved: "text-good", rejected: "text-alert",
-  };
+      <ChartCard title="🎬 制作中 · 成片" pill={hasGenerating ? "生成中…" : `${inProd.length}`}>
+        {inProd.length === 0 && (
+          <p className="py-6 text-center font-mono text-[11px] text-muted">
+            采纳选题后出现在这里。脚本、视频都收在各自卡片内,不会跳走。
+          </p>
+        )}
+        <div className="space-y-[8px]">
+          {inProd.map((t) => {
+            const s = scriptByTopic.get(t.id);
+            const a = s ? assetByScript.get(s.id) : undefined;
+            return (
+              <TopicCard key={t.id} topic={t} script={s} asset={a}
+                accountId={accountId} now={now} run={run} defaultOpen />
+            );
+          })}
+        </div>
+      </ChartCard>
+      {msg && <p className="font-mono text-[11px] text-alert lg:col-span-2">{msg}</p>}
+    </div>
+  );
+}
+
+/** One collapsible card = one topic's whole pipeline: 选题 → 脚本 → 视频(进度/预览/审核/发布). */
+function TopicCard({ topic, script, asset, accountId, now, run, defaultOpen }: {
+  topic: DraftOut; script?: DraftOut; asset?: VideoAssetOut; accountId: number; now: number;
+  run: (fn: () => Promise<unknown>) => Promise<void>; defaultOpen: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const [busy, setBusy] = useState(false);
+  const adopted = topic.review_status === "adopted";
+  const scriptAdopted = script?.review_status === "adopted";
+  const stage = pipelineStage(!!script, !!scriptAdopted, asset);
+  const src = mediaSrc(asset?.media_url);
+  const title = (topic.content.split("\n")[0] || topic.content).slice(0, 46);
+
+  async function act(fn: () => Promise<unknown>) {
+    setBusy(true);
+    try { await run(fn); } finally { setBusy(false); }
+  }
   const btn = "rounded-md border px-[10px] py-[4px] font-mono text-[11px] transition-colors disabled:opacity-50";
 
   return (
-    <ChartCard title="🎬 成片审核" pill={hasGenerating ? "生成中…" : `${rows.length} 条`} className={className}>
-      {rows.length === 0 && (
-        <p className="py-6 text-center font-mono text-[11px] text-muted">该账号还没有成片。生成后在这里审核。</p>
-      )}
-      <div className="space-y-[8px]">
-        {rows.map((v) => {
-          const src = mediaSrc(v.media_url);
-          const generating = v.status === "generating";
-          const failed = v.status === "failed";
-          return (
-            <div key={v.id} className="rounded-lg border border-line bg-panel px-3 py-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="font-mono text-[11px] text-dim">#{v.id}</span>
-                <span className="font-mono text-[11px] text-muted">{v.provider}</span>
-                {failed ? (
-                  <span className="font-mono text-[11px] text-alert">生成失败</span>
-                ) : generating ? (
-                  <span className="font-mono text-[11px] text-warn">generating</span>
-                ) : (
-                  <span className={`font-mono text-[11px] ${badge[v.review_status] ?? "text-muted"}`}>{v.review_status}</span>
-                )}
-                <span className="font-mono text-[10px] text-dim">成本 {v.cost}</span>
-                <div className="flex-1" />
-                {!generating && v.review_status === "pending" && (
-                  <>
-                    <button className={`${btn} border-good/50 bg-good/[.08] text-good`} disabled={busy === v.id}
-                      onClick={() => review(v.id, "approved")}>通过</button>
-                    <button className={`${btn} border-alert/50 bg-alert/[.08] text-alert`} disabled={busy === v.id}
-                      onClick={() => review(v.id, "rejected")}>否决</button>
-                  </>
-                )}
-                {!generating && v.review_status === "approved" && (
-                  <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet`} disabled={busy === v.id}
-                    onClick={() => publish(v.id)}>{busy === v.id ? "发布中…" : "发布/排期"}</button>
-                )}
-              </div>
-              {generating && <GenProgress createdAt={v.created_at} now={now} stage={v.stage} progress={v.progress} />}
-              {!generating && src && (
-                <div className="mt-[8px]">
-                  <video controls preload="metadata" src={src}
-                    className="w-full max-w-[220px] rounded-md border border-line bg-black" />
-                  <a href={src} target="_blank" rel="noreferrer"
-                    className="ml-2 font-mono text-[11px] text-cyan underline decoration-dotted hover:text-cyan/80">
-                    新窗口打开
-                  </a>
-                </div>
-              )}
-              {!generating && !src && !failed && (
-                <p className="mt-[6px] font-mono text-[10px] text-dim">无成片文件 URL</p>
+    <div className="rounded-lg border border-line bg-panel">
+      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-2 px-3 py-2 text-left">
+        <span className="font-mono text-[10px] text-dim">{open ? "▾" : "▸"}</span>
+        {!adopted && topic.review_status === "pending" && (
+          <span className="shrink-0 rounded bg-warn/[.15] px-[5px] py-[1px] font-mono text-[10px] text-warn">🔥</span>
+        )}
+        <span className="min-w-0 flex-1 truncate font-mono text-[12px] text-text">{title}</span>
+        <span className={`shrink-0 font-mono text-[10px] ${stage.tone}`}>{stage.label}</span>
+      </button>
+
+      {open && (
+        <div className="space-y-[10px] border-t border-line px-3 py-[10px]">
+          {/* 选题 */}
+          <div>
+            <div className="mb-[3px] font-mono text-[10px] uppercase tracking-wider text-dim">选题 · #{topic.id}</div>
+            <p className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-text">{topic.content}</p>
+            {!adopted && (
+              <button className={`${btn} mt-2 border-cyan/50 bg-cyan/[.08] text-cyan hover:bg-cyan/[.16]`} disabled={busy}
+                onClick={() => act(() => api.setDraftStatus(topic.id, "adopted"))}>
+                {busy ? "…" : "采纳选题 → 进制作"}
+              </button>
+            )}
+          </div>
+
+          {/* 脚本 (adopted topics only) */}
+          {adopted && (
+            <div className="border-t border-line/60 pt-[10px]">
+              <div className="mb-[3px] font-mono text-[10px] uppercase tracking-wider text-dim">脚本</div>
+              {!script ? (
+                <button className={`${btn} border-cyan/50 bg-cyan/[.08] text-cyan hover:bg-cyan/[.16]`} disabled={busy}
+                  onClick={() => act(() => api.generateScript(topic.id))}>
+                  {busy ? "生成中…" : "① 生成脚本"}
+                </button>
+              ) : (
+                <>
+                  <p className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-text">{script.content}</p>
+                  {!scriptAdopted ? (
+                    <div className="mt-2 flex gap-2">
+                      <button className={`${btn} border-cyan/50 bg-cyan/[.08] text-cyan hover:bg-cyan/[.16]`} disabled={busy}
+                        onClick={() => act(() => api.setDraftStatus(script.id, "adopted"))}>采纳脚本 →</button>
+                      <button className={`${btn} border-muted/40 text-muted hover:text-text`} disabled={busy}
+                        onClick={() => act(() => api.generateScript(topic.id))}>{busy ? "…" : "重写"}</button>
+                    </div>
+                  ) : (
+                    <div className="mt-1 font-mono text-[10px] text-good">✓ 脚本已采纳</div>
+                  )}
+                </>
               )}
             </div>
-          );
-        })}
-      </div>
-      {msg && <p className="mt-2 font-mono text-[11px] text-alert">{msg}</p>}
-    </ChartCard>
+          )}
+
+          {/* 视频 (adopted script only) */}
+          {scriptAdopted && script && (
+            <div className="border-t border-line/60 pt-[10px]">
+              <div className="mb-[3px] font-mono text-[10px] uppercase tracking-wider text-dim">视频</div>
+              {!asset && (
+                <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet hover:bg-violet/[.18]`} disabled={busy}
+                  onClick={() => act(() => api.generateVideo(accountId, script.id))}>
+                  {busy ? "提交中…" : "② 生成视频"}
+                </button>
+              )}
+              {asset?.status === "generating" && (
+                <GenProgress createdAt={asset.created_at} now={now} stage={asset.stage} progress={asset.progress} />
+              )}
+              {asset?.status === "failed" && (
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[11px] text-alert">生成失败</span>
+                  <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet`} disabled={busy}
+                    onClick={() => act(() => api.generateVideo(accountId, script.id))}>重试</button>
+                </div>
+              )}
+              {asset && asset.status === "ready" && (
+                <div className="space-y-2">
+                  {src && (
+                    <video controls preload="metadata" src={src}
+                      className="w-full max-w-[240px] rounded-md border border-line bg-black" />
+                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`font-mono text-[10px] ${asset.review_status === "approved" ? "text-good" : asset.review_status === "rejected" ? "text-alert" : "text-warn"}`}>
+                      {asset.review_status}
+                    </span>
+                    <span className="font-mono text-[10px] text-dim">成本 {asset.cost}</span>
+                    {src && (
+                      <a href={src} target="_blank" rel="noreferrer"
+                        className="font-mono text-[10px] text-cyan underline decoration-dotted">新窗口</a>
+                    )}
+                    <div className="flex-1" />
+                    {asset.review_status === "pending" && (
+                      <>
+                        <button className={`${btn} border-good/50 bg-good/[.08] text-good`} disabled={busy}
+                          onClick={() => act(() => api.setVideoReview(asset.id, "approved"))}>通过</button>
+                        <button className={`${btn} border-alert/50 bg-alert/[.08] text-alert`} disabled={busy}
+                          onClick={() => act(() => api.setVideoReview(asset.id, "rejected"))}>否决</button>
+                      </>
+                    )}
+                    {asset.review_status === "approved" && (
+                      <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet`} disabled={busy}
+                        onClick={() => act(() => api.publish(accountId, asset.id))}>发布/排期</button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

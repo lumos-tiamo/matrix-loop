@@ -72,6 +72,7 @@ class DraftOut(BaseModel):
     kind: str
     content: str
     review_status: str
+    parent_id: int | None = None
 
 
 class EvaluationOut(BaseModel):

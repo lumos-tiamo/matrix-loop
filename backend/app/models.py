@@ -159,6 +159,7 @@ class Draft(Base):
     kind: Mapped[str] = mapped_column(String(16))  # topic|script
     content: Mapped[str] = mapped_column(String)
     review_status: Mapped[str] = mapped_column(String(16), default="pending")  # pending|adopted|rejected
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("drafts.id"), nullable=True, index=True)  # script -> its source topic
 
     loop_run: Mapped["LoopRun"] = relationship(back_populates="drafts")
 

@@ -108,7 +108,7 @@ it("saves the brief via POST /accounts/{id}/brief", async () => {
   await waitFor(() => expect(posted.length).toBe(1));
 });
 
-function detailWithDrafts(drafts: { id: number; kind: string; content: string; review_status: string }[]) {
+function detailWithDrafts(drafts: { id: number; kind: string; content: string; review_status: string; parent_id?: number | null }[]) {
   return {
     id: 4, platform: "youtube", handle: "@nina", vertical: "crypto", positioning: null,
     objective_weights: {}, snapshots: [], content_items: [],
@@ -136,23 +136,23 @@ it("adopts a topic then generates a script", async () => {
   await waitFor(() => expect(calls).toContain("gen-script"));
 });
 
-it("a topic/script draft card expands to show full content", async () => {
-  const LONG = "A".repeat(220) + " HOOKLINE_HIDDEN_TAIL " + "B".repeat(50);
+it("a pending topic card collapses/expands to show its content", async () => {
+  const LONG = "A".repeat(60) + " HOOKLINE_HIDDEN_TAIL " + "B".repeat(50);
   stub((url) => {
     if (url.endsWith("/accounts")) return { ok: true, json: async () => ACCOUNTS };
     if (url.endsWith("/video/usage")) return { ok: true, json: async () => USAGE };
     if (url.includes("/video-assets")) return { ok: true, json: async () => [] };
     if (url.match(/\/accounts\/4\/brief$/)) return { ok: false, status: 404, json: async () => ({}) };
-    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([{ id: 1, kind: "script", content: LONG, review_status: "pending" }]) };
+    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([{ id: 1, kind: "topic", content: LONG, review_status: "pending" }]) };
     return undefined;
   });
   render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
   fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
-  // preview shown (200-char slice), full tail hidden
-  const toggle = await screen.findByRole("button", { name: /展开全文/ });
+  // pending topic sits in 选题池, collapsed by default -> body hidden
+  await screen.findByText(/选题池/);
   expect(screen.queryByText(/HOOKLINE_HIDDEN_TAIL/)).not.toBeInTheDocument();
-  // expand -> full content present
-  fireEvent.click(toggle);
+  // click the card header (its title starts with A's) -> expands to full content
+  fireEvent.click(await screen.findByRole("button", { name: /AAAAAAAA/ }));
   await waitFor(() => expect(screen.getByText(/HOOKLINE_HIDDEN_TAIL/)).toBeInTheDocument());
 });
 
@@ -164,7 +164,10 @@ it("generates a video from an adopted script", async () => {
     if (url.includes("/video-assets")) return { ok: true, json: async () => [] };
     if (url.match(/\/accounts\/4\/brief$/)) return { ok: false, status: 404, json: async () => ({}) };
     if (url.match(/\/accounts\/4\/generate-video$/) && init?.method === "POST") { calls.push("gen-video"); return { ok: true, json: async () => ({ id: 9, account_id: 4, script_draft_id: 2, provider: "fake", media_url: "https://f/x.mp4", duration: 45, cost: 1, status: "ready", review_status: "pending", created_at: "2026-07-09T00:00:00Z" }) }; }
-    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([{ id: 2, kind: "script", content: "Hook...", review_status: "adopted" }]) };
+    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([
+      { id: 1, kind: "topic", content: "Airdrop 101", review_status: "adopted" },
+      { id: 2, kind: "script", content: "Hook...", review_status: "adopted", parent_id: 1 },
+    ]) };
     return undefined;
   });
   render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
@@ -184,7 +187,10 @@ it("lists video assets and approves one", async () => {
     if (url.endsWith("/accounts")) return { ok: true, json: async () => ACCOUNTS };
     if (url.endsWith("/video/usage")) return { ok: true, json: async () => USAGE };
     if (url.match(/\/accounts\/4\/brief$/)) return { ok: false, status: 404, json: async () => ({}) };
-    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([]) };
+    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([
+      { id: 1, kind: "topic", content: "Airdrop 101", review_status: "adopted" },
+      { id: 2, kind: "script", content: "Hook...", review_status: "adopted", parent_id: 1 },
+    ]) };
     if (url.match(/\/video-assets\/9\/status$/) && init?.method === "POST") {
       calls.push({ url: String(url), body: String(init?.body) });
       return { ok: true, json: async () => ({ ...ASSET, review_status: "approved" }) };
@@ -194,8 +200,7 @@ it("lists video assets and approves one", async () => {
   });
   render(<MemoryRouter initialEntries={["/video"]}><Video /></MemoryRouter>);
   fireEvent.change(await screen.findByLabelText(/选择账号/), { target: { value: "4" } });
-  // asset row shows provider + a link to the media
-  expect(await screen.findByText(/fake/)).toBeInTheDocument();
+  // the ready asset renders inside its topic card with a 通过 button
   fireEvent.click(await screen.findByRole("button", { name: /通过/ }));
   await waitFor(() => expect(calls.length).toBe(1));
   expect(calls[0].body).toContain("approved");
@@ -208,7 +213,10 @@ it("publishes an approved asset via 发布", async () => {
     if (url.endsWith("/accounts")) return { ok: true, json: async () => ACCOUNTS };
     if (url.endsWith("/video/usage")) return { ok: true, json: async () => USAGE };
     if (url.match(/\/accounts\/4\/brief$/)) return { ok: false, status: 404, json: async () => ({}) };
-    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([]) };
+    if (url.match(/\/accounts\/4$/)) return { ok: true, json: async () => detailWithDrafts([
+      { id: 1, kind: "topic", content: "Airdrop 101", review_status: "adopted" },
+      { id: 2, kind: "script", content: "Hook...", review_status: "adopted", parent_id: 1 },
+    ]) };
     if (url.match(/\/accounts\/4\/publish$/) && init?.method === "POST") {
       calls.push("publish");
       return { ok: true, json: async () => ({ id: 1, account_id: 4, video_asset_id: 9, aitoearn_flow_id: "f1", aitoearn_task_id: "t1", platform_work_id: null, status: "queued", publish_at: null, media_urls: [], caption: "x", created_at: "2026-07-09T00:00:00Z" }) };

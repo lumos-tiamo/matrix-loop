@@ -16,7 +16,7 @@ export interface SnapshotOut {
 }
 export interface ContentItemOut { id: number; topic: string | null; views: number | null; likes: number | null; }
 export interface RecommendationOut { id: number; kind: string; content: string; status: string; }
-export interface DraftOut { id: number; kind: string; content: string; review_status: string; }
+export interface DraftOut { id: number; kind: string; content: string; review_status: string; parent_id?: number | null; }
 export interface EvaluationOut { id: number; composite_score: number; breakdown: Record<string, number>; created_at: string; }
 export interface LoopRunOut {
   id: number; ts: string; diagnosis: string | null; verify_result: Record<string, unknown>; status: string;
