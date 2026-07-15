@@ -53,7 +53,13 @@ def generate_video(session: Session, account, script_draft, *, provider,
     """Generate one governed video from an ADOPTED script draft. Layers, in order:
     human-gate -> dedup (reuse) -> cross-account differentiation -> daily quotas -> generate + meter.
     Raises ValueError (not adopted), NearDuplicateScript, or VideoQuotaExceeded to stop."""
-    cfg = cfg or VideoConfig()
+    if cfg is None:
+        from app.config import settings
+        cfg = VideoConfig(
+            max_videos_per_day=settings.video_max_per_day,
+            per_account_per_day=settings.video_per_account_per_day,
+            per_channel_per_day=settings.video_per_channel_per_day,
+        )
     if getattr(script_draft, "review_status", None) != "adopted":
         raise ValueError("script draft must be adopted before video generation (human gate)")
 

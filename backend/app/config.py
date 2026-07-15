@@ -76,6 +76,10 @@ class Settings(BaseSettings):
     waoowaoo_internal_token: str = ""     # waoowaoo INTERNAL_TASK_TOKEN (x-internal-task-token)
     waoowaoo_user_id: str = ""            # waoowaoo service-account userId (x-internal-user-id)
     waoowaoo_panels: int = 6              # max panels imaged+filmed per video (caps cost/length)
+    # video governor daily caps (per UTC-day; count ready+generating)
+    video_max_per_day: int = 20           # global across the whole matrix
+    video_per_account_per_day: int = 2    # per account
+    video_per_channel_per_day: int = 10   # per account.vertical
     waoowaoo_locale: str = "en"           # locale sent to waoowaoo (script/storyboard prompt language)
     # Video i2v runs through SiliconFlow directly (waoowaoo can't drive SF's POST-body status
     # polling). Panel images come from waoowaoo (its image model can be SF via openai-compat).
