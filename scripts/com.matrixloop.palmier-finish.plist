@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  matrix-loop Palmier finishing pass — runs every 30 min.
+  Install (your call — this is the persistence step):
+    cp scripts/com.matrixloop.palmier-finish.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.matrixloop.palmier-finish.plist
+  Disable:
+    launchctl unload ~/Library/LaunchAgents/com.matrixloop.palmier-finish.plist
+  Requires Palmier Pro open + matrix-loop backend on :8000.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.matrixloop.palmier-finish</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/aa00102/matrix-loop/scripts/palmier-finish-pass.sh</string>
+  </array>
+  <key>StartInterval</key><integer>1800</integer>
+  <key>RunAtLoad</key><false/>
+  <key>StandardOutPath</key><string>/tmp/palmier-finish-launchd.out</string>
+  <key>StandardErrorPath</key><string>/tmp/palmier-finish-launchd.err</string>
+</dict>
+</plist>

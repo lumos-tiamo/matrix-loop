@@ -7,23 +7,50 @@ import re
 logger = logging.getLogger(__name__)
 
 _SENTENCE_SPLIT = re.compile(r"[.!?。！？]+\s*|\n+")
+_CJK = re.compile(r"[一-鿿぀-ヿ가-힯＀-￯]")
+_CJK_BREAKERS = "，,、；;：:）)】」』"
 
 
-def chunk_caption(text: str, *, max_words: int = 6) -> list[str]:
-    """Split spoken text into short on-screen caption chunks (<= max_words words each),
-    breaking first on sentence enders then on word count."""
+def _is_cjk(s: str) -> bool:
+    return _CJK.search(s) is not None
+
+
+def _chunk_cjk(sentence: str, max_chars: int) -> list[str]:
+    """Pack a space-less CJK sentence into <= max_chars pieces, preferring to break right
+    after a secondary punctuation mark once the piece is at least ~60% full."""
+    s = sentence.replace(" ", "").replace("　", "")
+    out: list[str] = []
+    cur = ""
+    for ch in s:
+        cur += ch
+        if len(cur) >= max_chars or (ch in _CJK_BREAKERS and len(cur) >= max_chars * 0.6):
+            out.append(cur.strip(_CJK_BREAKERS))
+            cur = ""
+    if cur.strip(_CJK_BREAKERS):
+        out.append(cur.strip(_CJK_BREAKERS))
+    return [c for c in out if c]
+
+
+def chunk_caption(text: str, *, max_words: int = 6, max_cjk_chars: int = 12) -> list[str]:
+    """Split spoken text into short on-screen caption chunks. Breaks on sentence enders first;
+    then CJK sentences (no spaces) chunk by character count, others by word count — so Chinese
+    captions no longer collapse into one overflowing line."""
     text = (text or "").strip()
     if not text:
         return []
     chunks: list[str] = []
     for sentence in _SENTENCE_SPLIT.split(text):
-        words = sentence.split()
-        if not words:
+        sentence = sentence.strip()
+        if not sentence:
             continue
-        for i in range(0, len(words), max_words):
-            chunk = " ".join(words[i:i + max_words]).strip()
-            if chunk:
-                chunks.append(chunk)
+        if _is_cjk(sentence):
+            chunks.extend(_chunk_cjk(sentence, max_cjk_chars))
+        else:
+            words = sentence.split()
+            for i in range(0, len(words), max_words):
+                chunk = " ".join(words[i:i + max_words]).strip()
+                if chunk:
+                    chunks.append(chunk)
     return chunks
 
 
@@ -111,8 +138,23 @@ def _load_font(size: int):
 
 
 def _wrap(draw, text: str, font, max_width: int) -> list[str]:
+    if not text:
+        return []
+    # CJK has no spaces -> wrap character by character so lines never overflow the frame.
+    if _is_cjk(text):
+        lines: list[str] = []
+        cur = ""
+        for ch in text:
+            if not cur or draw.textlength(cur + ch, font=font) <= max_width:
+                cur += ch
+            else:
+                lines.append(cur)
+                cur = ch
+        if cur:
+            lines.append(cur)
+        return lines
     words = text.split()
-    lines: list[str] = []
+    lines = []
     cur = ""
     for w in words:
         trial = (cur + " " + w).strip()

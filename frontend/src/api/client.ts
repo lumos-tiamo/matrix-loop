@@ -122,6 +122,8 @@ export const api = {
     req<VideoAssetOut>(`/video-assets/${id}/status`, {
       method: "POST", body: JSON.stringify({ review_status }),
     }),
+  queuePalmier: (id: number) =>
+    req<VideoAssetOut>(`/video-assets/${id}/queue-palmier`, { method: "POST" }),
   getVideoUsage: () => req<VideoUsage>("/video/usage"),
   publish: (accountId: number, videoAssetId: number, caption?: string) =>
     req<PublishDispatchOut>(`/accounts/${accountId}/publish`, {

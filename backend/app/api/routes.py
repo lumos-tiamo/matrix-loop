@@ -502,6 +502,22 @@ def palmier_finish(asset_id: int, payload: schemas.PalmierFinishIn, db: Session 
     a.media_url = f"{settings.public_base_url}/media/{fname}"
     if "palmier" not in (a.provider or ""):
         a.provider = ((a.provider or "")[:24] + "+palmier")
+    a.stage = "palmier_done"   # clear any queue marker
+    db.commit()
+    return a
+
+
+@router.post("/video-assets/{asset_id}/queue-palmier", response_model=schemas.VideoAssetOut)
+def queue_palmier(asset_id: int, db: Session = Depends(get_db)) -> VideoAsset:
+    """Flag a ready asset for the Palmier finishing pass (the '送 Palmier 精修' button). The
+    scheduled agent picks up assets with stage='palmier_queued'. Reuses the (ready-state-unused)
+    stage field so no migration is needed."""
+    a = db.get(VideoAsset, asset_id)
+    if a is None:
+        raise HTTPException(status_code=404, detail="video asset not found")
+    if a.status != "ready":
+        raise HTTPException(status_code=422, detail="only ready assets can be queued for finishing")
+    a.stage = "palmier_queued"
     db.commit()
     return a
 

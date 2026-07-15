@@ -404,6 +404,16 @@ function TopicCard({ topic, script, asset, accountId, now, run, defaultOpen }: {
                         className="font-mono text-[10px] text-cyan underline decoration-dotted">新窗口</a>
                     )}
                     <div className="flex-1" />
+                    {/* Palmier finishing: queue for the scheduled agent, or show state */}
+                    {(asset.provider || "").includes("palmier") ? (
+                      <span className="font-mono text-[10px] text-good">✓ 已精修</span>
+                    ) : asset.stage === "palmier_queued" ? (
+                      <span className="font-mono text-[10px] text-warn">⏳ 精修排队中</span>
+                    ) : (
+                      <button className={`${btn} border-cyan/50 bg-cyan/[.08] text-cyan`} disabled={busy}
+                        title="排入 Palmier 精修队列(定时 agent 会自动加品牌/精修)"
+                        onClick={() => act(() => api.queuePalmier(asset.id))}>🎬 送 Palmier 精修</button>
+                    )}
                     {asset.review_status === "pending" && (
                       <>
                         <button className={`${btn} border-good/50 bg-good/[.08] text-good`} disabled={busy}

@@ -27,6 +27,22 @@ matrix-loop 是**无人值守的自动 loop**(选题→脚本→视频→审核�
 ## 实测(2026-07-15)
 asset 8(Aurea/askaurea)跑通全链:brief→Palmier(建9:16工程+导入matrix-loop成片+加绿色 `Aurea @askaurea` 下三分之一)→导出 palmier_8.mp4(61.5MB)→finish 回写→`:8000/media/palmier_8.mp4` 200 可播。
 
+## 自动化(定时精修 pass)+ 前端按钮
+
+**前端按钮**:视频工作台「制作中」卡片里,ready 成片有「🎬 送 Palmier 精修」按钮 → `POST /video-assets/{id}/queue-palmier`(把 asset.stage 置 `palmier_queued`)。已精修的显示「✓ 已精修」,排队中显示「⏳ 精修排队中」。
+
+**定时 pass**(`scripts/`):
+- `palmier-finish-pass.md` — agent 提示词(找 ready 且未 palmier 的 approved/queued 成片,逐个走 brief→Palmier→export→finish,单次最多 3 条)。
+- `palmier-finish-pass.sh` — 无头 `claude -p`,**scoped allowlist**(仅 `mcp__palmier-pro` + `Bash(curl:*)`,非 `--dangerously-skip-permissions`)。
+- `com.matrixloop.palmier-finish.plist` — launchd,每 30 分钟一次,`RunAtLoad` false。
+
+**启用**(你的决定——这是"持久化"那步):
+```bash
+cp scripts/com.matrixloop.palmier-finish.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.matrixloop.palmier-finish.plist   # 停用: unload
+```
+前提:Palmier Pro 开着 + 后端 :8000 在跑 + palmier MCP 已 user-scope 注册。日志 `/tmp/palmier-finish-pass.log`。先手动验证一次:`bash scripts/palmier-finish-pass.sh`。
+
 ## 备注
 - Palmier `canGenerate:true`(账号已登录订阅)→ 也能在时间线内用 Kling/Seedance/Veo 生成补拍素材(`list_models` 先看)。
 - 想批量:Palmier 一次一工程,适合逐条精修;要自动化可由「计划任务里的 Claude Code(带 palmier MCP)」逐个 asset 跑本流程。
