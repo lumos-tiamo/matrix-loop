@@ -437,6 +437,75 @@ def set_video_review(asset_id: int, payload: schemas.SetVideoReview, db: Session
     return asset
 
 
+def _palmier_brand(acc, brief) -> dict:
+    md = ((getattr(brief, "main_direction", "") if brief else "") or "").lower()
+    color, accent = "#14331F", "#C6FF3A"  # default AI/科普
+    for keys, c, a in (
+        (("airdrop", "空投", "撸毛", "farm"), "#8B5CFF", "#C6FF3A"),
+        (("trad", "charts", "chart", "技术", "交易", "ta"), "#12233F", "#38BDF8"),
+        (("yield", "defi", "gold", "黄金", "理财", "收益", "rwa"), "#3A2A08", "#F5B301"),
+    ):
+        if any(k in md for k in keys):
+            color, accent = c, a
+            break
+    name = (getattr(brief, "persona", None) if brief else None) \
+        or (getattr(brief, "main_direction", None) if brief else None) \
+        or (getattr(acc, "handle", None) if acc else None) or "Channel"
+    return {"name": str(name)[:32], "color": color, "accent": accent,
+            "handle": (getattr(acc, "handle", "") if acc else "")}
+
+
+@router.get("/video-assets/{asset_id}/palmier-brief")
+def palmier_brief(asset_id: int, db: Session = Depends(get_db)) -> dict:
+    """Everything an agent needs to build/finish this asset in Palmier: the local source file,
+    the narration script, per-channel brand config, and resolution."""
+    import os
+    from app.config import settings
+    a = db.get(VideoAsset, asset_id)
+    if a is None:
+        raise HTTPException(status_code=404, detail="video asset not found")
+    fname = (a.media_url or "").rsplit("/", 1)[-1]
+    vids = os.path.abspath(settings.video_output_dir)
+    local = os.path.join(vids, fname) if fname else None
+    script = db.get(Draft, a.script_draft_id) if a.script_draft_id else None
+    acc = db.get(Account, a.account_id)
+    brief = db.scalar(select(ChannelBrief).where(ChannelBrief.account_id == a.account_id))
+    return {
+        "asset_id": a.id, "status": a.status, "review_status": a.review_status,
+        "media_url": a.media_url,
+        "local_path": local if (local and os.path.exists(local)) else None,
+        "script": script.content if script else None,
+        "account": ({"platform": acc.platform, "handle": acc.handle, "vertical": acc.vertical} if acc else None),
+        "brand": _palmier_brand(acc, brief),
+        "resolution": [1080, 1920],
+    }
+
+
+@router.post("/video-assets/{asset_id}/finish", response_model=schemas.VideoAssetOut)
+def palmier_finish(asset_id: int, payload: schemas.PalmierFinishIn, db: Session = Depends(get_db)) -> VideoAsset:
+    """Register a Palmier-exported file as this asset's finished media (repoints media_url;
+    copies the file into video_output_dir if it isn't already there)."""
+    import os
+    import shutil
+    from app.config import settings
+    a = db.get(VideoAsset, asset_id)
+    if a is None:
+        raise HTTPException(status_code=404, detail="video asset not found")
+    vids = os.path.abspath(settings.video_output_dir)
+    fname = os.path.basename(payload.file_path)
+    src = os.path.abspath(payload.file_path) if os.path.isabs(payload.file_path) else os.path.join(vids, fname)
+    if not os.path.exists(src):
+        raise HTTPException(status_code=422, detail=f"file not found: {src}")
+    dst = os.path.join(vids, fname)
+    if os.path.abspath(src) != dst:
+        shutil.copy(src, dst)
+    a.media_url = f"{settings.public_base_url}/media/{fname}"
+    if "palmier" not in (a.provider or ""):
+        a.provider = ((a.provider or "")[:24] + "+palmier")
+    db.commit()
+    return a
+
+
 @router.post("/accounts/{account_id}/generate-video", response_model=schemas.VideoAssetOut, status_code=201)
 def generate_video_route(account_id: int, payload: schemas.GenerateVideoIn, db: Session = Depends(get_db)) -> VideoAsset:
     acc = db.get(Account, account_id)

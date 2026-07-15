@@ -180,6 +180,10 @@ class VideoAssetOut(BaseModel):
     created_at: datetime
 
 
+class PalmierFinishIn(BaseModel):
+    file_path: str   # absolute path, or a bare filename already in video_output_dir, of the Palmier export
+
+
 class SetVideoReview(BaseModel):
     review_status: str
 
