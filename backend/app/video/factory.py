@@ -56,6 +56,15 @@ def _waoowaoo_story_writer(settings):
     return _write
 
 
+def _compositor(settings):
+    """Final-mux strategy for faceless-based providers: RemotionComposer when configured, else
+    None (FacelessVideoProvider falls back to its built-in ffmpeg mux)."""
+    if getattr(settings, "faceless_compositor", "ffmpeg") != "remotion":
+        return None
+    from app.video.remotion_composer import RemotionComposer
+    return RemotionComposer(remotion_dir=settings.remotion_dir, node_bin=settings.remotion_node_bin)
+
+
 def resolve_video_provider():
     """Return the configured video provider. Defaults to FakeVideoProvider. Never raises —
     a misconfigured provider must not take down the loop; it falls back to fake."""
@@ -72,6 +81,7 @@ def resolve_video_provider():
                 tts=tts, visual=visual,
                 output_dir=settings.video_output_dir,
                 public_base_url=settings.public_base_url,
+                compositor=_compositor(settings),
             )
         if settings.video_provider == "avatar":
             # Aurea digital-host: newapi still (Nano-Banana, character-consistent) +
@@ -87,6 +97,7 @@ def resolve_video_provider():
                 tts=tts, visual=visual,
                 output_dir=settings.video_output_dir,
                 public_base_url=settings.public_base_url,
+                compositor=_compositor(settings),
             )
         if settings.video_provider == "waoowaoo_narrated":
             # waoowaoo drama clips (b-roll) + TTS 口播 + burned captions, composed by faceless.
@@ -118,6 +129,7 @@ def resolve_video_provider():
                 tts=tts, visual=visual,
                 output_dir=settings.video_output_dir,
                 public_base_url=settings.public_base_url,
+                compositor=_compositor(settings),
             )
         if settings.video_provider == "runninghub":
             if settings.runninghub_api_key:

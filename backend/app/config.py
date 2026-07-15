@@ -61,6 +61,10 @@ class Settings(BaseSettings):
     tts_base_url: str | None = None       # if None, the TTS factory falls back to anthropic_base_url
     tts_api_key: str | None = None        # if None, the TTS factory falls back to anthropic_api_key
     faceless_visual: str = "fake"         # aitoearn | seedance | fake — inner clip provider for b-roll
+    # final-mux layer: ffmpeg (built-in) or remotion (React brand templates, headless render)
+    faceless_compositor: str = "ffmpeg"   # ffmpeg | remotion
+    remotion_dir: str = "../remotion"     # relative to backend CWD (matrix-loop/remotion)
+    remotion_node_bin: str = "node"
 
     # --- waoowaoo AI-film b-roll (drama clips as faceless background) ---
     # video_provider="waoowaoo_narrated" = faceless(TTS+captions) with a WaoowaooBrollProvider

@@ -26,7 +26,7 @@ class FacelessVideoProvider:
 
     def __init__(self, *, tts, visual, output_dir="./data/videos",
                  public_base_url="http://127.0.0.1:8010", run=None,
-                 resolution=(1080, 1920), proc_timeout=600):
+                 resolution=(1080, 1920), proc_timeout=600, compositor=None):
         self._tts = tts
         self._visual = visual
         self._output_dir = os.path.abspath(output_dir)
@@ -34,6 +34,8 @@ class FacelessVideoProvider:
         self._run = run or self._default_run
         self._w, self._h = resolution
         self._proc_timeout = proc_timeout
+        # optional final-mux strategy (e.g. RemotionComposer); None = built-in ffmpeg mux
+        self._compositor = compositor
 
     def _default_run(self, cmd):
         p = subprocess.run(cmd, capture_output=True, text=True, timeout=self._proc_timeout)
@@ -117,6 +119,39 @@ class FacelessVideoProvider:
         logger.error(msg)
         raise RuntimeError(msg)
 
+    def _raw_visual_source(self, clip):
+        """Map an inner-visual clip to (kind, src) for an external compositor: fake -> gradient,
+        still -> the source image, otherwise the b-roll video (local path or url)."""
+        prov = getattr(clip, "provider", "")
+        if prov == "fake":
+            return "none", ""
+        if prov == "still":
+            return "image", (getattr(clip, "metadata", {}) or {}).get("path") or clip.media_url
+        return "video", clip.media_url
+
+    def _compose_external(self, clip, tts_result, narration: str, duration: float, brief) -> VideoResult:
+        """Delegate the final mux to self._compositor (e.g. Remotion) instead of ffmpeg."""
+        kind, src = self._raw_visual_source(clip)
+        timings = plan_caption_timings(chunk_caption(narration), duration)
+        out_path = self._compositor.compose(
+            background_kind=kind, background_src=src or "",
+            audio_path=getattr(tts_result, "audio_path", None), duration=duration,
+            captions=timings, brief=brief, output_dir=self._output_dir,
+            resolution=(self._w, self._h),
+        )
+        fname = os.path.basename(out_path)
+        digest = hashlib.sha1(narration.encode("utf-8")).hexdigest()[:16]
+        return VideoResult(
+            media_url=f"{self._public_base}/media/{fname}",
+            duration=duration,
+            cost=float(getattr(clip, "cost", 0.0) or 0.0),
+            provider=self.name,
+            dedup_key=digest,
+            metadata={"tts_provider": getattr(self._tts, "name", ""),
+                      "visual_provider": getattr(clip, "provider", ""),
+                      "compositor": getattr(self._compositor, "name", "external")},
+        )
+
     def generate(self, *, script: str, brief, params: dict) -> VideoResult:
         params = params or {}
         _on_progress = params.get("on_progress")
@@ -135,6 +170,10 @@ class FacelessVideoProvider:
         try:
             clip = self._visual.generate(script=script, brief=brief, params=params)  # visual reports 10→88
             rep("字幕 + 合成", 90)
+            if self._compositor is not None:
+                result = self._compose_external(clip, tts_result, narration, duration, brief)
+                rep("完成合成", 99)
+                return result
             bg = self._background(clip, duration, tmp)
             chunks = chunk_caption(narration)
             timings = plan_caption_timings(chunks, duration)

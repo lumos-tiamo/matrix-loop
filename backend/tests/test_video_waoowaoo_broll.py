@@ -76,7 +76,7 @@ def test_orchestration_sequence_returns_broll(monkeypatch, tmp_path):
     fake = _FakeWaoowaoo(panels=2)
     prov = _provider(fake, output_dir=str(tmp_path))
     # isolate orchestration from SiliconFlow + ffmpeg
-    monkeypatch.setattr(prov, "_panel_clip_urls", lambda pid, eid, ids: ["c0", "c1"])
+    monkeypatch.setattr(prov, "_panel_clip_urls", lambda pid, eid, ids, rep=None: ["c0", "c1"])
     monkeypatch.setattr(prov, "_concat_clips",
                         lambda urls, eid: (str(tmp_path / f"{eid}.mp4"), 12.5))
 
