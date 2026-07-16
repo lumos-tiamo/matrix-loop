@@ -71,10 +71,28 @@ def refresh_data():
     log(f"   dropped {dropped} stale OHLC cache file(s) -> live re-fetch on render")
 
 
+def _todays_daily_count() -> int:
+    """How many non-seed videos are already scheduled for today (idempotency vs the B-layer cron)."""
+    try:
+        import json
+        import urllib.request
+        from datetime import date
+        with urllib.request.urlopen("http://127.0.0.1:8000/schedule", timeout=20) as r:
+            items = json.loads(r.read().decode())
+        today = date.today().isoformat()
+        return sum(1 for x in items if not x.get("is_seed") and (x.get("date") == today))
+    except Exception:
+        return 0
+
+
 def daily_16():
     """Generate the day's fresh scheduled videos from the B-layer's VERIFIED trends (data-rich,
-    real numbers). Additive — NEVER touches the seed 16. (Run B-layer research first to refresh
-    trends; falls back to whatever verified trends are currently in the DB.)"""
+    real numbers). Additive — NEVER touches the seed 16. Idempotent: if the B-layer cron already
+    produced today's set, skip (don't double-generate)."""
+    already = _todays_daily_count()
+    if already >= 8:
+        log(f"   today already has {already} daily videos (B-layer cron ran) -> skip generation")
+        return
     r = subprocess.run([PY, "scripts/run_daily_cycle.py", "--from-trends", "--rounds", "4"],
                        cwd=BACKEND, capture_output=True, text=True, timeout=5400)
     for ln in r.stdout.strip().splitlines()[-6:]:
