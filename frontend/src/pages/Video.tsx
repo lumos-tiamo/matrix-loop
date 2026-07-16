@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, mediaSrc } from "../api/client";
 import { useAsync } from "../api/hooks";
-import type { DraftOut, VideoAssetOut } from "../api/types";
+import type { DraftOut, VideoAssetOut, PublishDispatchOut } from "../api/types";
 import { ChartCard } from "../components/ChartCard";
 import { StatTile } from "../components/StatTile";
 
@@ -204,6 +204,136 @@ function pipelineStage(hasScript: boolean, scriptAdopted: boolean, asset?: Video
   return { label: "⑤ 待审核", tone: "text-warn" };
 }
 
+// ---- 6-step pipeline tracker shown at the top of every card -------------------------------
+const PIPE_STEPS = ["采纳选题", "生成脚本", "采纳脚本", "生成视频", "剪辑精修", "发布配套"];
+function StepTracker({ hasScript, scriptAdopted, asset, published }: {
+  hasScript: boolean; scriptAdopted: boolean; asset?: VideoAssetOut; published?: boolean;
+}) {
+  const reached = [
+    true,                                                                              // ① 采纳选题(卡片存在即已有选题)
+    hasScript,                                                                          // ② 生成脚本
+    scriptAdopted,                                                                      // ③ 采纳脚本
+    !!asset && ["ready", "failed"].includes(asset.status) || asset?.review_status === "approved", // ④ 生成视频
+    !!asset && ((asset.provider || "").includes("palmier") || asset.stage === "palmier_queued" || asset.stage === "palmier_done"), // ⑤ 剪辑精修
+    !!published,                                                                        // ⑥ 发布配套/已排期
+  ];
+  let current = reached.findIndex((r) => !r);
+  if (current === -1) current = reached.length - 1;
+  return (
+    <div className="flex flex-wrap items-center gap-[3px]">
+      {PIPE_STEPS.map((label, i) => (
+        <span key={i}
+          className={`rounded px-[5px] py-[1px] font-mono text-[9px] ${
+            i === current ? "bg-violet/[.2] text-violet"
+              : reached[i] ? "bg-cyan/[.12] text-cyan"
+              : "bg-line/60 text-dim"}`}>
+          {i + 1} {label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+const SLOT_LABEL: Record<string, string> = {
+  first_reply: "X · 外链放首条回复", link_sticker_bio: "IG · link sticker + bio", bio: "bio 链接",
+};
+
+/** Step-6: edit the platform-native publishing companion content (caption/标签/外链槽/发布时间),
+ *  then 发布/排期 (which uses the saved plan). Only shown for approved assets. */
+function PublishPanel({ asset, accountId, platform, dispatch, run }: {
+  asset: VideoAssetOut; accountId: number; platform?: string;
+  dispatch?: PublishDispatchOut; run: (fn: () => Promise<unknown>) => Promise<void>;
+}) {
+  const defaultSlot = platform === "twitter" ? "first_reply" : platform === "instagram" ? "link_sticker_bio" : "bio";
+  const plan = useAsync(
+    () => api.getPublishPlan(asset.id).catch((e: Error & { status?: number }) => {
+      if (e.status === 404) return null;
+      throw e;
+    }),
+    [asset.id],
+  );
+  const [caption, setCaption] = useState("");
+  const [tags, setTags] = useState("");
+  const [slot, setSlot] = useState(defaultSlot);
+  const [linkText, setLinkText] = useState("");
+  const [when, setWhen] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (plan.loading) return;
+    const p = plan.data;
+    setCaption(p?.caption ?? "");
+    setTags((p?.hashtags ?? []).join(" "));
+    setSlot(p?.external_link_slot ?? defaultSlot);
+    setLinkText(p?.external_link_text ?? "");
+    setWhen(p?.posting_time ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asset.id, plan.loading]);
+
+  async function save(status: string) {
+    setBusy(true); setMsg(null);
+    try {
+      await api.putPublishPlan(asset.id, {
+        caption: caption.trim() || null,
+        hashtags: tags.split(/[\s,，]+/).map((s) => s.trim()).filter(Boolean),
+        external_link_slot: slot,
+        external_link_text: linkText.trim() || null,
+        posting_time: when.trim() || null,
+        status,
+      });
+      setMsg(status === "ready" ? "✓ 已标记就绪" : "✓ 已保存草稿");
+      plan.reload();
+    } catch (e) { setMsg(String(e)); } finally { setBusy(false); }
+  }
+
+  const inp = "w-full rounded-[7px] border border-line bg-bg px-[8px] py-[5px] font-mono text-[11px] text-text placeholder:text-dim focus:border-violet focus:outline-none";
+  const btn = "rounded-md border px-[10px] py-[4px] font-mono text-[11px] transition-colors disabled:opacity-50";
+
+  return (
+    <div className="mt-2 rounded-md border border-violet/30 bg-violet/[.04] p-[10px]">
+      <div className="mb-[6px] font-mono text-[10px] uppercase tracking-wider text-violet">发布配套内容 · step 6</div>
+      <div className="space-y-[6px]">
+        <textarea aria-label="平台文案" className={`${inp} min-h-[64px] resize-y`} placeholder="平台正文文案(平台原生口吻)"
+          value={caption} onChange={(e) => setCaption(e.target.value)} />
+        <input aria-label="话题标签" className={inp} placeholder="话题标签(空格分隔,如 #airdrop #defi)"
+          value={tags} onChange={(e) => setTags(e.target.value)} />
+        <div className="flex gap-2">
+          <select aria-label="外链位置" className={inp} value={slot} onChange={(e) => setSlot(e.target.value)}>
+            <option value="first_reply">X · 首条回复</option>
+            <option value="link_sticker_bio">IG · link sticker + bio</option>
+            <option value="bio">bio 链接(未满1000粉)</option>
+          </select>
+          <input aria-label="发布时间" className={inp} placeholder="发布时间,如 台湾 20:00"
+            value={when} onChange={(e) => setWhen(e.target.value)} />
+        </div>
+        <input aria-label="外链引流话术" className={inp} placeholder={`外链引流话术(${SLOT_LABEL[slot] ?? slot})`}
+          value={linkText} onChange={(e) => setLinkText(e.target.value)} />
+        <div className="flex flex-wrap items-center gap-2 pt-[2px]">
+          <button className={`${btn} border-muted/40 text-muted hover:text-text`} disabled={busy}
+            onClick={() => save("draft")}>{busy ? "…" : "存草稿"}</button>
+          <button className={`${btn} border-cyan/50 bg-cyan/[.08] text-cyan hover:bg-cyan/[.16]`} disabled={busy}
+            onClick={() => save("ready")}>标记就绪</button>
+          <div className="flex-1" />
+          {dispatch ? (
+            <span className="font-mono text-[10px] text-good">
+              ✓ 已{dispatch.status === "published" ? "发布" : "排期"}{dispatch.publish_at ? ` · ${dispatch.publish_at.slice(0, 16).replace("T", " ")}` : ""}
+            </span>
+          ) : (
+            <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet hover:bg-violet/[.18]`} disabled={busy}
+              title="用上面保存的配套内容发布/排期(未配 AiToEarn 会诚实报错)"
+              onClick={() => run(() => api.publish(accountId, asset.id))}>发布 / 排期 →</button>
+          )}
+        </div>
+        {plan.data?.status === "ready" && !dispatch && (
+          <p className="font-mono text-[10px] text-good">配套内容已就绪,可发布</p>
+        )}
+        {msg && <p className="font-mono text-[10px] text-muted">{msg}</p>}
+      </div>
+    </div>
+  );
+}
+
 const GEN_POLL_MS = 4000;
 
 /** Video workbench — two lists of collapsible pipeline cards (Seedance/RunningHub job-card style):
@@ -213,20 +343,34 @@ const GEN_POLL_MS = 4000;
 function Workbench({ accountId, onChange }: { accountId: number; onChange: () => void }) {
   const detail = useAsync(() => api.getAccount(accountId), [accountId]);
   const assetsQ = useAsync(() => api.listVideoAssets({ account_id: accountId }), [accountId]);
+  const dispatchesQ = useAsync(() => api.listDispatches(accountId), [accountId]);
   const [now, setNow] = useState(() => Date.now());
   const [msg, setMsg] = useState<string | null>(null);
 
   const assets: VideoAssetOut[] = useMemo(() => assetsQ.data ?? [], [assetsQ.data]);
+  const platform = detail.data?.platform;
   const hasGenerating = assets.some((a) => a.status === "generating");
+  const hasPalmierQueued = assets.some((a) => a.stage === "palmier_queued");
+  // dispatch by video_asset_id (non-failed = published/queued) → drives step-6 "已发布" state
+  const dispatchByAsset = useMemo(() => {
+    const m = new Map<number, PublishDispatchOut>();
+    const rows = Array.isArray(dispatchesQ.data) ? dispatchesQ.data : [];
+    for (const d of rows) {
+      if (d.video_asset_id != null && d.status !== "failed" && !m.has(d.video_asset_id)) {
+        m.set(d.video_asset_id, d);
+      }
+    }
+    return m;
+  }, [dispatchesQ.data]);
 
-  // live poll (asset progress + storyboard/script landing) while anything is generating
+  // live poll (asset progress + script landing + palmier finishing) while anything is in flight
   useEffect(() => {
-    if (!hasGenerating) return;
+    if (!hasGenerating && !hasPalmierQueued) return;
     const tick = setInterval(() => setNow(Date.now()), 1000);
-    const poll = setInterval(() => { assetsQ.reload(); detail.reload(); }, GEN_POLL_MS);
+    const poll = setInterval(() => { assetsQ.reload(); detail.reload(); dispatchesQ.reload(); }, GEN_POLL_MS);
     return () => { clearInterval(tick); clearInterval(poll); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasGenerating]);
+  }, [hasGenerating, hasPalmierQueued]);
 
   const { topics, scriptByTopic, assetByScript } = useMemo(() => {
     const runs = detail.data?.loop_runs ?? [];
@@ -270,7 +414,7 @@ function Workbench({ accountId, onChange }: { accountId: number; onChange: () =>
         <div className="space-y-[8px]">
           {pending.map((t) => (
             <TopicCard key={t.id} topic={t} script={scriptByTopic.get(t.id)} asset={undefined}
-              accountId={accountId} now={now} run={run} defaultOpen={false} />
+              accountId={accountId} now={now} run={run} defaultOpen={false} platform={platform} />
           ))}
         </div>
       </ChartCard>
@@ -287,7 +431,8 @@ function Workbench({ accountId, onChange }: { accountId: number; onChange: () =>
             const a = s ? assetByScript.get(s.id) : undefined;
             return (
               <TopicCard key={t.id} topic={t} script={s} asset={a}
-                accountId={accountId} now={now} run={run} defaultOpen />
+                accountId={accountId} now={now} run={run} defaultOpen
+                platform={platform} dispatch={a ? dispatchByAsset.get(a.id) : undefined} />
             );
           })}
         </div>
@@ -298,9 +443,10 @@ function Workbench({ accountId, onChange }: { accountId: number; onChange: () =>
 }
 
 /** One collapsible card = one topic's whole pipeline: 选题 → 脚本 → 视频(进度/预览/审核/发布). */
-function TopicCard({ topic, script, asset, accountId, now, run, defaultOpen }: {
+function TopicCard({ topic, script, asset, accountId, now, run, defaultOpen, platform, dispatch }: {
   topic: DraftOut; script?: DraftOut; asset?: VideoAssetOut; accountId: number; now: number;
   run: (fn: () => Promise<unknown>) => Promise<void>; defaultOpen: boolean;
+  platform?: string; dispatch?: PublishDispatchOut;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const [busy, setBusy] = useState(false);
@@ -329,6 +475,8 @@ function TopicCard({ topic, script, asset, accountId, now, run, defaultOpen }: {
 
       {open && (
         <div className="space-y-[10px] border-t border-line px-3 py-[10px]">
+          {/* 6 步流水线进度 */}
+          <StepTracker hasScript={!!script} scriptAdopted={!!scriptAdopted} asset={asset} published={!!dispatch} />
           {/* 选题 */}
           <div>
             <div className="mb-[3px] font-mono text-[10px] uppercase tracking-wider text-dim">选题 · #{topic.id}</div>
@@ -381,6 +529,14 @@ function TopicCard({ topic, script, asset, accountId, now, run, defaultOpen }: {
               {asset?.status === "generating" && (
                 <GenProgress createdAt={asset.created_at} now={now} stage={asset.stage} progress={asset.progress} />
               )}
+              {asset?.status === "generating" && (asset.progress ?? 0) === 0 &&
+                now - new Date(asset.created_at).getTime() > 240000 && (
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-alert">⚠ 疑似卡住(4min 无进度)</span>
+                  <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet`} disabled={busy}
+                    onClick={() => act(() => api.generateVideo(accountId, script.id))}>重试</button>
+                </div>
+              )}
               {asset?.status === "failed" && (
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-[11px] text-alert">生成失败</span>
@@ -422,11 +578,11 @@ function TopicCard({ topic, script, asset, accountId, now, run, defaultOpen }: {
                           onClick={() => act(() => api.setVideoReview(asset.id, "rejected"))}>否决</button>
                       </>
                     )}
-                    {asset.review_status === "approved" && (
-                      <button className={`${btn} border-violet/50 bg-violet/[.1] text-violet`} disabled={busy}
-                        onClick={() => act(() => api.publish(accountId, asset.id))}>发布/排期</button>
-                    )}
                   </div>
+                  {/* step 6 · 发布配套内容(仅审核通过后) */}
+                  {asset.review_status === "approved" && (
+                    <PublishPanel asset={asset} accountId={accountId} platform={platform} dispatch={dispatch} run={run} />
+                  )}
                 </div>
               )}
             </div>

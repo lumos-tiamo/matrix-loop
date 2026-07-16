@@ -213,6 +213,31 @@ class PublishDispatchOut(BaseModel):
     created_at: datetime
 
 
+class PublishPlanIn(BaseModel):
+    caption: str | None = None
+    hashtags: list[str] = []
+    external_link_slot: str | None = None   # first_reply|link_sticker_bio|bio
+    external_link_text: str | None = None
+    posting_time: str | None = None
+    status: str = "draft"                    # draft|ready
+
+
+class PublishPlanOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    account_id: int
+    video_asset_id: int
+    platform: str | None
+    caption: str | None
+    hashtags: list[str]
+    external_link_slot: str | None
+    external_link_text: str | None
+    posting_time: str | None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+
 class TrendIn(BaseModel):
     source: str
     title: str

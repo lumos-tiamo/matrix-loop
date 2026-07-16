@@ -4,6 +4,7 @@ import type {
   FlowData, SegmentOut, EndpointOut, CompositionItem,
   ChannelBriefOut, VideoAssetOut, VideoUsage, SetBriefIn,
   PublishDispatchOut,
+  PublishPlanOut, PublishPlanIn,
   FlywheelState,
   FlywheelAccountLive, FlywheelEventLive,
 } from "./types";
@@ -132,6 +133,12 @@ export const api = {
   listDispatches: (accountId: number) =>
     req<PublishDispatchOut[]>(`/publish/dispatches?account_id=${accountId}`),
   refreshDispatch: (id: number) => req<PublishDispatchOut>(`/publish/dispatches/${id}`),
+  // ---- Publish plan (step-6 companion content) ----
+  getPublishPlan: (assetId: number) => req<PublishPlanOut>(`/video-assets/${assetId}/publish-plan`),
+  putPublishPlan: (assetId: number, body: PublishPlanIn) =>
+    req<PublishPlanOut>(`/video-assets/${assetId}/publish-plan`, {
+      method: "PUT", body: JSON.stringify(body),
+    }),
 
   // ---- Flywheel ----
   getFlywheel: () => req<FlywheelState>("/flywheel"),

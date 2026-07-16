@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
 from app.api.overview import build_overview
-from app.models import Account, AccountSegment, AudienceSegment, Calibration, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, PublishDispatch, Recommendation, Snapshot, Trend, VideoAsset
+from app.models import Account, AccountSegment, AudienceSegment, Calibration, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, PublishDispatch, PublishPlan, Recommendation, Snapshot, Trend, VideoAsset
 from app.flow.build import build_flow
 from app.flow.classify import classify_audience
 from app.analysis.claude_client import ClaudeClient
@@ -522,6 +522,50 @@ def queue_palmier(asset_id: int, db: Session = Depends(get_db)) -> VideoAsset:
     return a
 
 
+@router.get("/video-assets/{asset_id}/publish-plan", response_model=schemas.PublishPlanOut)
+def get_publish_plan(asset_id: int, db: Session = Depends(get_db)) -> PublishPlan:
+    """Step-6 companion content for this asset (caption/hashtags/external-link slot/posting time)."""
+    plan = db.scalar(select(PublishPlan).where(PublishPlan.video_asset_id == asset_id))
+    if plan is None:
+        raise HTTPException(status_code=404, detail="no publish plan for this asset yet")
+    return plan
+
+
+@router.put("/video-assets/{asset_id}/publish-plan", response_model=schemas.PublishPlanOut)
+def upsert_publish_plan(asset_id: int, payload: schemas.PublishPlanIn, db: Session = Depends(get_db)) -> PublishPlan:
+    """Create or update the step-6 companion content for a video asset (one plan per asset)."""
+    asset = db.get(VideoAsset, asset_id)
+    if asset is None:
+        raise HTTPException(status_code=404, detail="video asset not found")
+    acc = db.get(Account, asset.account_id)
+    plan = db.scalar(select(PublishPlan).where(PublishPlan.video_asset_id == asset_id))
+    if plan is None:
+        plan = PublishPlan(account_id=asset.account_id, video_asset_id=asset_id)
+        db.add(plan)
+    plan.platform = acc.platform if acc else plan.platform
+    plan.caption = payload.caption
+    plan.hashtags = list(payload.hashtags or [])
+    plan.external_link_slot = payload.external_link_slot
+    plan.external_link_text = payload.external_link_text
+    plan.posting_time = payload.posting_time
+    plan.status = payload.status or "draft"
+    db.commit()
+    db.refresh(plan)
+    return plan
+
+
+def _caption_from_plan(db: Session, asset_id: int) -> str | None:
+    """Compose a single dispatch caption from the stored publish plan (caption + hashtags)."""
+    plan = db.scalar(select(PublishPlan).where(PublishPlan.video_asset_id == asset_id))
+    if plan is None:
+        return None
+    parts = [plan.caption or ""]
+    if plan.hashtags:
+        parts.append(" ".join(plan.hashtags))
+    composed = "\n\n".join(p for p in parts if p).strip()
+    return composed or None
+
+
 @router.post("/accounts/{account_id}/generate-video", response_model=schemas.VideoAssetOut, status_code=201)
 def generate_video_route(account_id: int, payload: schemas.GenerateVideoIn, db: Session = Depends(get_db)) -> VideoAsset:
     acc = db.get(Account, account_id)
@@ -557,8 +601,10 @@ def publish_account(account_id: int, payload: schemas.PublishIn, db: Session = D
         raise HTTPException(status_code=404, detail="video asset not found for this account")
     client = _aitoearn_client_or_422()
     from app.publish.dispatch import create_dispatch, PublishNotReady
+    # Step-6: prefer the stored publish plan's companion content when no explicit caption is given.
+    caption = payload.caption if payload.caption is not None else _caption_from_plan(db, asset.id)
     try:
-        return create_dispatch(db, acc, asset, client=client, caption=payload.caption, publish_at=payload.publish_at)
+        return create_dispatch(db, acc, asset, client=client, caption=caption, publish_at=payload.publish_at)
     except PublishNotReady as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001 - upstream connector error

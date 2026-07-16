@@ -247,6 +247,32 @@ class PublishDispatch(Base):
         super().__init__(**kw)
 
 
+class PublishPlan(Base):
+    """Step-6 companion content for one video asset: the platform-native caption, hashtags,
+    external-link placement (X=first_reply / IG=link_sticker_bio / TikTok=bio), and suggested
+    posting time. Human-editable before dispatch; publish() prefers this over an ad-hoc caption.
+    One plan per asset (upsert)."""
+    __tablename__ = "publish_plans"
+    __table_args__ = (UniqueConstraint("video_asset_id", name="uq_publish_plan_asset"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
+    video_asset_id: Mapped[int] = mapped_column(ForeignKey("video_assets.id"), index=True)
+    platform: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    caption: Mapped[str | None] = mapped_column(String, nullable=True)
+    hashtags: Mapped[list] = mapped_column(JSON, default=list)
+    external_link_slot: Mapped[str | None] = mapped_column(String(32), nullable=True)  # first_reply|link_sticker_bio|bio
+    external_link_text: Mapped[str | None] = mapped_column(String, nullable=True)
+    posting_time: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="draft")   # draft|ready
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+
+    def __init__(self, **kw):
+        kw.setdefault("hashtags", list())
+        super().__init__(**kw)
+
+
 class AppState(Base):
     __tablename__ = "app_state"
     key: Mapped[str] = mapped_column(String(64), primary_key=True)

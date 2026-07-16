@@ -72,6 +72,18 @@ def resolve_video_provider():
     from app.video.fake import FakeVideoProvider
 
     try:
+        if settings.video_provider == "hyperframes":
+            import os
+            import sys
+            from app.video.hyperframes import HyperframesVideoProvider
+            batch = os.path.abspath(os.path.join(os.getcwd(), settings.hyperframes_batch_dir))
+            return HyperframesVideoProvider(
+                batch_dir=batch,
+                python_bin=settings.hyperframes_python or sys.executable,
+                output_dir=settings.video_output_dir,
+                public_base_url=settings.public_base_url,
+                quality=settings.hyperframes_quality,
+            )
         if settings.video_provider == "faceless":
             from app.video.faceless import FacelessVideoProvider
             from app.video.tts.factory import resolve_tts_provider

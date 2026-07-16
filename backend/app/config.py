@@ -32,7 +32,12 @@ class Settings(BaseSettings):
     scheduler_autostart: bool = False
 
     # Video generation
-    video_provider: str = "fake"                      # fake | seedance | aitoearn | faceless | runninghub | avatar | waoowaoo_narrated
+    video_provider: str = "fake"                      # fake | seedance | aitoearn | faceless | runninghub | avatar | waoowaoo_narrated | hyperframes
+    # hyperframes = deterministic HTML->MP4 (HeyGen HyperFrames); same watchable pipeline as the
+    # curated matrix batch. Publish-quality, zero-gacha, low-AI-feel. This is the recommended default.
+    hyperframes_batch_dir: str = "../hyperframes-batch"   # relative to backend CWD (matrix-loop/hyperframes-batch)
+    hyperframes_python: str = ""                          # python with edge-tts; "" -> backend .venv python (sys.executable)
+    hyperframes_quality: str = "draft"                    # draft | high
     seedance_model: str = "seedance2.0fast"
     dreamina_bin: str = "dreamina"
     video_output_dir: str = "./data/videos"

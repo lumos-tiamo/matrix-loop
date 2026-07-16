@@ -184,6 +184,30 @@ export interface PublishDispatchOut {
   created_at: string;
 }
 
+// ---- Publish plan (step-6 companion content) ----
+export interface PublishPlanOut {
+  id: number;
+  account_id: number;
+  video_asset_id: number;
+  platform: string | null;
+  caption: string | null;
+  hashtags: string[];
+  external_link_slot: string | null;   // first_reply | link_sticker_bio | bio
+  external_link_text: string | null;
+  posting_time: string | null;
+  status: string;                        // draft | ready
+  created_at: string;
+  updated_at: string;
+}
+export interface PublishPlanIn {
+  caption?: string | null;
+  hashtags?: string[];
+  external_link_slot?: string | null;
+  external_link_text?: string | null;
+  posting_time?: string | null;
+  status?: string;
+}
+
 // ---- Flywheel ----
 export interface FlywheelStep { key: string; label: string; count: number; status: string; }
 export interface FlywheelAccount { id: number; handle: string; platform: string; autopilot: boolean; }

@@ -118,7 +118,11 @@ def generate_video(session: Session, account, script_draft, *, provider,
             session.rollback()
 
     try:
-        result = provider.generate(script=script, brief=brief, params={"on_progress": on_progress})
+        result = provider.generate(script=script, brief=brief, params={
+            "on_progress": on_progress,
+            "account_handle": getattr(account, "handle", None),
+            "account_id": account.id,
+        })
     except Exception as exc:  # noqa: BLE001 - isolate provider failures
         asset.status = "failed"
         session.commit()

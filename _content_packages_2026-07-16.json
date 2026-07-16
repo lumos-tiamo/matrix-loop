@@ -1,0 +1,1822 @@
+{
+  "packages": [
+    {
+      "id": "AE-1",
+      "account": "Airdrop Edge @AirdropEdge",
+      "platform": "X (Twitter)",
+      "language": "English",
+      "hook3s": "\"There's a top-tier airdrop where no snapshot has even been announced yet — meaning nothing you do is 'too late.' Here's the one.\"",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-3",
+          "narration": "There's a top-tier airdrop where no snapshot has even been announced yet. Which means nothing you do right now is too late.",
+          "onScreenCaption": "NO SNAPSHOT ANNOUNCED YET",
+          "visual": "Cold open on a dark violet (#8B5CFF) screen, big white kicker text. Small blinking dot next to 'window: OPEN'. No logos yet. Talking-head-style captions, hard cut."
+        },
+        {
+          "index": 2,
+          "seconds": "3-10",
+          "narration": "It's Polymarket. Their CMO publicly confirmed on record that there will be a token, and there will be an airdrop. That's not a rumor thread — that's the team saying it out loud.",
+          "onScreenCaption": "Polymarket — CMO on record: token + airdrop",
+          "visual": "REAL SOURCE: screen-record / screenshot of the CMO's public confirmation quote (highlight the words 'there will be a token / airdrop'). Blur any surrounding noise. Lower-third label: 'source: Polymarket CMO, public interview'."
+        },
+        {
+          "index": 3,
+          "seconds": "10-18",
+          "narration": "Two things make this rare. One: no snapshot date and no eligibility rules have been announced. Two: the farming window is still fully open. Most 'alpha' you get is already priced in. This one isn't.",
+          "onScreenCaption": "No snapshot date announced  ·  Window: FULLY open",
+          "visual": "Two-column infographic on violet. Left card 'SNAPSHOT — not announced' with an empty checkbox. Right card 'WINDOW — open' with a green pulse. Restrained fade-in, no confetti."
+        },
+        {
+          "index": 4,
+          "seconds": "18-27",
+          "narration": "There's also a paper trail. Parent company Blockratize filed POLY and dollar-POLY trademarks back in February 2026. Teams don't file ticker trademarks for fun.",
+          "onScreenCaption": "Blockratize filed POLY / $POLY trademark — Feb 2026",
+          "visual": "REAL SOURCE: screenshot of the USPTO trademark filing record (applicant 'Blockratize Inc.', marks 'POLY / $POLY', filed Feb 4 2026, status live/pending). Highlight applicant + date. Keep ticker on-screen (allowed on X)."
+        },
+        {
+          "index": 5,
+          "seconds": "27-36",
+          "narration": "On size, don't take a number as gospel: analysts estimate a community allocation somewhere in the single-digit-percent range, in line with past DeFi airdrops. Nothing official — treat it as an estimate, not a promise.",
+          "onScreenCaption": "Est. single-digit % to community (analyst estimate, unofficial)",
+          "visual": "Simple donut/bar infographic showing a small single-digit wedge in violet against grey remainder. Label 'to community (analyst estimate — unofficial)'. No price, no valuation, no market cap."
+        },
+        {
+          "index": 6,
+          "seconds": "36-52",
+          "narration": "So here's the executable part. Actually trade markets — real positions, don't just click around. Provide liquidity if you understand the risk. Use it across multiple weeks, not one panic session. And keep your wallet consistent so your activity is attributable whenever a snapshot happens.",
+          "onScreenCaption": "Trade real markets · Add liquidity (if you get the risk) · Be consistent · One wallet",
+          "visual": "4-step checklist that stamps in one line at a time (restrained slide-up). Each step gets a small violet number chip. Screen-record b-roll of a markets UI in the background, dimmed."
+        },
+        {
+          "index": 7,
+          "seconds": "52-66",
+          "narration": "The trap on every open airdrop is fake claim pages that drain your wallet the second you sign. There is no live claim right now — so anything telling you to 'claim POLY today' is a scam. Verify before you ever sign.",
+          "onScreenCaption": "No live claim yet = every 'claim now' is a SCAM",
+          "visual": "Red-flag card: a mock phishing 'CLAIM POLY' button with a big strike-through. Caption 'signing = drained'. Keep it clearly illustrative, not a real link."
+        },
+        {
+          "index": 8,
+          "seconds": "66-78",
+          "narration": "Tracking eligibility across farms and vetting claim links by hand is exhausting. That's the boring work I now hand to an AI — I ask it to check my status across farms and sanity-check any claim link before I sign. Link's in the first reply. Not financial advice — do your own research.",
+          "onScreenCaption": "Track farms + verify claim links before you sign → first reply",
+          "visual": "Close on the checklist collapsing into one line 'track + verify', then an arrow pointing DOWN to '↓ first reply'. End card violet with @AirdropEdge handle + 'NFA'."
+        }
+      ],
+      "platformCaption": "The one top-tier airdrop where no snapshot has even been announced yet.\n\nPolymarket's CMO confirmed on record a token + airdrop is coming. No snapshot date, no eligibility rules announced. Farming window: still fully open. Analysts estimate a single-digit-% community allocation — unofficial, treat as an estimate.\n\nFull farming checklist + the #1 scam to avoid in the video. 🧵 link below 👇\n\nNFA / DYOR.",
+      "hashtags": [
+        "#Airdrop",
+        "#Polymarket",
+        "#Airdrops",
+        "#DeFi",
+        "#CryptoSEA"
+      ],
+      "externalLink": {
+        "slot": "X = first reply. Link in the main body cuts reach by ~80%, so the body carries no link; the external link goes in the pinned first reply. Account already meets X's link threshold; X has no follower wall for external links.",
+        "text": "First reply: \"Doing the boring part with an AI: I have Nina track my eligibility across multiple farms AND verify any claim link before I sign it — so I don't get drained by a fake 'claim POLY' page. Try it → [Nina link]. NFA.\""
+      },
+      "postingTime": "SEA prime window: post 20:00–22:00 SGT/PHT (UTC+8), weekday. Drop the link as the pinned first reply within 30 seconds of posting, then actively reply to comments for the first 15 minutes to bank the higher reply-weight engagement.",
+      "compliance": "NFA — not financial advice, DYOR; nothing here is a solicitation and no returns are promised. Red-line self-check: (1) This is X, so no TikTok 3-sec filter applies — ticker $POLY and prices are allowed here; no '100x'/guaranteed-return language used regardless. (2) No blacklisted pseudo-facts used — NO gold market-cap/300%, NO Fed rate-cut claims, NO fake gold ATH, NO Robinhood AI-agent count, NO Ostium 'last season', NO BUIDL $25B, NO stale sUSDe 10–15%, NO App Store id as downloadable Nina. (3) Airdrop framed with relative timing only ('no snapshot announced yet / window open'); no fake countdown/urgency and no deadline claimed for POLY. Snapshot status stated as 'not announced' rather than the stronger unverifiable claim 'not taken'. (4) Supply figure downgraded to an explicit analyst ESTIMATE ('single-digit %, unofficial'), not asserted as reported or guaranteed allocation. (5) Scam segment teaches method + red flags only, does NOT name any single fraud case (no unverified naming). (6) Taiwan penalty split not relevant to this X/SEA post (no license/fraud sentencing claim made); XAUE not referenced here. (7) External link kept out of main body (~80% reach penalty) and placed in the pinned first reply; CTA verifies claim links before signing — safety-first framing. (8) Operator note in externalLink.slot translated to English so the package is pure-English with no leaked non-English strings.",
+      "hyperframesSpec": "Render 9:16 (1080x1920) deterministic MP4 from HTML. Palette: airdrop violet #8B5CFF primary, trading blue #38bdf8 accent for links/arrows, near-black #0B0B12 background, white #FFFFFF text, alert red #FF4D4D reserved ONLY for the scam frame. Type hierarchy: hook/kicker 88px bold, on-screen captions 64px semibold, data labels 40px medium, source lower-thirds 28px regular. Grid: 96px safe margins, single centered column, one idea per frame. Motion: restrained only — 200ms fade/slide-up per element, single blinking dot for 'window OPEN', NO confetti/parallax/zoom. Only render VERIFIED numbers/strings: (a) 'NO SNAPSHOT ANNOUNCED YET'; (b) 'Polymarket CMO on record: token + airdrop'; (c) 'Window: FULLY OPEN'; (d) 'Blockratize filed POLY / $POLY trademark — Feb 2026'; (e) 'Est. single-digit % to community (analyst estimate — unofficial)'. Do NOT render any price, market cap, valuation, countdown, or a hard '~5–10%' figure as if reported. Real-media frames (scenes 2, 4, and b-roll in 6) are placeholders in the HTML timeline to be composited with the actual CMO-quote screenshot, USPTO trademark-filing screenshot, and dimmed markets-UI screen recording. Persistent tiny 'NFA' watermark bottom-right from scene 2 onward. End card: violet full-bleed, @AirdropEdge + '↓ first reply' + 'NFA'.",
+      "factsUsed": [
+        {
+          "fact": "Polymarket CMO Matthew Modabber publicly confirmed, on record, that there will be a POLY token and an airdrop (no launch date given).",
+          "source": "Blockworks / Yahoo Finance / Bankless — Polymarket CMO Modabber public confirmation (Degenz Live podcast); founder Shayne Coplan teased $POLY on X. Verified 2026-07."
+        },
+        {
+          "fact": "No snapshot date and no eligibility criteria have been officially announced; the farming/eligibility window is still open (framed as 'not announced', not asserted as 'not taken').",
+          "source": "CoinCodex / KuCoin / cryptonews airdrop coverage — no official snapshot or eligibility disclosed as of mid-2026. Verified 2026-07."
+        },
+        {
+          "fact": "Parent company Blockratize Inc. filed U.S. trademarks for 'POLY' and '$POLY' on Feb 4, 2026 (intent-to-use, live/pending at USPTO).",
+          "source": "The Block / Blockonomi — USPTO filing records, applicant Blockratize Inc., filed 2026-02-04. Verified 2026-07."
+        },
+        {
+          "fact": "Analysts/community estimate a community allocation in the single-digit-percent range based on DeFi precedent — this is an unofficial estimate, not a reported or guaranteed figure.",
+          "source": "cryptonews / community analyst estimates — explicitly labeled speculation based on precedent; no official Polymarket allocation disclosed. Verified 2026-07."
+        },
+        {
+          "fact": "No live claim exists yet, so any page telling you to 'claim POLY' now is a scam — verify claim links before signing.",
+          "source": "Derived safety statement from verified status (no claim live / nothing announced) — general anti-phishing red flag, no named case."
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "No blacklisted pseudo-facts found (checked all 8: gold mcap/300%, Fed rate-cut, fake gold ATH, Robinhood AI agents, Ostium last season, BUIDL $25B, stale sUSDe, App Store id) — none present. No change needed there.",
+          "Softened the central hook/scenes 1 & 3 and factsUsed #2: changed the affirmative unverifiable claim 'snapshot has NOT been taken' to the sourceable 'no snapshot date / eligibility rules have been ANNOUNCED yet'. Sources confirm nothing has been announced, but do NOT confirm a snapshot was never taken. The 'nothing is too late / window open' angle is preserved honestly.",
+          "Downgraded the '~5–10% of supply (reported)' claim (scene 5, caption, hyperframes, factsUsed #4). Sources show this is an analyst/community ESTIMATE based on DeFi precedent, not 'reported' allocation. Reworded to 'analysts estimate a single-digit-% community allocation — unofficial, treat as an estimate' and removed the hard 5–10% figure and the word 'reporting'. Removed the '~5–10%' from renderable strings in hyperframesSpec.",
+          "Tightened fact sourcing: replaced vague internal 'Verified hook (verify=confirmed)' labels with the actual public sources (Blockworks/Yahoo/Bankless for the CMO; The Block/Blockonomi/USPTO for the trademark; CoinCodex/KuCoin for snapshot status). CMO named as Matthew Modabber; trademark date made precise (Feb 4, 2026, intent-to-use).",
+          "Translated the Chinese operator note in externalLink.slot to English so the package is pure-English (no leaked non-English strings). Content unchanged (X first-reply placement, ~80% body-link reach penalty, account meets link threshold).",
+          "Verified platform red lines: X post keeps $POLY ticker in body (allowed on X), external link is in the pinned first reply not the body — correct. No Aurea/quiet.yield involved, so no bio/link-sticker constraint applies. NFA present in body, caption, first reply, and end card.",
+          "Verified compliance scope: Taiwan penalty split and XAUE fixed-return language are not applicable (no license/fraud sentencing claim and no XAUE reference in this post); compliance note correctly states this. No dated airdrop (GRVT/Hyperlynx) referenced, so no 'recalculate on post day' note required, though the copy now avoids any hard deadline for POLY.",
+          "Publishable: hook still stops the scroll, 8 scenes / 78s is reasonable for a value-dense X airdrop thread video, CTA to first reply is natural. Corrections do not weaken the hook and remove overclaim/liability."
+        ]
+      }
+    },
+    {
+      "id": "AE-2",
+      "account": "Airdrop Edge @AirdropEdge",
+      "platform": "X (Twitter)",
+      "language": "English",
+      "hook3s": "\"Hyperlynx confirmed a 300M-token airdrop — and the boost that doubles your points is on a clock. Watch me set it up in 60 seconds.\"",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-3",
+          "narration": "Hyperlynx confirmed a 300M-token airdrop — and the boost that doubles your points is on a clock. Watch me set it up in 60 seconds.",
+          "onScreenCaption": "300M airdrop confirmed. The boost is on a clock.",
+          "visual": "Cold open on my screen recording of the Hyperlynx 'The Hunt' page (REAL SCREEN RECORDING). Fast zoom into the '300,000,000 LYNX' headline. Purple #8B5CFF accent bar top."
+        },
+        {
+          "index": 2,
+          "seconds": "3-12",
+          "narration": "Here's the deal, plain. 'The Hunt' allocates 300 million LYNX — that's 30% of total supply — to farmers. It's split 30% for trading, 70% for providing liquidity. So LP is where most of the reward lives.",
+          "onScreenCaption": "300M LYNX = 30% supply | 30% trade / 70% LP",
+          "visual": "Screen recording pans the official 'The Hunt' allocation section (REAL). Overlay a simple donut: 30% trade vs 70% LP in trade-blue #38bdf8. Keep motion minimal."
+        },
+        {
+          "index": 3,
+          "seconds": "12-22",
+          "narration": "Now the part people miss. The Genesis month runs a flat two-times boost — every point you earn this phase counts double. That window is time-boxed, so check today's exact deadline on-page before you touch anything, because it moves.",
+          "onScreenCaption": "Genesis month: flat 2x boost (check today's deadline)",
+          "visual": "Screen recording of the Genesis 2x boost banner (REAL). Big '2x' number in airdrop-purple. Small persistent footnote strip: 'Deadline moves — verify current date on-page.'"
+        },
+        {
+          "index": 4,
+          "seconds": "22-40",
+          "narration": "Let me show the setup on HyperEVM. Connect wallet. First a swap — small, just to register trading activity. Then I add liquidity to the pool. That LP position is what earns the bigger 70% weight. Confirm in wallet. Done — position live, now it's earning during the 2x phase.",
+          "onScreenCaption": "Swap → Add LP on HyperEVM → confirm",
+          "visual": "REAL screen recording of the actual HyperEVM flow: connect wallet, a small swap, then Add Liquidity, then wallet confirmation. Blur any personal balances. Caption chips step through '1 Swap / 2 Add LP / 3 Confirm'."
+        },
+        {
+          "index": 5,
+          "seconds": "40-52",
+          "narration": "The trap is the timing. TGE is expected around October to November, but the 2x only lives during Genesis. Miss that window and your points earn at base rate. This is the kind of thing you don't want to babysit manually.",
+          "onScreenCaption": "TGE ~Oct/Nov (expected) | 2x only during Genesis",
+          "visual": "Simple timeline graphic on dark bg: 'Genesis 2x' block highlighted in purple, arrow to 'TGE ~Oct/Nov (expected)' marker. Clean, no price charts, no tickers."
+        },
+        {
+          "index": 6,
+          "seconds": "52-62",
+          "narration": "So I let Nina track it for me — points progress, farm status, and the deadline — so I get a heads-up before the 2x window closes instead of finding out after. Link's in the first reply. Not financial advice — verify everything yourself before you commit.",
+          "onScreenCaption": "Track it, don't babysit it → link in first reply",
+          "visual": "Cut to a clean Nina UI beauty shot (product screen, no fabricated numbers). End card: '@AirdropEdge' + 'NFA' + arrow pointing down to 'first reply'. Purple #8B5CFF end frame."
+        }
+      ],
+      "platformCaption": "Hyperlynx 'The Hunt' is confirmed: 300M LYNX (30% of supply) going to farmers, split 30% trading / 70% LP.\n\nThe catch: Genesis month runs a flat 2x boost. Every point counts double — but only during that window, and the cutoff moves. Verify today's exact deadline on-page before you set up.\n\nWatch the 60s setup: swap → add LP on HyperEVM → confirm. LP carries the heavier 70% weight, so that's where the work is. TGE expected ~Oct/Nov (subject to change).\n\nI don't babysit farms manually anymore — I let an assistant track points + deadline so I get a heads-up before the 2x closes.\n\nSetup guide + tracker → first reply 👇\n\nNFA. DYOR.",
+      "hashtags": [
+        "#HyperEVM",
+        "#Hyperlynx",
+        "#airdrop",
+        "#DeFi",
+        "#LYNX"
+      ],
+      "externalLink": {
+        "slot": "X = first reply (drop link in reply within the first minute; keep the main post link-free to protect reach — organic video ≈10x, and reply weight is high)",
+        "text": "Don't want to manually check farm points + the 2x deadline every day? Nina tracks HyperEVM farm progress and pings you before the Genesis window closes → [Nina link]. (App unverified — confirm the official source yourself. NFA.)"
+      },
+      "postingTime": "SEA prime engagement window — post ~8:00-9:30 PM SGT/local (SEA pan-English). Reply with the link within 60 seconds of posting, then actively reply to comments for the first 15 minutes to ride reply weight and comment velocity.",
+      "compliance": "NFA (not financial advice) — stated on-screen (scene 6) and in caption/first reply. Red-line self-check for THIS post: (1) X-specific — link kept OUT of main post, placed in first reply only, to avoid the reach penalty; native video used for higher reach. (2) No fabricated numbers on-screen: only verified facts rendered (300M LYNX / 30% supply / 30-70 split / flat 2x / TGE ~Oct/Nov marked 'expected'). No price, no ticker price claims, no '100x', no guaranteed returns. (3) Airdrop deadline handled with RELATIVE wording ('on a clock', 'check today's deadline on-page', 'window moves', 'it moves') — the 'two weeks left' figure was NOT rendered because it was a July-early read; deadline label re-verify at publish. RE-VERIFY AT PUBLISH: on the day of posting, open the Hyperlynx page and confirm the Genesis 2x window is still open and TGE timing is unchanged before publishing; if the window has closed, do not post. (4) Nina app framed as 'unverified — confirm official source'; App Store id NOT asserted as downloadable Nina anywhere. (5) No single-source scam call-outs. (6) No XAUE/gold yield claims in this asset, so RWA yield/whitelist rules not triggered; no Taiwan-jurisdiction solicitation in this English SEA post, so the Taiwan penalty-split rule (unlicensed operation = 7yr/NT$100M vs fraud/manipulation = 10yr/NT$200M — kept separate if ever invoked) is not triggered here. (7) DYOR / verify-yourself CTA included. (8) Blacklist pseudo-facts scan: none present — no gold-token $7.1B/300%, no Fed rate-cut/new-chair claim, no May-2026 $4,768 gold ATH, no Robinhood 70k AI agents, no Ostium 'last quarter', no BUIDL $25B, no sUSDe 10-15%.",
+      "hyperframesSpec": "Render engine: HyperFrames HTML→deterministic MP4. Canvas 9:16, 1080x1920, 30fps. Account palette = Airdrop Edge → primary airdrop-purple #8B5CFF, secondary trade-blue #38bdf8 (for the trade/LP split donut). Background: near-black #0B0B12 with subtle purple radial glow top-center; no busy gradients. Typography: Inter/Söhne family — H1 headline 96-120px bold (data numbers), H2 label 48-56px medium, footnote/disclaimer 30-34px regular in muted gray #9AA0AE. Layout grid: 96px side margins, centered stacks, single focal number per frame. VERIFIED DATA POINTS TO RENDER (only these numbers): '300,000,000 LYNX', '30% of total supply', '30% trading / 70% LP', 'Flat 2x boost — Genesis month', 'TGE expected ~Oct/Nov 2026'. DO NOT render any price, ATH, ticker price, market cap, '2 weeks', or countdown numbers. Deadline shown as text label only: 'Deadline moves — verify current date on-page'. Persistent bottom strip on data frames: 'NFA'. Motion: restrained — number count-up on the 300M frame (0.6s ease-out), donut draw-in for the 30/70 split (0.8s), simple fade/slide 200ms between frames. End card frame: '@AirdropEdge' wordmark, purple bg, down-arrow '↓ link in first reply', 'NFA'. Screen-recording segments (swap+LP on HyperEVM) are composited live footage, NOT HyperFrames — HyperFrames renders only intro number cards, the 30/70 donut, the Genesis/TGE timeline, and the end card.",
+      "factsUsed": [
+        {
+          "fact": "Hyperlynx 'The Hunt' confirmed airdrop of 300M LYNX (30% of total supply)",
+          "source": "Verified hotspot hook (AE-2), verify=confirmed"
+        },
+        {
+          "fact": "Reward weighting: 30% trading / 70% LP",
+          "source": "Verified hotspot hook (AE-2), verify=confirmed"
+        },
+        {
+          "fact": "Genesis month runs a flat 2x boost",
+          "source": "Verified hotspot hook (AE-2), verify=confirmed"
+        },
+        {
+          "fact": "TGE expected ~2026-10/11 (expected, subject to change — rendered with 'expected' qualifier)",
+          "source": "Verified hotspot hook (AE-2), verify=confirmed"
+        },
+        {
+          "fact": "2x window deadline is time-boxed and moving ('two weeks left' was a July-early read) — expressed as relative wording only, re-verify on-page at publish, no number rendered",
+          "source": "Verified hotspot hook (AE-2) — deadline caveat"
+        },
+        {
+          "fact": "Setup executes on HyperEVM (swap + provide liquidity)",
+          "source": "Verified hotspot hook (AE-2) — form/format definition"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "Blacklist pseudo-facts: NONE detected. This asset does not touch gold-token market cap/300%, Fed rate-cut/new-chair, May-2026 $4,768 gold ATH, Robinhood 70k AI agents, Ostium 'last quarter', BUIDL $25B, or sUSDe 10-15% — all verified absent.",
+          "App Store id (item 8): compliant as written — Nina framed as 'App unverified — confirm the official source yourself' in both scene 6 and the first-reply link text; no App Store id asserted as downloadable Nina. Left as-is.",
+          "Deadline handling (moving 2x window): compliant — all references use relative wording ('on a clock','check today's deadline','it moves','window moves'); no number rendered on-screen. STRENGTHENED: added an explicit 'RE-VERIFY AT PUBLISH' instruction to the compliance block (open the Hyperlynx page on posting day, confirm Genesis 2x still open + TGE timing unchanged; do not post if the window has closed).",
+          "TGE date: changed 'TGE ~Oct/Nov' to 'TGE ~Oct/Nov (expected)' / 'subject to change' in scene 5, onScreenCaption, caption, hyperframes render label, and factsUsed to avoid presenting a soft expectation as a hard date.",
+          "hook3s wording: changed 'the boost that stacks your share' to 'the boost that doubles your points' and dropped 'just' — describes the verified mechanic (points count double) precisely rather than implying a guaranteed larger allocation/return. Mirrored in scene 1 narration + caption.",
+          "CTA softening: changed 'before you ape' (scene 6) to 'before you commit' to remove impulsive-action slang while keeping the verify-yourself emphasis; scene 4 unchanged (no 'ape' there).",
+          "Platform red lines (X): PASS — external link kept out of main post and placed in first reply within 60s; native video for reach; NFA on-screen (scene 6) + in caption + in first reply; DYOR present. No price/ticker-price/'100x'/guaranteed-return anywhere. First-3s contains no coin price, ticker price, or '100x' (X has no first-3s ticker ban like TikTok/IG, but checked anyway — clean).",
+          "Aurea/quiet.yield link rule: not triggered — this is @AirdropEdge on X, not TikTok/IG; external-link-in-first-reply is the correct X mechanic (not bio/link sticker).",
+          "Language: PASS — pure English throughout; no mixed script.",
+          "Taiwan penalty-split & XAUE yield/whitelist rules: not triggered by this asset (no Taiwan solicitation, no gold/XAUE yield claim); noted the split penalties in the compliance block for completeness so they stay separate if ever referenced.",
+          "factsUsed sourcing: PASS — every fact traces to the AE-2 verified hotspot hook; the deadline fact is explicitly marked relative/re-verify-at-publish with no number.",
+          "Publishability: PASS — hook stops scroll with a concrete number + urgency + a 60s promise; 6 scenes over ~62s is well-paced for X native video; CTA is natural. Ready to publish AFTER the publish-day deadline re-verification is performed."
+        ]
+      }
+    },
+    {
+      "id": "AE-3",
+      "account": "Airdrop Edge @AirdropEdge",
+      "platform": "X (Twitter)",
+      "language": "English",
+      "hook3s": "\"Backpack, MegaETH, Monad already went live — so any 'claim' page for them RIGHT NOW is a trap.\"",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-4s",
+          "narration": "Backpack, MegaETH, Monad already went live — so any 'claim' page for them right now is a trap.",
+          "onScreenCaption": "THE CLAIM IS A DRAINER",
+          "visual": "Cold open on presenter (real talking-head, phone-shot vertical) with three project logos crossed out behind. Hard cut on 'trap'. Purple #8B5CFF accent bar top."
+        },
+        {
+          "index": 2,
+          "seconds": "4-14s",
+          "narration": "These three are DONE. Backpack's token launched March 23, MegaETH April 30, and Monad's mainnet went live back on November 24. The real events are over — the 'you missed the airdrop, claim now' pages that keep popping up are the scam.",
+          "onScreenCaption": "ALREADY LAUNCHED — Backpack 3/23/26 · MegaETH 4/30/26 · Monad mainnet 11/24/25",
+          "visual": "Split-screen title card with the three dates as a clean timeline (VERIFIED DATA: TGE/mainnet dates confirmed via web search — Backpack TGE 2026-03-23, MegaETH TGE 2026-04-30, Monad mainnet 2025-11-24). No price, no ticker. Purple timeline animates left-to-right."
+        },
+        {
+          "index": 3,
+          "seconds": "14-28s",
+          "narration": "Here's the actual mechanism, because 'don't click links' isn't enough. A fake claim site loads a real-looking button. When you press it, it doesn't send you tokens — it asks your wallet to SIGN something. Usually an approve, a setApprovalForAll, or a Permit2 signature.",
+          "onScreenCaption": "THE TRICK: 'Claim' = a SIGNATURE request, not a transfer",
+          "visual": "Screen-recording style mock (labeled 'ILLUSTRATIVE MOCK') of a wallet popup showing an approval/Permit2 signature request. Highlight the words approve / setApprovalForAll / Permit2 in scam-red."
+        },
+        {
+          "index": 4,
+          "seconds": "28-42s",
+          "narration": "That signature is gasless and feels harmless — no ETH leaves your wallet, so people just confirm. But you're not claiming anything. You're handing a stranger's contract permission to move your tokens out later, on their schedule. That's how wallets get emptied minutes or days after 'claiming'.",
+          "onScreenCaption": "You're not claiming. You're APPROVING their contract to drain you.",
+          "visual": "Animated diagram: user signs (green check) -> attacker contract gets 'spender' rights -> tokens flow OUT arrow to unknown address. Use science-green #C6FF3A for the 'you' node, scam-red for the drain arrow."
+        },
+        {
+          "index": 5,
+          "seconds": "42-58s",
+          "narration": "Red-flag checklist, save this. One: the URL is a free sub-domain — backpack-dot-something-random-dot-xyz, not the real domain. Two: a countdown timer or 'only 12 spots left' rushing you. Three: the approval amount says unlimited or max. Four: it's setApprovalForAll to an operator you don't recognize. Any one of these — close the tab.",
+          "onScreenCaption": "RED FLAGS: free sub-domain · fake countdown · 'unlimited/max' approval · unknown setApprovalForAll",
+          "visual": "Four-item red-flag list card, each row ticks in with a red flag icon. Clean grid, purple header bar. Text-overlay heavy (mute-safe)."
+        },
+        {
+          "index": 6,
+          "seconds": "58-72s",
+          "narration": "So before you sign ANY claim, do two things. Check the contract you're interacting with, and read the exact permission you're about to grant. If you can't verify it yourself, ask an assistant that reads the contract and the approval for you before you tap confirm. Not financial advice — this is wallet safety. Link's in the first reply.",
+          "onScreenCaption": "Before you sign: VERIFY the contract + the approval. NFA. Link in first reply",
+          "visual": "Presenter back on camera, calm close. End card: 'Verify before you sign' with a subtle arrow pointing down-to-replies. Purple #8B5CFF background lockup, AirdropEdge handle."
+        }
+      ],
+      "platformCaption": "Backpack, MegaETH, Monad are DONE. All three already launched.\n\nSo every \"claim your missed airdrop\" page for them right now? That's the trap.\n\nThe scam isn't the link — it's the SIGNATURE. A fake claim button asks your wallet to approve / setApprovalForAll / Permit2. Feels gasless and harmless, so people confirm... and hand a stranger's contract permission to drain them later.\n\n4 red flags before you ever sign:\n• free sub-domain (not the real site)\n• fake countdown / \"spots left\"\n• approval = unlimited / max\n• setApprovalForAll to an operator you don't know\n\nVerify the contract AND the permission before you tap confirm. NFA — this is wallet hygiene.\n\nHow to check it in 30s 👇 (first reply)",
+      "hashtags": [
+        "#Airdrop",
+        "#WalletSecurity",
+        "#Web3Safety",
+        "#Backpack",
+        "#MegaETH",
+        "#Monad",
+        "#DeFi",
+        "#OnchainSecurity"
+      ],
+      "externalLink": {
+        "slot": "X = first reply (post link in the first reply within seconds of publishing; keep the main tweet link-free to protect reach). Reply text carries the CTA + link. Reply to every comment for the first 15 minutes.",
+        "text": "Don't want to decode approvals manually? Nina reads the contract + the exact permission you're about to sign BEFORE you tap confirm — flags approve/setApprovalForAll/Permit2 traps in plain English. Try it 👉 [Nina link]  (NFA)"
+      },
+      "postingTime": "SEA English audience — post around 8:00-9:30 PM SGT/MYT (UTC+8), a peak scroll window; stay on-thread for the first 15 minutes to reply to every comment (high reply weight). Drop the first-reply link within 60 seconds of publishing.",
+      "compliance": "NFA (not financial advice) — this is wallet-security education, not an endorsement to buy/claim any token. Red-line self-check: (1) X filter — main tweet is link-FREE, external link goes in the first reply only, protecting reach; native vertical video used. (2) No blacklisted pseudo-facts touched — no gold market-cap/300%, no Fed rate-cut claims, no fake $4,768 gold ATH, no Robinhood agent count, no Ostium 'final season', no BUIDL $25B, no old sUSDe yields, no App Store ID as 'downloadable Nina'. (3) No individual scam case named — mechanism + red-flag checklist only, so no single-source doxxing/defamation risk. (4) Launch dates independently verified via web search (Backpack TGE 2026-03-23, MegaETH TGE 2026-04-30, Monad mainnet 2025-11-24) — Scene 2 caption/narration corrected to the precise Monad date (Nov 24). (5) No fabricated urgency/countdown attributed to the projects; countdowns are described only as a scam red flag. (6) No yield/return claims (this is the anti-drainer angle, not Xaue), so no fixed-return promise and no whitelist rule triggered. (7) Taiwan penalty split not applicable here (no unlicensed-operation vs fraud framing used in this video). (8) No deadline-dated airdrop (GRVT/Hyperlynx) referenced, so no 'recompute-at-publish' relative-wording obligation triggered.",
+      "hyperframesSpec": "Format: 9:16, 1080x1920, deterministic HTML->MP4. Palette (anti-drainer/security card, airdrop account): PRIMARY airdrop-purple #8B5CFF (headers, timeline, brand lockup), ACCENT trade-blue #38bdf8 (secondary labels), SCAM-RED #FF3B3B (drain arrow + red-flag icons + the words approve/setApprovalForAll/Permit2), SCIENCE-GREEN #C6FF3A (the 'YOU/your wallet' node only). Background near-black #0A0A0F. Type hierarchy: H1 hook/section titles 96-120px bold condensed; body captions 52-64px medium; checklist rows 56px; disclaimer/handle 34px. Font: Inter or Söhne-style geometric sans. Layout: safe margins 96px all sides; captions live in lower-third for talking-head scenes, full-card for data/diagram scenes; every scene has a mute-safe text overlay (majority watch muted). Screens to render with VERIFIED data only: (Scene 2) timeline card with three fixed labels — 'Backpack · TGE Mar 23, 2026', 'MegaETH · TGE Apr 30, 2026', 'Monad · Mainnet Nov 24, 2025'. NO price, NO ticker, NO market cap, NO percentages anywhere. (Scene 3) illustrative wallet-popup mock, watermark 'ILLUSTRATIVE — not a real site'. (Scene 4) 3-node flow diagram YOU(green)->APPROVE->ATTACKER CONTRACT->drain-out(red). (Scene 5) four red-flag rows. (Scene 6) end lockup 'VERIFY BEFORE YOU SIGN' + @AirdropEdge + 'NFA' + down-arrow to replies. Motion: restrained — single left-to-right timeline wipe (Scene 2), sequential row fade-ins (Scene 5), one arrow-flow animation (Scene 4). No bouncing, no confetti, no price tickers. On-screen 'NFA' persists small bottom-right from Scene 3 onward.",
+      "factsUsed": [
+        {
+          "fact": "Backpack token generation event (TGE) occurred 2026-03-23 — the launch is over.",
+          "source": "Verified hook (brief) + web search: Backpack TGE 2026-03-23 (learn.backpack.exchange, KuCoin, Tekedia)"
+        },
+        {
+          "fact": "MegaETH TGE occurred 2026-04-30 — the launch is over.",
+          "source": "Verified hook (brief) + web search: MegaETH MEGA TGE 2026-04-30 (megaeth.com/token, cryptobriefing, coingabbar)"
+        },
+        {
+          "fact": "Monad mainnet went live 2025-11-24 — the launch is over.",
+          "source": "Verified hook (brief) + web search: Monad mainnet 2025-11-24 09:00 ET (monad.xyz, Bankless, Decrypt, @monad on X)"
+        },
+        {
+          "fact": "Primary theft method is signature phishing via approve / setApprovalForAll / Permit2, delivered on free sub-domain fake 'claim' pages; described as mechanism + red-flag checklist only, no named individual case.",
+          "source": "Verified hook (brief), verify=confirmed; corroborated by standard drainer mechanics (unlimited/max approval, fake countdown, unknown operator as red flags)"
+        },
+        {
+          "fact": "CTA: verify the contract and the exact approval you are about to sign before confirming; Nina positioned as anti-drainer pre-sign verification assistant.",
+          "source": "Brief CTA direction (Nina, anti-drainer, verify contract+authorization before Claim)"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "No blacklisted pseudo-facts present — full field scan clean (no gold market cap/300%, no Fed rate-cut/new-chair claim, no $4,768 gold ATH, no Robinhood agent count, no Ostium 'final season', no BUIDL $25B, no old sUSDe yields, no App Store ID as downloadable Nina). No change needed.",
+          "Verified all three launch dates via live web search: Backpack TGE 2026-03-23 (confirmed), MegaETH TGE 2026-04-30 (confirmed), Monad mainnet 2025-11-24 (confirmed). All factsUsed sources upgraded from 'Verified hook (brief)' to hook + independent web-search corroboration.",
+          "CORRECTED accuracy: original Scene 2 narration/caption said Monad went live 'back in November'/'Nov 25' vaguely; real date is Nov 24, 2025. Tightened Scene 2 narration to 'November 24', caption to 'Monad mainnet 11/24/25', and hyperframesSpec fixed label to 'Monad · Mainnet Nov 24, 2025' for internal consistency and precision.",
+          "X external-link placement verified correct: main tweet is link-free, CTA + link live in the first reply only (externalLink.slot, platformCaption, compliance all aligned). No violation.",
+          "Language check passed: English account, all narration/captions/caption/hashtags pure English. No Aurea/繁中 mixing (not a Aurea package).",
+          "NFA present (Scene 6, caption, externalLink, compliance). Not-financial-advice framing intact.",
+          "Taiwan penalty split correctly noted as N/A (no unlicensed-operation vs fraud framing in this wallet-security video). No fabricated law citation added.",
+          "XAUE yield rule N/A — no yield/return claims anywhere (anti-drainer angle, not Xaue). No fixed-return promise, no whitelist rule triggered. Correctly documented.",
+          "Deadline-dated airdrop rule (GRVT/Hyperlynx relative wording + recompute-at-publish) not applicable — no live claimable airdrop with a deadline referenced; the piece explicitly warns that these launches are OVER and that countdowns are a scam red flag. Added an explicit N/A note to compliance for auditability.",
+          "No individual scam case named or single-source victim doxxing — mechanism + red-flag checklist only. Defamation/single-source risk avoided.",
+          "Nina CTA is a product-capability claim carried under NFA and matches approved anti-drainer positioning; acceptable as-is.",
+          "Removed non-verifiable specificity from postingTime ('13.5x reply weight' and '~80% reach penalty' were unsourced precise figures) — softened to 'high reply weight' and 'protecting reach' to avoid presenting unverifiable stats as fact.",
+          "Publishability: hook is strong/scroll-stopping (concrete named projects + immediate 'trap' payoff), CTA is natural and educational, 6 scenes / 72s total is reasonable for an X security explainer, mute-safe overlays throughout. Ready to publish."
+        ]
+      }
+    },
+    {
+      "id": "AE-4",
+      "account": "Airdrop Edge @AirdropEdge",
+      "platform": "X (Twitter)",
+      "language": "English",
+      "hook3s": "\"Right now might be one of the calmest windows to farm a perp DEX in months — and the reason is hiding in the funding rate and how much leverage just left the system.\"",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-4s",
+          "narration": "Right now might be one of the calmest windows to farm a perp DEX in months — and the reason is hiding in the funding rate.",
+          "onScreenCaption": "THE CALMEST FARM WINDOW IN MONTHS?",
+          "visual": "Cold open on a clean dark dashboard mock (brand). Cursor hovers a single 'FUNDING RATE' tile that ticks in. No price, no ticker splash yet — just the concept. REAL MATERIAL: overlay a real, current TradingView / exchange funding-rate panel screenshot for credibility (screenshot must be pulled the day you publish, not reused)."
+        },
+        {
+          "index": 2,
+          "seconds": "4-12s",
+          "narration": "Funding is the fee longs and shorts pay each other on a perp. When it's high and positive, the crowd is over-leveraged long — that's when farming gets messy. When it's flat, mildly positive, or even slightly negative, the crowd isn't crammed onto one side.",
+          "onScreenCaption": "FUNDING = THE CROWD'S LEVERAGE TAX",
+          "visual": "Split screen: left = 'HIGH + FUNDING = crowded longs = messy'; right = 'FLAT / MILD / SLIGHTLY NEGATIVE = less crowded'. Animated arrows point to a needle sitting near the middle-low of a gauge. REAL MATERIAL: exchange funding history chart showing the recent flat/mixed line."
+        },
+        {
+          "index": 3,
+          "seconds": "12-22s",
+          "narration": "Across the majors, funding has been mixed and low lately — mildly positive on some legs, slipping negative on others. Translation: nobody's paying a steep premium to be long right now. That's a neutral-to-cool regime, not a euphoric one.",
+          "onScreenCaption": "MAJORS FUNDING: MIXED & LOW  (not euphoric)",
+          "visual": "Three stacked rows (BTC, ETH, SOL) each showing a small gauge needle in the low/neutral zone — no hard percentage numbers rendered. Labels read 'mild +', 'flat', 'slightly −' to reflect a mixed regime. REAL MATERIAL: current funding-rate screenshots tiled behind the clean overlay so viewers verify the live figures themselves on publish day."
+        },
+        {
+          "index": 4,
+          "seconds": "22-32s",
+          "narration": "And a lot of leverage has already left the system. Total open interest is way down from its peak late last year — much of that froth got flushed. Less crowded, fewer forced-liquidation cascades.",
+          "onScreenCaption": "OPEN INTEREST: WELL OFF ITS PEAK  (leverage flushed)",
+          "visual": "A descending bar: tall 'peak' bar (late-2025) dropping to a shorter 'now' bar — no dollar figures rendered, just the direction/shape. Caption 'LEVERAGE COOLING'. REAL MATERIAL: Coinglass/aggregate-OI chart screenshot behind the animation so the drawdown is visible without us quoting a specific number."
+        },
+        {
+          "index": 5,
+          "seconds": "32-44s",
+          "narration": "Why this matters for airdrop farmers: on a perp DEX you're often opening positions to earn points. Low or flat funding means the cost of holding those positions is small — you keep more of the setup while you farm.",
+          "onScreenCaption": "LOW FUNDING = CHEAPER TO HOLD A FARM POSITION",
+          "visual": "Simple flow diagram: [Open position] -> [earn points] -> [funding cost tile glowing low/green]. Keep it schematic, no specific returns. Brand-purple accents."
+        },
+        {
+          "index": 6,
+          "seconds": "44-56s",
+          "narration": "One live example you can stack this on: GRVT's campaign — the registration window's open, there's a multiplier deadline coming up mid-week, and a token event lands right after. Deadlines move, so re-check the exact dates on the day you act.",
+          "onScreenCaption": "EXAMPLE: GRVT campaign live · multiplier deadline soon · re-check dates before you act",
+          "visual": "A relative-timeline strip: 'Register window OPEN' -> 'Multiplier deadline (this week)' -> 'Token event (days later)' with a bold '⚠ VERIFY DATES ON THE DAY' stamp. No hard promises, no fixed calendar dates rendered. REAL MATERIAL: GRVT campaign page screenshot, dates blurred/generic to stay relative."
+        },
+        {
+          "index": 7,
+          "seconds": "56-70s",
+          "narration": "But regimes flip fast. Before you commit, read the current funding and leverage picture instead of guessing. That's literally what I use Nina for — ask it the live funding regime, then decide if the farm is worth it. Link's in the first reply. Not financial advice.",
+          "onScreenCaption": "READ THE REGIME BEFORE YOU FARM → Nina  ·  NFA",
+          "visual": "End card: brand lockup, a chat-bubble mock 'What's the current BTC/ETH/SOL funding regime?' with a clean Nina-style answer bubble. Arrow pointing down-left to 'FIRST REPLY 👇'. Restrained fade-in, no flashy motion."
+        }
+      ],
+      "platformCaption": "Farming a perp DEX looks cleaner right now — and it's because funding is mild and a lot of leverage has already left the system.\n\nMajors funding has been mixed and low lately (mild +, flat, some legs slightly negative) — nobody's paying a steep premium to be long. Neutral-to-cool, not euphoric.\nAggregate open interest is well off its late-2025 peak = leverage isn't stretched.\n\nTranslation for farmers: cheaper to hold a position while you farm points. But regimes flip — read the current one before you commit, don't guess. Check the live funding numbers yourself on the day you act.\n\nHow to read it fast 👇 (first reply)\nNFA.",
+      "hashtags": [
+        "#Airdrops",
+        "#PerpDEX",
+        "#DeFi",
+        "#FundingRate",
+        "#GRVT",
+        "#OnchainData"
+      ],
+      "externalLink": {
+        "slot": "X = first reply (external link goes in reply #1, not in the post body — link-in-body cuts reach ~80%)",
+        "text": "I don't eyeball funding across BTC/ETH/SOL anymore — I just ask Nina for the live regime and whether it's a mild or crowded setup before I open anything. Try it here 👉 [Nina link] — NFA, always check the live funding numbers and re-check campaign dates yourself."
+      },
+      "postingTime": "SEA English audience — post during SEA evening peak (roughly 8-10pm SGT / GMT+8) to catch after-work scroll. Then reply within 15 minutes with the Nina link (first reply) and actively reply to comments for the first 15 min to bank X's reply weighting (13.5x like / 20x RT).",
+      "compliance": "NFA — educational only, not financial advice; funding/OI can flip fast and campaign terms change, verify everything yourself before acting. Red-line self-check for this post: (1) No blacklisted pseudo-facts used — no gold-token mktcap/300%, no Fed rate-cut claims, no fake gold ATH, no Robinhood agent count, no Ostium 'last quarter', no BUIDL $25B, no sUSDe 10-15%, no App Store 'download Nina' claim. (2) CORRECTED: the original pack rendered a fabricated, internally-uniform funding figure ('BTC/ETH/SOL ~+0.01%/8h ≈ +11% APR') and a false OI peak ('~$70B+ May peak'). Verified July-2026 data contradicts both — funding across majors has been MIXED and low (BTC softened but positive, ETH flipped NEGATIVE per Coinbase Research July 2026; SOL unverified), and aggregate OI peaked in Oct 2025 (~$94B futures / ~$210B total incl. options), not May. All specific funding percentages and the '$70B+ May peak' / '$47B now' dollar figures have been REMOVED from narration and every rendered frame and replaced with qualitative, directionally-true framing ('mixed and low', 'well off its late-2025 peak'). No unverified number is spoken or shown. (3) GRVT dates written in RELATIVE terms with an on-screen 'verify dates on the day' stamp — no fixed calendar dates rendered, no manufactured urgency. (4) No guaranteed/fixed returns — 'cheaper to hold' framed as cost, not profit; no APR/yield figure rendered. (5) X platform mechanics respected — external link in first reply, not body. (6) Taiwan criminal-liability clause not applicable (no XAUE/gold offering in this English X post); no single-source scam naming. (7) No 100x / no price prediction / no ticker-as-hype. (8) Viewer is told twice to check the live funding numbers themselves on publish day, since exact figures shift daily.",
+      "hyperframesSpec": "Render target: 9:16, 1080x1920, deterministic HTML→MP4. Palette = TRADE BLUE #38bdf8 as lead accent (this is a markets/funding-rate explainer) + AIRDROP PURPLE #8B5CFF as secondary/CTA accent for the GRVT + Nina frames; background near-black #0B0E14; neutral text #E6EDF5; muted labels #8A94A6; positive gauge zone in restrained green (do NOT use loud #C6FF3A — keep it muted trade-blue/green). Type hierarchy: H1 hook 88-104px bold condensed; metric labels 40-56px (NO giant number frames, since we render no hard figures); labels 34-40px uppercase tracked; footnotes/NFA 26px. Layout: 12-col safe grid, keep all text inside center 80% (caption-safe for muted-autoplay). Motion: restrained — single needle sweep on the gauge, cross-dissolves only, no bounce/no confetti. DATA POINTS TO RENDER (qualitative only — DO NOT render any specific funding percentage or OI dollar figure, because live values shift daily and the uniform figures in the original draft were unverified/contradicted): Frame3 = three gauge needles in the low/neutral zone labeled 'mild +', 'flat', 'slightly −' (mixed regime); NO '+0.01%' and NO '+11% APR' text. Frame4 = descending bar 'PEAK (late 2025) → NOW' showing the drawdown SHAPE only; NO '$70B'/'$47B'/'May' labels. Frame6 = relative GRVT timeline chips 'Register OPEN · Multiplier deadline this week · Token event after' + persistent '⚠ VERIFY DATES ON THE DAY' stamp. End card = Nina chat-bubble mock + 'FIRST REPLY 👇' + 'NFA' badge. Persistent bottom-corner 'NFA · not financial advice' watermark at 60% opacity on every frame. Persistent small footnote on Frame3/Frame4: 'live figures — check yourself on the day'. Do NOT render any dollar or percent number anywhere in this video.",
+      "factsUsed": [
+        {
+          "fact": "Perpetual funding across majors has been mixed and low in mid-2026 — BTC funding softened but stayed positive while ETH funding slipped back into negative territory (SOL not independently confirmed); framed qualitatively as a neutral-to-cool, non-euphoric regime rather than a specific rate",
+          "source": "Coinbase Research — Crypto Market Positioning (July 2026): 'BTC funding stayed positive but softened... ETH funding slipped back into negative territory' (https://www.coinbase.com/institutional/research-insights/research/trading-insights/crypto-market-positioning-july-2026). Viewers directed to check live funding on publish day (CoinGlass/The Block)."
+        },
+        {
+          "fact": "Aggregate crypto open interest is well off its peak (peaked in October 2025 — ~$94B futures OI / ~$210B total incl. options — and fell sharply through Q1-Q2 2026), indicating leverage has been flushed out; rendered as a drawdown SHAPE with no specific dollar figure",
+          "source": "CoinGlass aggregate OI data as reported (peak >$94B Oct 2025, steepest drawdown since 2023) + Coinbase Research (July 2026): 'broad step down in open interest... unwinding much of the build-up.' Specific $ figures deliberately not rendered because they shift and the draft's '$70B+ May peak' was a false attribution."
+        },
+        {
+          "fact": "GRVT campaign is live and can be stacked (registration window open, a multiplier deadline this week, a token event shortly after) — stated only in relative terms with an on-screen 'verify dates on the day' caveat; exact calendar dates deliberately not rendered and to be re-checked on the publish day",
+          "source": "Verified hook — GRVT campaign; dates rendered relatively per airdrop-deadline rule and re-checked on publish day rather than hard-coded."
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "FIXED (factual, on-screen): Removed the fabricated uniform funding figure 'BTC/ETH/SOL ~+0.01%/8h ≈ +11% APR'. Verified July-2026 data (Coinbase Research) shows funding was MIXED — BTC positive-but-softening, ETH NEGATIVE, SOL unverified — not a uniform +11% APR. This was presented as a 'verified hook' and rendered on Frame3, violating the 'verified only' render rule. Replaced narration + Frame3 with qualitative 'mixed and low / mild+, flat, slightly−' framing and removed all rendered percentages.",
+          "FIXED (factual, on-screen): Removed 'OI ~$47B down from the ~$70B+ May peak.' The real aggregate-OI peak was October 2025 (~$94B futures / ~$210B total), not May; the '$70B+ May peak' was a fabricated peak and the drawdown attribution was false. Replaced with 'well off its late-2025 peak' and Frame4 now renders the drawdown SHAPE only, no dollar figures.",
+          "FIXED (render spec): hyperframesSpec updated to explicitly forbid rendering any funding % or OI $ figure; removed the giant-numeral metric frames (Frame3 count-up, Frame4 $70B→$47B bars) that depended on the unverified numbers; added a persistent 'live figures — check yourself on the day' footnote.",
+          "FIXED (factsUsed): Rewrote all three entries to match actually-verifiable claims with a real cited source (Coinbase Research July 2026 + CoinGlass), removed the false 'confirmed +11% APR' and '$70B+ May peak' claims, and made the OI/funding facts qualitative.",
+          "FIXED (durability): Added explicit instructions (narration, caption, external link, spec footnote) telling viewers to check the live funding numbers themselves on the publish day, since exact values shift daily — closing the gap left by removing hard figures.",
+          "VERIFIED OK — no blacklisted pseudo-facts present (no gold-token mktcap/300%, no Fed rate-cut narrative, no fake gold ATH, no Robinhood agent count, no Ostium 'last quarter', no BUIDL $25B, no sUSDe 10-15%, no App Store 'download Nina').",
+          "VERIFIED OK — X external link kept in first reply, not post body.",
+          "VERIFIED OK — NFA present in body, caption, external link, compliance, and end card.",
+          "VERIFIED OK — Taiwan/XAUE clauses correctly N/A (no gold/XAUE offering in this English X post); no single-source scam individual named.",
+          "VERIFIED OK — no 100x, no price prediction, no ticker-as-hype; language is pure English.",
+          "VERIFIED OK — GRVT deadline kept relative with '⚠ VERIFY DATES ON THE DAY' stamp; no hard calendar dates rendered; 'aurea/quiet.yield external-link' rule not triggered (this is the X account, link correctly in first reply). Net: publishable AFTER the on-screen funding/OI claims are re-checked against live data on the publish day and the qualitative framing is kept."
+        ]
+      }
+    },
+    {
+      "id": "CC-1",
+      "account": "Clear Charts @ClearChartsHQ",
+      "platform": "X (Twitter)",
+      "language": "English",
+      "hook3s": "\"96% of the liquidations were shorts. Let me show you why this move isn't what your timeline thinks it is.\"",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-4",
+          "narration": "ETH just ran plus five percent in a day. But before you call it a rally — look at who actually got hurt. Ninety-six percent of the liquidations were shorts.",
+          "onScreenCaption": "+5% in a day. But WHO got liquidated?",
+          "visual": "REAL FOOTAGE: TradingView ETH daily chart on screen, price candle pushing up. Cursor visible. Clean dark chart, brand blue accent bar top."
+        },
+        {
+          "index": 2,
+          "seconds": "4-14",
+          "narration": "Point one — the level. Price broke back above the descending trendline that's been capping every bounce. I'm drawing it live here. That's the line bulls needed to reclaim, and today they did.",
+          "onScreenCaption": "POINT 1: Reclaimed the descending trendline",
+          "visual": "REAL FOOTAGE: Screen-record of me drawing the descending trendline on TradingView, then the candle closing above it. Blue line annotation, small 'reclaim' tag at the break."
+        },
+        {
+          "index": 3,
+          "seconds": "14-26",
+          "narration": "Point two — the invalidation. This only stays a real breakout if price holds back ABOVE the trendline on a retest. Lose it, and the whole thing flips to a fake-out. That's your line in the sand — not a feeling, a level.",
+          "onScreenCaption": "INVALIDATION: back below the line = fake-out",
+          "visual": "REAL FOOTAGE: Zoom in on the trendline, draw a horizontal 'invalidation' marker just under it. Red dashed annotation. Cursor taps the retest zone."
+        },
+        {
+          "index": 4,
+          "seconds": "26-40",
+          "narration": "Point three — the why. Futures open interest just climbed to nineteen point eight billion, the highest since the June third deleverage. And with ninety-six percent of liquidations on the short side, that plus five percent looks a lot more like a short squeeze than fresh conviction.",
+          "onScreenCaption": "WHY: OI $19.8B (highest since Jun 3) + 96% liqs = SHORTS",
+          "visual": "REAL DATA SCREENSHOT: OI chart showing $19.8B print, side-by-side with liquidation breakdown (shorts 96% / longs 4%). Numbers highlighted in blue."
+        },
+        {
+          "index": 5,
+          "seconds": "40-52",
+          "narration": "The catch — volume hasn't confirmed the breakout yet. Squeezes can run, but without volume behind them they can hand it all back on the retest. So watch that line, watch the tape. Squeeze first, rally is still unproven.",
+          "onScreenCaption": "Volume did NOT confirm the breakout yet",
+          "visual": "REAL FOOTAGE: TradingView volume bars at the bottom of the ETH chart, cursor pointing at the underwhelming volume on the breakout candle. 'unconfirmed' tag."
+        },
+        {
+          "index": 6,
+          "seconds": "52-60",
+          "narration": "I read the chart. If you want the funding-plus-OI picture laid out alongside these levels — I dropped where in the first reply. Not financial advice, just the levels.",
+          "onScreenCaption": "I chart it. Nina lays out the funding + OI data. NFA. Link in first reply",
+          "visual": "Outro card: ClearCharts logo, 'NFA — levels not advice', arrow pointing down to 'first reply'. Static, minimal, brand blue."
+        }
+      ],
+      "platformCaption": "ETH +5% in a day — and 96% of the liquidations were SHORTS.\n\nThat's a squeeze signature, not a conviction rally. Here's the read:\n\n1/ Reclaimed the descending trendline (drawn live)\n2/ Invalidation = a close back below it on the retest\n3/ OI up to $19.8B — highest since the Jun 3 deleverage\n\nThe catch: volume hasn't confirmed the breakout. Squeezes can run, then hand it all back.\n\nWatch the line. Watch the tape. NFA.",
+      "hashtags": [
+        "#ETH",
+        "#Ethereum",
+        "#TradingView",
+        "#OpenInterest",
+        "#ShortSqueeze"
+      ],
+      "externalLink": {
+        "slot": "X = first reply (external link belongs in the first reply, never the main post — in-post links cut reach ~80%)",
+        "text": "I chart the levels — Nina lays out the funding + OI picture alongside them so you're not reading one number in a vacuum: [Nina link]. Educational only, not sizing or trade advice. NFA."
+      },
+      "postingTime": "Post during SEA English active hours; reply with the external link immediately, then reply to every comment within the first 15 minutes (replies weigh ~13.5x a like, ~20x a retweet — the first-15-min reply loop is the whole game).",
+      "compliance": "NFA — not financial advice, educational chart read only, no price targets or entries given. Red-line self-check: (1) No fabricated blacklist facts used — no gold-token mcap/300%, no Fed narrative, no fake $4,768 May ATH, no Robinhood agent count, no Ostium 'final quarter', no BUIDL $25B, no stale sUSDe yield, no App Store download claim / no id6771070397 on caption. (2) Only verified hook data on captions: +5% move (confirmed multi-source 07-15), descending-trendline reclaim (framed as live analyst chart-read, not hard data), OI $19.8B highest since Jun 3 deleverage (confirmed via Glassnode-cited reporting, 07-14 print), 96% shorts / 4% longs liquidated (confirmed — long-liq dominance fell to 4%), volume did NOT confirm breakout (framed as caveat). (3) Safe derivations only — 'squeeze not rally' framed as a read, not a prediction; explicit unconfirmed-volume caveat. (4) External link in FIRST REPLY only, never main post; main post body carries no link. (5) No XAUE yield claim in this piece; no airdrop deadline claim in this piece, so no relative-deadline wording needed. (6) No named single-source scam allegation. (7) Nina referenced as a data cross-check tool only — no download/App-Store claim, and CTA reworded to 'lays out the data, educational only, not sizing/trade advice' so it does not imply Nina gives position-sizing guidance (preserves NFA). Taiwan penalty separation N/A (not invoked here). TikTok/IG 3-second price/ticker/100x ban N/A (platform = X).",
+      "hyperframesSpec": "HyperFrames render (HTML→deterministic MP4/PNG). Palette: Trading Blue #38bdf8 primary (this is a chart/desk piece), on near-black #0B0F14 background; invalidation markers use a restrained red #F04452, confirm/positive accents in blue only. Aspect: X native landscape 16:9 preferred for the screen-record overlay (charts read better wide); if repurposed for feed, 1:1. Type hierarchy: Headline 72px bold (point labels 'POINT 1/2/3'), sub 40px medium (level descriptions), data callouts 88px bold mono for numbers, footer 28px for 'NFA'. Frames to render with VERIFIED data only: Frame A — '+5% in a day' + 'WHO got liquidated?'. Frame B — 'Descending trendline reclaimed' overlay. Frame C — 'INVALIDATION: close back below the line' (red). Frame D — data card: 'OI $19.8B — highest since Jun 3 deleverage' beside 'Liquidations: SHORTS 96% / LONGS 4%'. Frame E — 'Volume did NOT confirm the breakout' with muted volume-bar graphic. Frame F — outro: 'I chart. Nina lays out the data. NFA. Link in first reply'. All chart body = real TradingView screen-record underneath; HyperFrames renders only the text/annotation overlay layer. Motion: restrained — annotation lines draw-on over 0.4s, numbers count-up max 0.5s, no bounce, no confetti. Do NOT render any number not in factsUsed.",
+      "factsUsed": [
+        {
+          "fact": "ETH rose about +5% on 07-15 (multi-source: ~5.2% / 24h, above ~$1,850-$1,880), on softer US inflation data",
+          "source": "Verified hotspot hook (CC-1) + web confirm (invezz.com, coinmarketcap.com, crypto.news 07-15-2026), verify=confirmed"
+        },
+        {
+          "fact": "Futures open interest climbed to $19.8B on 07-14 — the highest since the June 3 deleverage",
+          "source": "Verified hotspot hook (CC-1) + web confirm (Glassnode-cited reporting, crypto.news), verify=confirmed"
+        },
+        {
+          "fact": "Long-liquidation dominance fell to ~4% of the total, i.e. ~96% of liquidations were shorts",
+          "source": "Verified hotspot hook (CC-1) + web confirm (crypto.news / coinglass 07-15-2026), verify=confirmed"
+        },
+        {
+          "fact": "Volume did NOT confirm the breakout (breakout unconfirmed by volume) — stated as a caveat, not a prediction",
+          "source": "Verified hotspot hook (CC-1), verify=confirmed (chart-read caveat)"
+        },
+        {
+          "fact": "Price reclaimed the descending trendline — presented as a live analyst chart-read/annotation, not a hard data point",
+          "source": "Analyst chart-read (CC-1), verify=opinion/read (not asserted as verified data)"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "No blacklist pseudo-facts found — piece is clean of all 8 banned items (gold mcap/300%, Fed narrative, $4,768 May ATH, Robinhood agent count, Ostium 'final quarter', BUIDL $25B, stale sUSDe yield, App Store download/id6771070397).",
+          "factsUsed verified against live sources: +5% on 07-15, OI $19.8B highest since June 3 deleverage (07-14 print), ~96% shorts/~4% longs liquidated, volume-not-confirmed caveat. All numeric captions match verified data.",
+          "Added explicit factsUsed entry for the 'descending trendline reclaim' labeling it an analyst chart-read/opinion (verify=opinion), not verified hard data — it was previously implied as a hook fact; now correctly classified so no unverified number/level is presented as confirmed data.",
+          "Softened CTA in externalLink and scene 6: changed 'Ask her before you size anything' / 'Nina reads the data' to 'Nina lays out the funding + OI picture alongside these levels' + 'Educational only, not sizing or trade advice.' Original wording risked implying Nina gives position-sizing guidance, undercutting NFA. No download or App-Store claim was present or added.",
+          "Verified X-specific red line: external link is in the first reply only; main platformCaption body carries no link. Compliant.",
+          "Confirmed language is pure English (English account) — no繁中/Aurea mixing.",
+          "N/A items correctly scoped and documented in compliance: Taiwan penalty separation (not invoked), XAUE yield (not in piece), airdrop deadlines (none in piece), TikTok/IG 3-second price/ticker/100x ban (platform is X, not applicable).",
+          "Publishable: hook is strong and stops the scroll, 6 scenes over 0-60s is well-paced, CTA is natural and NFA-safe, link routing is correct for X."
+        ]
+      }
+    },
+    {
+      "id": "CC-2",
+      "account": "Clear Charts @ClearChartsHQ",
+      "platform": "X (Twitter)",
+      "language": "English",
+      "hook3s": "\"Bad news for the Fed just became good news for crypto — here's the chart nobody's reading right.\"",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-4",
+          "narration": "So the Fed's still leaning hawkish — holding at three-and-a-half to three-three-quarters, and nine of eighteen committee members have pencilled in at least one more hike this year. On paper, that's bad for risk.",
+          "onScreenCaption": "Fed: HOLD 3.50-3.75% · still leaning HIKE (9 of 18 see ≥ 1 hike)",
+          "visual": "REAL FOOTAGE: TradingView screen recording, BTC/USD daily candles on the left. Lower-third caption overlaid. No price ticker value shown large — chart is the wallpaper, not the message."
+        },
+        {
+          "index": 2,
+          "seconds": "4-11",
+          "narration": "But watch what happened after the CPI print. June CPI came in soft — headline minus zero-point-four percent month-over-month. That's the biggest single-month drop since April 2020. Year-over-year cooled to three-point-five, under expectations.",
+          "onScreenCaption": "June CPI: -0.4% MoM (biggest drop since Apr 2020) · 3.5% YoY, below est.",
+          "visual": "REAL FOOTAGE: TradingView, add the DXY (US Dollar Index) as a second pane/overlay. Annotate the CPI-release timestamp with a vertical line. Show DXY rolling over. Data-point captions animate in one at a time."
+        },
+        {
+          "index": 3,
+          "seconds": "11-18",
+          "narration": "Core inflation cooled too — the twelve-month rate eased to two-point-six percent. Cooler inflation means the odds of another hike started fading — even with the Fed still hawkish. So the dollar softened, and that's the tell.",
+          "onScreenCaption": "Core CPI 2.6% YoY → hike odds fade → DXY softens",
+          "visual": "REAL FOOTAGE: DXY pane highlighted, drawing the inverse relationship. Split-screen: DXY down / BTC steadying. Keep annotations minimal, one arrow per idea."
+        },
+        {
+          "index": 4,
+          "seconds": "18-26",
+          "narration": "Here's the mechanic, not a prediction: a weaker dollar tends to loosen financial conditions. So a rate-hike Fed still gave crypto room to breathe — because the market repriced the path, not just the level.",
+          "onScreenCaption": "Weaker DXY = looser conditions · market repriced the PATH",
+          "visual": "REAL FOOTAGE: TradingView with a clean DXY-vs-BTC comparison overlay. A simple hand-drawn arrow: 'level' vs 'path'. No projections drawn — descriptive only."
+        },
+        {
+          "index": 5,
+          "seconds": "26-34",
+          "narration": "The lesson: don't trade the headline, trade the reaction. Pull the full macro context — CPI, core, the rate path — before you touch the chart. That's how you stop flying blind. Not financial advice.",
+          "onScreenCaption": "Trade the reaction, not the headline · NFA",
+          "visual": "REAL FOOTAGE: pull back to full TradingView layout, DXY + BTC visible together. End card fades in bottom-third: 'Full macro context in the reply.' Restrained fade, no zoom spin."
+        }
+      ],
+      "platformCaption": "Bad news became good news.\n\nA rate-HIKE Fed (9 of 18 members see ≥ 1 hike). Soft June CPI (-0.4% MoM, biggest drop since Apr 2020). And crypto caught a bid.\n\nThe chart nobody read right: DXY. Watch the dollar, not the headline. 🧵 below 👇\n\nTrade the reaction, not the print. NFA.",
+      "hashtags": [
+        "#Macro",
+        "#CPI",
+        "#DXY",
+        "#Bitcoin",
+        "#TradingView",
+        "#RatePath"
+      ],
+      "externalLink": {
+        "slot": "X first reply (pinned as reply-1 within 60s of posting; keeps -80% link-in-body penalty off the main post)",
+        "text": "Want the macro context pulled for you before you open a chart? Nina reads the CPI / core / rate-path setup in plain English so your TA isn't flying blind → [Nina link]. Ask it: 'What did soft CPI do to hike odds and the dollar?' NFA."
+      },
+      "postingTime": "Post during SEA-English active window; engage in replies within the first 15 minutes and keep replying through the first 60-90 min (reply weight = 13.5x a like). Drop the external link as first reply immediately after the main post lands.",
+      "compliance": "NFA — educational market commentary, not financial advice; nothing here is a recommendation to buy, sell, or hold. Red-line self-check: (1) Used ONLY the confirmed hike-version macro facts — June CPI -0.4% MoM / 3.5% YoY / core 2.6% YoY, Fed hold 3.50-3.75% with hawkish lean and NINE OF EIGHTEEN members pencilling >=1 hike (corrected from the original 'one committee member', which understated the hawkish signal); explicitly did NOT say 'Fed pulled cuts / new chair / only 1 member expects a cut' (blacklisted). (2) No gold market-cap / '300%' / fake ATH claims — this video never touches gold. (3) No '100x', no guaranteed returns, no price targets or projections — all chart talk is descriptive ('mechanic, not a prediction'). (4) Nina App Store id NOT cited as downloadable; CTA points to a generic Nina link only. (5) X-native: link is in first reply, not body. (6) No single-source scam call-outs, no airdrop deadlines in this piece. Taiwan penalty separation N/A (no XAUE/Aurea promo in this English X piece). No XAUE yield figures used. Macro facts independently verified against BLS June-2026 CPI release and the June-2026 FOMC statement/SEP.",
+      "hyperframesSpec": "Format 9:16 for repurposing, but native asset is 16:9 / square from the TradingView screen recording (X-native video). Palette: Trading Blue #38bdf8 as primary accent (this is a charts/macro account), neutral dark background #0B0F14, white #FFFFFF body text, science-green #C6FF3A reserved ONLY for the single 'good news' beat to signal the flip. Layout: chart is full-bleed background (real TradingView + DXY recording); all data rendered as lower-third caption bars, one data point per beat, never stacked more than 2 lines. Type hierarchy: H1 caption 64px bold (the beat headline), data value 48px semibold in #38bdf8, sub-label 28px regular #FFFFFF at 70% opacity. Motion: captions fade+slide-up 200ms, one at a time; a single vertical marker line at the CPI timestamp; NO zoom spins, NO parallax. Render ONLY these verified data points as text overlays: 'June CPI -0.4% MoM', 'biggest single-month drop since Apr 2020', 'CPI 3.5% YoY (below est.)', 'Core CPI 2.6% YoY', 'Fed hold 3.50-3.75%', '9 of 18 members: >=1 hike this year'. End card: '#38bdf8' rule line + 'Full macro context in the reply' 40px + 'NFA' 24px. Do not render any number not in this list.",
+      "factsUsed": [
+        {
+          "fact": "June CPI headline -0.4% month-over-month, the biggest single-month drop since April 2020",
+          "source": "BLS Consumer Price Index — June 2026 release (largest 1-month decrease since Apr 2020, which fell 0.8%)"
+        },
+        {
+          "fact": "June CPI 3.5% year-over-year (down from 4.2% in May), below expectations",
+          "source": "BLS CPI June 2026 release; consensus was above 3.5%"
+        },
+        {
+          "fact": "Core CPI 2.6% year-over-year (core was flat month-over-month); better than the 2.9% consensus",
+          "source": "BLS CPI June 2026 release / CNBC June-2026 CPI report; core 12-month rate 2.6%, down from 2.9% in May"
+        },
+        {
+          "fact": "Fed holding 3.50-3.75% with a hawkish/hike lean; NINE OF EIGHTEEN participants penciled in at least one hike this year (median 2026 rate rose to 3.8%)",
+          "source": "June-2026 FOMC statement + Summary of Economic Projections (corrected: original package said 'one committee member (9/18)', which misread 9-of-18 as a single member)"
+        },
+        {
+          "fact": "After the soft CPI, the probability of a further hike eased (market ~25% odds on a July hike)",
+          "source": "Kiplinger / CNBC July-2026 coverage; Polymarket July FOMC odds — hike odds softened post-CPI"
+        },
+        {
+          "fact": "Descriptive macro mechanic: cooler inflation easing hike odds tends to soften the US dollar (DXY), loosening financial conditions — framed as mechanism, not a forecast",
+          "source": "Standard macro relationship, presented descriptively; no projection or price target made"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "CORRECTED FACTUAL ERROR (material): Scene 1 narration/caption, platformCaption, hyperframesSpec render-list, and factsUsed all said 'one committee member (9/18)' penciled in a hike. The June-2026 FOMC SEP actually shows NINE of EIGHTEEN participants penciling in at least one hike (median 2026 rate rose to 3.8%). The original wording misread '9/18' as a single member and understated the hawkish signal. Changed to 'nine of eighteen committee members / 9 of 18' everywhere.",
+          "CLARITY FIX: Scene 3 said 'Core came in at two-point-six' and caption 'Core CPI 2.6%' without a period label, sitting next to the headline '-0.4% MoM' — risk of implying 2.6% was a MoM print. Core MoM was actually flat (0.0%); the 2.6% is the 12-month rate. Relabeled narration and caption/overlay to 'Core CPI 2.6% YoY' (and added 'core was flat MoM' note in factsUsed) so no unlabeled figure can be misread.",
+          "VERIFICATION: Independently confirmed the whitelisted-but-unlisted macro numbers against the BLS June-2026 CPI release and the June-2026 FOMC statement/SEP, and updated factsUsed sources from generic 'Verified hook' to the actual primary sources (BLS CPI, FOMC/SEP).",
+          "NO BLACKLISTED PSEUDO-FACTS PRESENT: no gold $7.1B/300%/fake ATH, no 'Fed pulled cuts/new chair/only 1 expects a cut' (piece correctly uses the hike version), no Robinhood AI agents, no Ostium, no BUIDL $25B, no sUSDe stale yield, no App Store id6771070397 as downloadable. Nothing to delete on that axis.",
+          "PLATFORM RED LINES PASS: X-native — external link kept in first reply, not body; no ticker/price value rendered large in first 3s (chart is wallpaper); no '100x'/guaranteed returns/price targets; NFA present in body, reply, and end card. No TikTok/IG bio-vs-external-link rule applies to this X piece; Taiwan penalty separation and XAUE yield wording N/A (no gold/XAUE/Aurea content).",
+          "LANGUAGE PASS: pure English throughout.",
+          "No dated-airdrop content in this piece, so no 'recompute on publish day' note needed.",
+          "Publishable after edits: hook stops the scroll, 5 scenes / 34s is well within X-native length, CTA is natural and points to a generic Nina link (App Store id not cited)."
+        ]
+      }
+    },
+    {
+      "id": "CC-3",
+      "account": "Clear Charts @ClearChartsHQ",
+      "platform": "X (Twitter)",
+      "language": "English",
+      "hook3s": "\"Most 'AI agent' coins went to zero. One didn't. The difference wasn't the hype — it was whether anything was actually running underneath.\"",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-4s",
+          "narration": "Most 'AI agent' coins went to zero. One didn't. The difference wasn't the hype — it was whether anything was actually running underneath.",
+          "onScreenCaption": "INFRASTRUCTURE vs VAPORWARE",
+          "visual": "Cold open, no price. Split screen: left side a wall of dead 'AI agent' logos fading to grey; right side a single live network graph pulsing. Trading-blue #38bdf8 accent line. Talking-head lower-third: Clear Charts."
+        },
+        {
+          "index": 2,
+          "seconds": "4-12s",
+          "narration": "Quick reality check. DeAI — decentralized AI — was one of 2026's dominant narratives. It scaled up hard, then took a selective pullback in Q1. Point is: money flooded in, and the market stopped rewarding everything equally.",
+          "onScreenCaption": "DeAI = a dominant 2026 narrative · scaled up, then a Q1 pullback",
+          "visual": "Qualitative arrow graphic rising then a partial retrace. NO dollar figure and NO multiple on screen. Note strip: 'directional, not a price call'. Real material optional: a muted TradingView sector heatmap in background, blurred, no tickers legible."
+        },
+        {
+          "index": 3,
+          "seconds": "12-24s",
+          "narration": "So how do you tell real infrastructure from a ticker in an AI costume? Three questions. One: is there a live network doing work? Two: are serious counterparties integrating it? Three: is it shipping, or just tweeting?",
+          "onScreenCaption": "3 tests: LIVE NETWORK? · REAL INTEGRATIONS? · SHIPPING?",
+          "visual": "Three checkbox cards animate in one by one. Science-green #C6FF3A checkmarks. Clean type. Restrained motion — cards slide, no bounce."
+        },
+        {
+          "index": 4,
+          "seconds": "24-40s",
+          "narration": "Run Bittensor's TAO through those. It moved to a model where each subnet has its own token — often called dTAO — so the network can price which AI work actually has demand. That's a live mechanism you can check yourself, not a promise.",
+          "onScreenCaption": "Bittensor → per-subnet tokens (dTAO) · demand gets priced · verify yourself",
+          "visual": "Diagram: central network node branching to multiple subnet nodes, each with a small token chip. Trading-blue #38bdf8 lines. Label 'dTAO' in monospace. No 'confirmed' stamp. Screen-recording B-roll optional: scroll of a subnet dashboard, faces/prices cropped out."
+        },
+        {
+          "index": 5,
+          "seconds": "40-56s",
+          "narration": "Test two: real counterparties. The signal to look for is a major exchange doing the actual plumbing work — a native integration and support for subnet tokens. When an exchange builds for your architecture, that's a very different thing than a launch thread. Check the exchange's own announcement before you trust it.",
+          "onScreenCaption": "Signal to check: does a major exchange do the native plumbing? · verify the source",
+          "visual": "Two-logo bridge motif (network node <-> generic exchange glyph). NO 'confirmed' stamp — instead a 'CHECK THE SOURCE' prompt in trading-blue #38bdf8. Keep it as a method diagram, not a logo endorsement, not a claim about any named company."
+        },
+        {
+          "index": 6,
+          "seconds": "56-70s",
+          "narration": "Test three: is it shipping? With Bittensor, the thing to look for is upgrades that actually change limits — like raising how many subnets can run at once. Roadmaps are cheap. A parameter that actually moved, and that you can confirm on-chain, is a receipt.",
+          "onScreenCaption": "Test 3: did a real limit move? (e.g. subnet cap) · confirm on-chain",
+          "visual": "Generic count-up placeholder on a 'subnet cap' label with no hardcoded numbers presented as fact. Trading-blue #38bdf8. Small 'τ' glyph. Caption strip: 'verify before you trust'. Motion: single clean count-up, no confetti."
+        },
+        {
+          "index": 7,
+          "seconds": "70-84s",
+          "narration": "That's the whole game. Vaporware sells you a story about agents. Infrastructure lets you check a live network, real integrations, and shipped upgrades. Same three questions work on any DeAI coin you're handed.",
+          "onScreenCaption": "Story ≠ Network · ask the 3 questions on ANY DeAI coin",
+          "visual": "Recap of the three checkbox cards from scene 3, now all as question prompts. Left 'vaporware' column greyed out, right 'infrastructure' column lit. Balanced framing — this is a method, not a buy call."
+        },
+        {
+          "index": 8,
+          "seconds": "84-95s",
+          "narration": "Not financial advice — this is a checklist, not a call. If you want to run these fundamentals fast before you touch anything, I dropped a tool in the first reply that helps you break down DeAI projects. Comment your ticker, I'm replying for the next fifteen minutes.",
+          "onScreenCaption": "NFA · checklist, not a call · tool + reply below",
+          "visual": "End card. Clear Charts wordmark. Trading-blue #38bdf8 on near-black. Text: 'Drop a DeAI ticker below 👇'. Small NFA badge bottom corner. Static hold 2s for screenshot-ability."
+        }
+      ],
+      "platformCaption": "Most \"AI agent\" coins went to zero. TAO didn't — and it wasn't the marketing.\n\nHere's the 3-question filter I use to tell real DeAI infrastructure from a ticker in an AI costume:\n\n1. Is there a LIVE network doing work?\n2. Are serious counterparties integrating it?\n3. Is it actually shipping?\n\nRun TAO through it (and verify each yourself before you trust it):\n• Bittensor moved to a per-subnet-token model (dTAO) — so the network can price which AI work has real demand.\n• Watch for a major exchange doing native plumbing + subnet-token support — check the exchange's own post, not a hype thread.\n• Watch for upgrades that actually move limits (like the subnet cap) — confirm on-chain, don't take the tweet's word.\n\nStory vs network. Thread vs receipts. That's the difference.\n\nDeAI was one of 2026's dominant narratives (scaled up, then a selective Q1 pullback) — which is exactly when knowing the difference matters most.\n\nNFA, this is a checklist not a call. Drop a DeAI ticker below and I'll break it down 👇 (replying for the next 15 min)",
+      "hashtags": [
+        "#DeAI",
+        "#Bittensor",
+        "#TAO",
+        "#AIagents",
+        "#Crypto",
+        "#Web3"
+      ],
+      "externalLink": {
+        "slot": "X = first reply (native video ~10x reach; link in body cuts reach ~80%, so link goes in reply 1, posted immediately after the video; reply within 15 min to every comment)",
+        "text": "Before you touch any DeAI ticker, run the fundamentals yourself. Nina (Antalpha's conversational Web3 AI assistant) can help you break down a project — is there a live network, real integrations, actual shipping — so you can spot infrastructure vs ticker cosplay. It's free; search 'Nina Antalpha' to find the current official access point (don't trust a random link, including this one — confirm the domain yourself). NFA."
+      },
+      "postingTime": "SEA pan-English audience: post Tue–Thu 08:00–10:00 SGT/GMT+8 (evening US overlap) or 20:00–22:00 SGT for the local scroll window. Be at keyboard for the first 15 minutes to reply to every comment (reply weight ~13.5x a like). Drop the first-reply link within 60 seconds of posting the video.",
+      "compliance": "NFA — educational breakdown, a fundamentals checklist, not a buy/sell recommendation; nothing here predicts price. Redline self-check: (1) NO price/ticker/'100x'/guaranteed-return claims used as hooks — cold open is pure narrative; DeAI growth stated qualitatively (scaled up + selective Q1 pullback), NO dollar figure AND NO multiple on screen. (2) Specific hotspot claims were sourced only to an internal 'verify=confirmed' label with no checkable primary source, so they were SOFTENED: the specific 'Kraken completed a native dTAO integration' named-counterparty claim was de-named into a generic 'watch for a major exchange doing native plumbing — check the source' method; the specific 'Robin τ 128→256' count was de-hardcoded into a generic 'watch for a limit that actually moved — confirm on-chain' method; all 'confirmed'/'verified' certainty stamps removed and replaced with 'verify yourself / check the source' prompts. dTAO kept but attributed ('often called') and framed as user-checkable. (3) NO blacklisted pseudo-facts: no gold mcap/300%, no Fed rate-cut claims, no fake gold ATH, no Robinhood 70k, no Ostium 'last season', no BUIDL $25B, no stale sUSDe 10-15%. App Store id6771070397 NOT used; additionally the previously hardcoded live URL https://nina.antalpha.com was REMOVED and replaced with 'search for the current official access point / confirm the domain yourself' since the specific endpoint was unverified — same principle as not asserting a specific downloadable Nina location. (4) This video is for Nina/AI×Crypto — no XAUE yield claims, so gold-yield/whitelist and TW criminal-penalty (unlicensed 7yr/NT$100M vs fraud-manipulation 10yr/NT$200M — kept separate if ever invoked) rules are N/A but noted. (5) Bittensor/exchange shown as diagram/method signals with no 'confirmed' stamp and no named endorsement; no single-source scam individual named. (6) X first-reply link only (bio/pinned not needed — @ClearChartsHQ posting native; if account <1000 followers and link-in-reply is throttled, fall back to pinned reply CTA). No airdrop deadline claims in this script.",
+      "hyperframesSpec": "Render target: 9:16, 1080x1920, ~95s, deterministic HTML→MP4. Palette: primary Trading-blue #38bdf8 (science topic = infrastructure/analysis), accents Science-green #C6FF3A for method checkmarks; background near-black #0A0E14; text #F5F7FA. NO airdrop-purple, NO yield-gold (not a yield/RWA piece). Typography: display = bold grotesque (e.g. Inter/Space Grotesque) for on-screen captions at 88–110px; sub-labels 44–52px; monospace (e.g. JetBrains Mono) for the 'dTAO' / 'τ' chips only. Layout: safe margins 8% all sides, captions bottom-third above a persistent thin NFA badge. IMPORTANT — render ONLY method-level labels; do NOT render any specific counterparty name, version nickname, or hardcoded number as a confirmed fact: allowed on-screen = 'per-subnet tokens (dTAO)', '3 tests', 'verify yourself / check the source / confirm on-chain', qualitative 'scaled up then Q1 pullback' arrow with NO dollar value and NO multiple. Do NOT render: any 'confirmed'/'verified' stamp, the word 'Kraken', 'Robin τ', or the '128 → 256' count as fact — the scene-6 count-up is a generic placeholder animation only, not a claimed receipt. Do NOT render any price, market cap, or percentage. Motion: restrained — slides, single count-up, opacity fades; no bounce/confetti/parallax. End card holds static 2s for screenshotting.",
+      "factsUsed": [
+        {
+          "fact": "DeAI (decentralized AI) was one of 2026's dominant narratives, with strong scale-up then a selective pullback in Q1 — stated qualitatively, no dollar figure and no multiple used.",
+          "source": "Hotspot hook stated qualitatively; precise $ figure and the '3x' multiple both deliberately excluded per rules (soften unverifiable specifics)"
+        },
+        {
+          "fact": "Bittensor moved to a per-subnet-token model often referred to as dTAO, so the network can price AI-work demand — framed as a user-verifiable mechanism, not a hard claim.",
+          "source": "Widely-referenced Bittensor architecture (dTAO); attributed and framed as check-yourself since only an internal 'verify=confirmed' label was provided, not a primary source"
+        },
+        {
+          "fact": "METHOD ONLY (not a factual claim): a strong counterparty signal is a major exchange doing native plumbing + subnet-token support — audience is told to confirm the exchange's own announcement.",
+          "source": "Original 'Kraken completed native dTAO integration' claim had no checkable source (self-label only), so de-named into a verify-it-yourself method"
+        },
+        {
+          "fact": "METHOD ONLY (not a factual claim): a shipping signal is an upgrade that actually moves a limit like the subnet cap — audience is told to confirm on-chain.",
+          "source": "Original 'Robin τ 128→256' specific had no checkable source (self-label only), so de-hardcoded into a verify-it-yourself method"
+        },
+        {
+          "fact": "Nina is Antalpha's conversational Web3 AI assistant for AI×Crypto fundamentals breakdown (used only in CTA; no specific live URL asserted — audience told to find/confirm the official access point).",
+          "source": "Ops handbook / brand memory nina-xaue-octok-products (product positioning); specific URL removed as unverified"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "No blacklisted pseudo-facts present (gold mcap/300%, Fed, fake gold ATH, Robinhood 70k, Ostium 'last season', BUIDL $25B, stale sUSDe all absent). This is a Nina/AI×Crypto piece, so gold/XAUE-yield, TW-penalty, and airdrop-deadline rules are N/A here.",
+          "SOFTENED unverifiable specifics that were stamped 'confirmed/verified' with only a self-referential 'verify=confirmed' internal label and no checkable primary source (checklist: 可疑数字/日期→删或改为定性). Named-counterparty claim 'Kraken completed a native dTAO integration and is set to list subnet tokens' de-named into a generic 'watch for a major exchange doing native plumbing — check the source' method (scene 5, caption).",
+          "De-hardcoded the specific 'Robin τ' + '128 → 256' subnet-cap count into a generic 'watch for a limit that actually moved — confirm on-chain' method (scene 6, caption, hyperframesSpec). The scene-6 count-up is now an explicit placeholder animation, not a claimed receipt.",
+          "Removed all 'INTEGRATION: confirmed' / 'verified' certainty stamps and replaced with 'verify yourself / check the source / confirm on-chain' prompts across scenes 4-6 and hyperframesSpec; dTAO kept but attributed ('often called') and framed as user-checkable rather than asserted as fact.",
+          "Removed the hardcoded '~3x' growth multiple (kept only the qualitative 'scaled up, then Q1 pullback' arrow) — the multiple was still a specific number without a checkable source.",
+          "Removed the hardcoded live URL https://nina.antalpha.com from the external link (it was presented as a working product endpoint but was unverified — same principle as the App Store id6771070397 rule). Replaced with 'search for the current official access point / confirm the domain yourself'.",
+          "Verified platform redlines pass: X external link is in first reply, not body; no price/ticker/'100x'/guaranteed-return in first 3s; account is @ClearChartsHQ on X so the Aurea/quiet.yield bio-vs-external-link and 1000-follower rules are N/A. Language is pure English throughout. NFA present in narration, captions, caption, and end card. Hook is scroll-stopping and the reply-CTA is natural; runtime ~95s across 8 scenes is reasonable.",
+          "Changed original qa.pass from an unqualified true (which had certified overclaimed 'confirmed' specifics) to a true that reflects the softened, source-honest version. Final verdict: publishable after these edits."
+        ]
+      }
+    },
+    {
+      "id": "CC-4",
+      "account": "Clear Charts @ClearChartsHQ",
+      "platform": "X (Twitter)",
+      "language": "English",
+      "hook3s": "\"Everyone's staring at one number on the BTC chart — and it's not the one they think. Let me draw it.\"",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-4s",
+          "narration": "Everyone's watching one line on Bitcoin right now, and it's not the one they think. Let me draw my actual map — level, invalidation, and why.",
+          "onScreenCaption": "MY BTC MAP — level / invalidation / why",
+          "visual": "REAL FOOTAGE: TradingView BTC daily chart, clean, no drawings yet. Cursor hovering. Clear Charts watermark bottom-right."
+        },
+        {
+          "index": 2,
+          "seconds": "4-12s",
+          "narration": "Price is sitting near sixty-four-seven as I record this. That's more than fifty percent off the January all-time high up around one-twenty-six K. So context first: we are deep in a drawdown, not near the top.",
+          "onScreenCaption": "~$64.7K now · >50% below the ~$126K ATH (Jan 2026)",
+          "visual": "REAL FOOTAGE: screen-record drawing a horizontal ray at current price. Then a faint dashed line waaay up at the ATH region labelled ~$126K to show the gap. NFA tag appears bottom-left and stays for the whole video."
+        },
+        {
+          "index": 3,
+          "seconds": "12-24s",
+          "narration": "Here's the first ceiling I care about. I've got resistance banded roughly sixty-five-three to sixty-eight, and the fifty-day EMA is riding right through it near sixty-five-one. So this isn't one magic price — it's a shelf. I want a daily close ABOVE that band before I believe a breakout, not just a wick into it.",
+          "onScreenCaption": "Resistance ~$65.3K–68K · 50-day EMA ~$65.1K = one shelf",
+          "visual": "REAL FOOTAGE: draw a shaded resistance box from ~65.3K to 68K. Overlay the 50-day EMA indicator so it visibly runs through the box. Circle where price is testing it."
+        },
+        {
+          "index": 4,
+          "seconds": "24-36s",
+          "narration": "Below, my support I'm watching is roughly sixty-one to sixty-two-and-a-half. That's my line in the sand. My invalidation is simple: sustained trade under that support zone and this whole read is wrong — I stand aside, I don't average into a broken level.",
+          "onScreenCaption": "Support ~$61K–62.5K = my line · lose it = read is invalid",
+          "visual": "REAL FOOTAGE: draw a second shaded box at 61K–62.5K in a cooler colour. Draw an arrow down through it with a big X = INVALIDATION label."
+        },
+        {
+          "index": 5,
+          "seconds": "36-48s",
+          "narration": "Now the why. Glassnode flagged on July sixteenth that sell-side pressure looks exhausted and this could be early basing. Exhausted sellers plus a defined support shelf is the kind of setup I actually want to map — but early basing is a maybe, not a bottom call. I need that band to hold to keep leaning that way.",
+          "onScreenCaption": "Glassnode (Jul 16): sell-side pressure exhausted, possible early basing",
+          "visual": "REAL FOOTAGE: cut to a screenshot of the Glassnode note/dashboard framing the point (REAL DATA SCREENSHOT). Back to chart, cursor tapping the support box."
+        },
+        {
+          "index": 6,
+          "seconds": "48-58s",
+          "narration": "So the whole map in one breath: reclaim sixty-five-three to sixty-eight on a daily close and I get interested up; lose sixty-one and I'm out. Everything in between is just noise. If you want to read a chart WITH me instead of chasing green candles, I put where I go in the first reply. Not financial advice — this is my map, not your trade.",
+          "onScreenCaption": "Reclaim $65.3K–68K = up · lose $61K = out · rest = noise · NFA",
+          "visual": "REAL FOOTAGE: final clean chart with both boxes + EMA + labels visible at once (the finished map). Hold on it. Reply-arrow icon animates pointing to first-reply. NFA tag stays."
+        }
+      ],
+      "platformCaption": "$65K is the first ceiling — here's my actual BTC map, no hype.\n\nLevel: resistance ~$65.3K–68K with the 50-day EMA (~$65.1K) running right through it. I want a DAILY CLOSE above the band, not a wick.\n\nInvalidation: lose ~$61K support and the read is dead. I stand aside, I don't average a broken level.\n\nWhy: Glassnode (Jul 16) flagged sell-side pressure looks exhausted — possible early basing. A maybe, not a bottom call.\n\nBTC's ~$64.7K right now, still >50% under the Jan ATH (~$126K). Context matters.\n\nNFA. This is my map, not your trade. Want to read charts together on demand? 👇 first reply.",
+      "hashtags": [
+        "#Bitcoin",
+        "#BTC",
+        "#TradingView",
+        "#PriceAction",
+        "#CryptoCharts"
+      ],
+      "externalLink": {
+        "slot": "X = first reply (pinned reply under the video). Native video posted clean in the main tweet — link kept OUT of the body to protect reach (in-body links reduce reach on X).",
+        "text": "First reply: \"Want to read the chart with me when levels actually trigger? I use Nina — a conversational Web3 AI — to pull levels, invalidation and on-chain context on demand. Ask it anything, on your schedule → [Nina link]. NFA.\""
+      },
+      "postingTime": "SEA English-market window: post 8:00–10:00pm SGT/MYT (GMT+8), weekday. Reply with the Nina link in the first comment within ~60 seconds of posting, then actively reply to comments for the first 15 minutes to compound engagement while the native video is boosted.",
+      "compliance": "NFA — not financial advice; this is a personal chart read, on-screen NFA tag held for the full video and repeated in caption + first reply. Red-line self-check: (1) Never states a fixed ATH decimal — uses \"~$126K\" only; current price framed as \"~$64.7K as I record\" (time-stamped, not a live guarantee). (2) No \"100x\"/guaranteed-returns/price-target-as-promise language; up-case is conditional (\"if reclaim... I get interested\"), Glassnode framed as \"possible early basing,\" a maybe not a bottom call. (3) Only verified hook levels used: support ~$61K–62.5K, resistance ~$65.3K–68K, 50-day EMA ~$65.1K, Glassnode Jul 16 note. (4) No blacklisted pseudo-facts (no gold mcap/300% claim, no Fed rate-cut narrative, no fake $4,768 gold high, no Robinhood agent count, no Ostium urgency, no BUIDL $25B figure, no sUSDe 10-15% figure, no App Store id6771070397 download claim). (5) X-specific: native video in body, external link in FIRST REPLY only — not in tweet body. (6) No airdrop deadlines in this piece, so no dated-scarcity risk (no GRVT/Hyperlynx relative-deadline wording needed). (7) Nina described accurately as a conversational Web3 AI assistant; no download/App-Store claim. (8) No named scam individuals; no leverage/perp CTA. (9) No TW-law content and no XAUE-yield content in this piece, so those clauses do not apply. (10) 3-second ticker/price rule applies to TikTok/IG only; this is X, where a price in the body is permitted — hook still avoids \"100x\"/guaranteed-returns. Note on unverified inputs: BTC ~$64.7K, ~$126K Jan-2026 ATH, and the Glassnode Jul-16 note are carried from the CC-4 verified hook and framed defensively (approximate + time-stamped); if any drifts before publish, re-check on the day and reframe as qualitative.",
+      "hyperframesSpec": "Brand: Trading Blue #38bdf8 as primary accent (charts/markets account). Neutral base: near-black #0B1220 background, off-white #E8EEF5 text. Semantic overlays for the chart-map render layer: resistance band #38bdf8 at 18% fill, support band #38bdf8 at 10% fill differentiated by a lighter stroke, invalidation X + arrow in a muted red #FF5C6C (used sparingly, only on the invalidation frame). 50-day EMA line rendered as a thin #F5B301 stroke so it reads distinct from the price line. Format: 9:16 (1080x1920) for X native, safe margins 120px top/bottom for mobile UI. Layout: lower-third caption bar (semi-opaque #0B1220 @ 85%, one line, wraps max two) + a persistent top-left NFA chip. Type hierarchy: H1 caption 64px bold (Inter/Söhne), sub-value 40px medium, NFA chip 28px. Data points to render ON SCREEN (only these verified numbers, nothing else): current price \"~$64.7K\"; ATH reference \"~$126K (Jan 2026)\"; \">50% below ATH\"; resistance \"$65.3K–68K\"; 50-day EMA \"~$65.1K\"; support \"$61K–62.5K\"; source \"Glassnode · Jul 16\". Motion: restrained — caption fades in 200ms, boxes wipe-in left-to-right 300ms, no bounce, no particles. Every text overlay must be a caption overlay (assume ~70% watch muted). Do NOT render any decimal ATH, any gold/Fed/other-product number, or any price target as a promise.",
+      "factsUsed": [
+        {
+          "fact": "BTC trading ~$64,700 on Jul 15/16, 2026 (framed as \"as I record\", approximate)",
+          "source": "Verified hook (CC-4), confirmed"
+        },
+        {
+          "fact": "BTC is >50% below its Jan 2026 all-time high of ~$126K (ATH written as approximate, no fixed decimal)",
+          "source": "Verified hook (CC-4), confirmed"
+        },
+        {
+          "fact": "Glassnode note dated Jul 16, 2026: sell-side pressure appears exhausted, possible early basing (framed as a maybe, not a bottom call)",
+          "source": "Verified hook (CC-4) — Glassnode, confirmed"
+        },
+        {
+          "fact": "Support zone ~$61K–62.5K",
+          "source": "Verified hook (CC-4), confirmed"
+        },
+        {
+          "fact": "Resistance zone ~$65.3K–68K",
+          "source": "Verified hook (CC-4), confirmed"
+        },
+        {
+          "fact": "50-day EMA ~$65.1K",
+          "source": "Verified hook (CC-4), confirmed"
+        },
+        {
+          "fact": "Nina = Antalpha conversational Web3 AI assistant (AI x Crypto) — CTA framing only, no download/App-Store claim",
+          "source": "Global operations manual (north-star product), confirmed"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "Blacklist scan: PASS. No banned pseudo-facts present — verified absent: gold mcap $7.1B/+300%, Fed rate-cut/new-chair narrative, fake $4,768 gold high, Robinhood 70k+ AI agents, Ostium 'last quarter' urgency, BUIDL $25B holding, sUSDe 10-15% legacy yield, App Store id6771070397 download claim. This piece is BTC-chart-only and does not touch gold/Fed/other-product numbers.",
+          "X external-link placement: PASS (no change needed). Native video in body; Nina link confined to the FIRST REPLY. Softened the reach rationale wording from a hard '~80% cut' stat to 'reduces reach' since that exact percentage is not a verified figure — kept the correct behavior.",
+          "Platform 3s rule: PASS. Ticker/price/100x/guaranteed-return restriction is TikTok/IG-only; this is X, where a body price is allowed. Hook still avoids '100x' and any guaranteed-return language.",
+          "Language: PASS. English account, fully English throughout (no zh-TW leakage).",
+          "NFA / conditional framing: PASS. NFA held full-video + caption + first reply; up-case is conditional; Glassnode framed as 'possible early basing, a maybe not a bottom call.' No price-target-as-promise.",
+          "Airdrop deadlines: N/A — none present, so no relative-wording/'recalculate on publish day' clause required. Added an explicit note to compliance confirming this.",
+          "XAUE-yield / TW-law clauses: N/A to this piece; added explicit confirmation to compliance so the exemption is documented rather than silent.",
+          "factsUsed audit: PASS. All 7 entries map to the CC-4 verified hook or the ops manual. Added 'approximate/framed-defensively/maybe-not-bottom-call' qualifiers so each stored fact matches its on-screen defensive framing. Added a compliance caveat to re-check the three market-data inputs (price, ATH, Glassnode note) on publish day and reframe qualitatively if they drift.",
+          "Nina CTA: PASS. Described as 'conversational Web3 AI'; no download/App-Store claim. '[Nina link]' left as an intentional template slot to be filled at publish.",
+          "Fixed the flipped internal QA flag: original package shipped qa.pass=true with issues=[] but had no recorded review trail; this pass documents the adversarial checks performed. Content unchanged in substance — only minor defensive-wording edits (reach-stat softening + explicit N/A confirmations). Publishable as-is once the Nina link and live level values are confirmed on the day."
+        ]
+      }
+    },
+    {
+      "id": "QY-1",
+      "account": "Quiet Yield @quiet.yield",
+      "platform": "Instagram (Carousel)",
+      "language": "English",
+      "hook3s": "Cover card (Reel hook + slide 1): \"Your bank pays 0.38%. There's an honest reason on-chain pays more — and an honest limit to how much.\" No ticker, no price, no \"100x\", no guaranteed return. Reel version (silent, caption overlay): text builds line-by-line — \"0.38%\" → strike-through → \"~5%\" → \"here's where it actually comes from.\"",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "slide 1",
+          "narration": "Cover / hook. Frame the whole carousel as a calm, anti-hype explainer, not a shill. Set expectation: we explain WHERE yield comes from, and we cap the honesty at real numbers.",
+          "onScreenCaption": "Your bank: 0.38%. On-chain USDC: ~5%. The honest yield ladder.",
+          "visual": "Split-screen infographic. Left = grey 'BANK' block with 0.38%. Right = teal 'ON-CHAIN USDC' block with ~5%. Bottom strip: 'Not magic. Not free. Here's the real ladder.' Small 'NFA' tag corner. No logos of specific banks."
+        },
+        {
+          "index": 2,
+          "seconds": "slide 2",
+          "narration": "The anchor. All honest stablecoin yield traces back to the risk-free rate. Short US T-bills sit around 3.7-3.8% right now. If someone offers you way more, the extra has to come from somewhere — that's the whole lesson. (Rate is live; re-check the current T-bill print before posting.)",
+          "onScreenCaption": "Rule #1: Everything is priced off T-bills — ~3.7-3.8%",
+          "visual": "A horizontal 'yield ladder' baseline. Bottom rung labeled 'US T-bills ~3.7-3.8% (the anchor)'. Arrow up says 'anything above this = extra risk you're being paid for'. Clean, one number highlighted in gold."
+        },
+        {
+          "index": 3,
+          "seconds": "slide 3",
+          "narration": "Rung one: lending USDC on Aave V3. Roughly 3.1 to 3.4 percent, and it drifts with demand. It's close to the anchor because you're lending to over-collateralized borrowers. Risk here is smart-contract and de-peg, not credit. No FDIC.",
+          "onScreenCaption": "Rung 1 — Lend USDC (Aave V3): ~3.1-3.45% (variable)",
+          "visual": "Ladder rung 1 lit in trading-blue. Side panel 'RISK: smart-contract, de-peg. NOT FDIC-insured.' Icon: two-way lending arrows. Number band '~3.1-3.45%'."
+        },
+        {
+          "index": 4,
+          "seconds": "slide 4",
+          "narration": "Rung two: syrupUSDC, around 5 percent (recently ~4.7-5.1). Higher than plain lending because it routes into institutional-style borrowers. More yield equals more counterparty and credit exposure. That's the trade, spelled out.",
+          "onScreenCaption": "Rung 2 — syrupUSDC: ~5% (variable)",
+          "visual": "Ladder rung 2, blue-to-gold gradient. Side panel 'WHY MORE: institutional borrowers = added counterparty/credit risk.' Small caution triangle. Number band '~5%'."
+        },
+        {
+          "index": 5,
+          "seconds": "slide 5",
+          "narration": "Rung three: sUSDe. Yield floats with perp funding rates, so it's variable — recently in the mid-single digits, and it has run much higher in hot markets. Better when funding is positive, but it can compress fast. It is NOT a savings account.",
+          "onScreenCaption": "Rung 3 — sUSDe: mid-single digits now, variable",
+          "visual": "Ladder top rung in gold, but drawn as a wavy/oscillating line to signal variability. Side panel 'FLOATS with funding rates. Can drop. Not fixed, not a deposit.' Number band 'mid-single digits (varies)'."
+        },
+        {
+          "index": 6,
+          "seconds": "slide 6",
+          "narration": "The honest ceiling. Realistic, sustainable stablecoin yield today sits roughly 3.5 to 8 percent. If a screen shows you two-figure APY, that's not a bank rate — that's a risk bill. Ask what's being sold.",
+          "onScreenCaption": "The honest band: ~3.5-8%. Above that? Ask where the money comes from.",
+          "visual": "All three rungs shown together inside a shaded 'honest zone' 3.5-8%. A red dashed line labeled 'anything way above = ask what risk you're taking'. Repeat each rung's risk tag in a compact legend."
+        },
+        {
+          "index": 7,
+          "seconds": "slide 7",
+          "narration": "Bridge to the CTA, calm not salesy. If you want yield but you're allergic to the volatility on the top rung, another honest lane is yield priced in gold instead of dollars — tokenized gold that can earn. Different risk, still ask the same question.",
+          "onScreenCaption": "Want yield without the top-rung swings? Another honest lane: yield priced in gold.",
+          "visual": "New minimalist panel, gold accent. A small gold coin/ingot motif labeled 'yield measured in gold, not USD'. Copy: 'Example figures ~2% / low-single-digit measured in gold. Institutional-grade, opening soon. Whitelist first.' No fixed-return promise."
+        },
+        {
+          "index": 8,
+          "seconds": "slide 8",
+          "narration": "Close + save prompt + CTA. Reinforce the mental model: pick your rung on purpose, know the risk, and if you're curious about the gold lane, the link's in bio. Save this as your yield cheat-sheet.",
+          "onScreenCaption": "Save this. Pick your rung on purpose. Link in bio → the gold-yield lane.",
+          "visual": "Recap ladder thumbnail + big 'SAVE 🔖' cue. Bottom: 'Link sticker + bio → Xaue (tokenized gold yield). NFA. Whitelist / institutional-grade, opening soon.' Handle @quiet.yield."
+        }
+      ],
+      "platformCaption": "Your bank pays 0.38%. On-chain USDC pays around 5%. That's not magic — and it's not free. 🧵➡️ swipe.\\n\\nEvery honest stablecoin yield is priced off one thing: short US T-bills (~3.7-3.8% right now). Anything above the anchor is a risk bill you're being paid to carry. Here's the ladder, rung by rung (all figures variable — check live before you commit):\\n\\n• Lend USDC on Aave V3 → ~3.1-3.45% (smart-contract & de-peg risk, NOT FDIC)\\n• syrupUSDC → ~5% (institutional borrowers = more counterparty/credit risk)\\n• sUSDe → mid-single digits right now, but VARIABLE (floats with funding rates, can compress or spike)\\n\\nThe honest, sustainable band today is roughly 3.5-8%. If a screen flashes double-digit APY, don't ask \\\"how do I get in\\\" — ask \\\"where does the money come from?\\\"\\n\\nPrefer yield without the top-rung swings? There's another honest lane: yield priced in gold instead of dollars (tokenized gold, institutional-grade, whitelist — example figures in the low single digits measured in gold). Same rule applies: know the risk.\\n\\nSave this as your yield cheat-sheet. 🔖\\nNFA — not financial advice, always DYOR.\\n👉 Link sticker + bio.",
+      "hashtags": [
+        "#stablecoins",
+        "#usdc",
+        "#defi",
+        "#onchainyield",
+        "#tbills",
+        "#rwa",
+        "#tokenizedgold",
+        "#personalfinance",
+        "#passiveincomeeducation",
+        "#dyor",
+        "#nfa",
+        "#financialliteracy",
+        "#SEAinvesting",
+        "#yieldeducation"
+      ],
+      "externalLink": {
+        "slot": "IG = link sticker on the Reel/Story + bio link (account under 1000 followers — no in-feed outbound link assumed; drive via link sticker + bio only)",
+        "text": "Two-figure APY? First ask where the money comes from. If you want yield while dodging the top-rung swings, look at tokenized gold that can earn — yield priced in gold, not dollars. Institutional-grade, whitelist opening soon. Link sticker + bio → Xaue. Example figures only, NFA."
+      },
+      "postingTime": "Reel hook first for reach; then within 24h drop the Carousel to bank saves. SEA English audience — post the Carousel around 8:00–9:30pm SGT/MYT (peak evening scroll, mirrors the TW 6–10pm window). Reply to every comment in the first 90 minutes.",
+      "compliance": "NFA — this is educational, not financial advice; do your own research. Red-line self-check for this post: (1) IG/TikTok 3s filter — cover uses NO ticker, NO price, NO '100x', NO guaranteed-return language; hook leads with bank 0.38% (a real bank rate, not a crypto price) and an honesty frame. (2) Every yield figure is tagged with its specific protocol risk + 'NOT FDIC' and labeled variable — no yield is presented as safe or fixed. (3) sUSDe framed as VARIABLE / mid-single-digit using 2026-07 live conditions (~4% 7-day trailing) — NOT the blacklisted old '10–15%' value and NOT overstated to 'high single digits'. (4) Xaue framed with 'example figures / low-single-digit measured in gold / institutional-grade opening soon / whitelist' — NO fixed or promised return, retail whitelist emphasized. (5) No named scam individuals; no fabricated urgency; no airdrop deadlines in this post. (6) Under-1000-follower gate respected: outbound only via link sticker + bio, no assumed in-feed external link. (7) No blacklisted pseudo-facts used (no $71B gold cap, no Fed rate-cut claims, no fake gold ATH, no Robinhood AI-agent count, no BUIDL $25B, no App Store download claim). (8) All rate numbers softened to live-verified ranges with 'variable / check live before posting' language to avoid stale false precision. Taiwan penalty note not applicable in this English SEA post; if localized, keep unlicensed-operation (7yr/NT$100M) and fraud/manipulation (10yr/NT$200M) penalties stated separately.",
+      "hyperframesSpec": "Render as IG Carousel 8 cards, 1080x1350 (4:5) for feed + a 1080x1920 (9:16) Reel cover derived from card 1. Brand palette: primary = 收益金 #F5B301 (yield/anchor numbers, ladder top rung), secondary = 交易蓝 #38bdf8 (lending/DeFi rungs), background = near-black #0B0E14 with subtle grid texture; text neutral #F5F7FA, risk-warning text #FF6B6B (muted, not alarmist). Gold-lane card (7-8) shifts accent fully to #F5B301. Typography hierarchy: card headline 64–80px bold (tight tracking), number badges 96–120px extra-bold, body/risk tags 30–36px medium, footer NFA/handle 24px. Layout: consistent 72px safe margins; each rung card = left number badge, right risk panel, persistent bottom ladder-progress indicator (rung 1→3). Data points to render (ONLY these verified numbers): Bank 0.38%; On-chain USDC ~5%; T-bills anchor ~3.7-3.8%; Aave V3 USDC ~3.1-3.45% (variable); syrupUSDC ~5% (variable); sUSDe 'mid-single digits, variable'; honest band 3.5-8%; Xaue 'example ~2% / low-single-digit measured in gold' (label as EXAMPLE, not a rate to render as bold hero). Motion (Reel only, restrained): card 1 line-by-line text reveal, 0.38% strike-through into ~5%, sUSDe rung drawn as a gentle oscillating line to signal variability; no bouncy/aggressive easing, max 2 animated elements per frame. Deterministic HTML→MP4/PNG: fixed fonts, no external CDN calls, embed all values as static text. Do NOT render any number not in the verified list above.",
+      "factsUsed": [
+        {
+          "fact": "Realistic sustainable stablecoin yield today is roughly 3.5–8%",
+          "source": "Verified hook set (QY-1), verify=confirmed"
+        },
+        {
+          "fact": "Short US T-bill rate ~3.7-3.8% is the anchor for on-chain stablecoin yield",
+          "source": "Live corroborated: US 3-month bill yield 3.71% (Jul 10) to 3.80% (Jul 15, 2026) via TradingEconomics/FRED — corrected from stale 3.66%; labeled live/check-before-post"
+        },
+        {
+          "fact": "Aave V3 USDC supply yield ~3.1-3.45%, variable",
+          "source": "Live corroborated ~3.45% (trending toward ~2.76%) via Aavescan/DeFiLlama Jul 2026 — widened from over-precise 3.14-3.18%"
+        },
+        {
+          "fact": "syrupUSDC yield ~5% (recently 4.7-5.1%), variable",
+          "source": "Live corroborated 4.7-5.1% via Maple app/transparency dashboard Jul 2026 — softened from spurious single-point 4.96%"
+        },
+        {
+          "fact": "sUSDe yield floats with funding rates, currently mid-single digits / variable",
+          "source": "Live corroborated ~3.86% (7-day trailing) via Aavescan/Ethena Jul 2026 — corrected from overstated 'high single digits'; blacklisted old 10-15% value NOT used"
+        },
+        {
+          "fact": "Bank baseline 0.38% vs on-chain USDC ~5% framing",
+          "source": "FDIC national average savings rate 0.38% (Jun 2026) confirmed; used as comparative hook not as a promised rate"
+        },
+        {
+          "fact": "Each protocol carries specific risk (smart-contract, de-peg, counterparty/credit); none are FDIC-insured",
+          "source": "Verified hook set (QY-1): 'each protocol tagged risk / no FDIC'"
+        },
+        {
+          "fact": "Xaue = tokenized gold yield, example figures ~2% / low-single-digit measured in gold, institutional-grade opening soon, retail whitelist",
+          "source": "Operations handbook CTA rules for Xaue (no fixed return, whitelist emphasized)"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "FACT — sUSDe overstated: original said 'high single digits' across slide 5, caption, hyperframesSpec and factsUsed. Live 2026-07 is ~3.86% (7-day trailing, Aavescan/Ethena) = mid-single digits. Corrected everywhere to 'mid-single digits, variable' to match live conditions and avoid overstatement (checklist item 7 requires 2026-07 realtime ~3.5-8%, not stale/high values).",
+          "FACT — T-bills anchor 3.66% was stale/low: live short T-bill is 3.71% (Jul 10) to 3.80% (Jul 15, 2026). Changed on-screen figure to '~3.7-3.8%' and added 'rate is live, re-check current print before posting' in slide 2 and caption.",
+          "FACT — Aave V3 USDC 3.14-3.18% was over-precise and below live: live ~3.45% (trending toward ~2.76%). Widened to '~3.1-3.45% (variable)' in slide 3, caption, and hyperframesSpec verified-number list.",
+          "FACT — syrupUSDC 4.96% single-point precision replaced: live 4.7-5.1% (Maple app/transparency). Softened to '~5% (variable)' to remove false precision while staying accurate.",
+          "COMPLIANCE (verified clean, no change needed) — no blacklisted pseudo-facts present (no $71B gold cap, no Fed rate-cut/new-chair claims, no fake gold ATH, no Robinhood AI-agent count, no BUIDL $25B, no App Store download claim); NFA present throughout; 3s filter clean (no ticker/price/100x/guaranteed return on cover); XAUE uses 'example ~2% / low-single-digit measured in gold / institutional-grade opening soon / whitelist', no fixed return; retail whitelist emphasized.",
+          "COMPLIANCE (verified, no change) — under-1000-follower gate for @quiet.yield (IG) respected: CTA drives via link sticker + bio only, no assumed in-feed outbound link. Not an X post, so no first-reply-link rule applies.",
+          "COMPLIANCE (verified, no change) — no airdrop with deadline referenced, so no relative-wording/'recompute on posting day' note needed. Language is pure English (correct for the Quiet Yield English channel). Taiwan penalty note retained and kept split (unlicensed 7yr/NT$100M vs fraud/manipulation 10yr/NT$200M) for localization safety.",
+          "EDIT — added 'variable / check live before posting' qualifiers to every rate in caption and updated the hyperframesSpec verified-number allowlist so renderers cannot burn in the old stale numbers. Removed #yieldfarming101 hashtag (implies active farming/returns) and replaced with #yieldeducation to match the educational, non-promissory framing."
+        ]
+      }
+    },
+    {
+      "id": "QY-2",
+      "account": "Quiet Yield @quiet.yield",
+      "platform": "Instagram (Carousel)",
+      "language": "English",
+      "hook3s": "Slide 1 (the thumb-stopper): \"Tokenized gold just did more volume in ONE quarter than in all of last year.\" Big number, calm tone, no ticker or price — a fact-drop framed as \"here's a shift most people missed,\" designed to earn the swipe and the save.",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "slide 1",
+          "narration": "Cover / hook card. State the single verified headline as a clean fact-drop and promise a 30-second explainer. Invite the save.",
+          "onScreenCaption": "Tokenized gold did more volume in ONE quarter than ALL of 2025.",
+          "visual": "Full-bleed dark card (#0B0B0F). Giant serif+grotesk headline, Yield Gold #F5B301 accent on the word GOLD. Small gold-bar glyph. Bottom-right: 'swipe -> ' and a small bookmark icon with 'save this'. No chart, no price, no ticker."
+        },
+        {
+          "index": 2,
+          "seconds": "slide 2",
+          "narration": "The number that made people look twice: in Q1 2026, tokenized gold spot trading volume was 90.7 billion dollars — larger than the entire 84.6 billion for all of 2025.",
+          "onScreenCaption": "Q1 2026: $90.7B  >  All of 2025: $84.6B",
+          "visual": "Two-bar comparison infographic. Left bar (shorter) labeled 'All of 2025 · $84.6B'. Right bar (taller) labeled 'Q1 2026 (one quarter) · $90.7B' in Yield Gold #F5B301. Caption underneath: 'spot trading volume, tokenized gold'. Data label = REAL verified figures only ($90.7B and $84.6B)."
+        },
+        {
+          "index": 3,
+          "seconds": "slide 3",
+          "narration": "What is tokenized gold? It's real gold, held in vaults, represented as a token you can hold and move on-chain — 24/7, no bank hours.",
+          "onScreenCaption": "What it actually is",
+          "visual": "Simple 3-step icon row: [gold bar in vault] -> [token coin glyph] -> [wallet]. One line each: 'Real gold, vaulted' / 'Represented on-chain' / 'Move it 24/7'. Neutral educational card, Yield Gold #F5B301 line icons on dark. No brand names, no tickers."
+        },
+        {
+          "index": 4,
+          "seconds": "slide 4",
+          "narration": "This isn't spread across a hundred coins. Roughly nine out of every ten dollars in this segment sits in just two of the largest tokenized-gold assets.",
+          "onScreenCaption": "~90% sits in the two biggest",
+          "visual": "Donut / concentration graphic: one large Yield Gold #F5B301 arc labeled '~90% — the two largest tokenized-gold tokens (XAU_T + PAXG)', small grey remaining arc 'everything else'. Sub-caption: 'the two leaders hold the vast majority of on-chain tokenized gold'. No specific market-cap dollar figures rendered — qualitative concentration only."
+        },
+        {
+          "index": 5,
+          "seconds": "slide 5",
+          "narration": "Why the shift? People want the stability of gold, but on rails that settle instantly and never close. That's the RWA — real-world-asset — story in one line.",
+          "onScreenCaption": "Old asset. New rails.",
+          "visual": "Split card: left half warm gold-ingot texture with word 'STABILITY', right half cool Trade Blue #38bdf8 grid/mesh with word 'INSTANT SETTLEMENT'. Center seam label: 'RWA = real assets, on-chain'. Editorial, calm."
+        },
+        {
+          "index": 6,
+          "seconds": "slide 6",
+          "narration": "Here's the part most people don't know: gold itself doesn't pay you anything. Plain gold, or plain tokenized gold, just sits there.",
+          "onScreenCaption": "But gold pays you… nothing.",
+          "visual": "Minimal card: a single gold coin glyph with a flat '0%' line under it. Sub-caption: 'holding metal = no yield by itself'. High negative space, one Yield Gold #F5B301 coin. Sets up the payoff slide."
+        },
+        {
+          "index": 7,
+          "seconds": "slide 7",
+          "narration": "That's the gap Xaue is built for: a yield layer sitting on top of tokenized gold, so the gold you hold can also earn — returns measured in gold itself. Example figures shown have been low single digits, it's institutional-grade and opening up, and it's not a fixed or guaranteed rate.",
+          "onScreenCaption": "Gold that can also earn.",
+          "visual": "Layer-stack diagram: base block 'Trade Blue tokenized gold (XAU-backed)' -> top block 'Yield Gold Xaue · yield layer'. Side labels: 'returns denominated in gold' / 'example figures: low single digits' / 'institutional-grade · opening access'. Disclaimer strip at bottom in small type: 'Example only. Not fixed or guaranteed. Not financial advice.'"
+        },
+        {
+          "index": 8,
+          "seconds": "slide 8",
+          "narration": "If you want the deep-dive on how gold can earn yield, the full breakdown is in the link — tap the link sticker or check the bio. Save this so you can find it later.",
+          "onScreenCaption": "Full breakdown -> link sticker + bio",
+          "visual": "CTA card. Centered: 'Curious how gold earns yield?' Then a mock link-sticker pill 'Xaue — yield on tokenized gold'. Below: 'link sticker up top (Story) or tap bio'. Corner: bookmark icon 'save for later'. Footer micro-type: 'Not financial advice.' Yield Gold #F5B301 + subtle dark."
+        }
+      ],
+      "platformCaption": "Tokenized gold quietly had its biggest quarter ever. 🥇\n\nIn Q1 2026, tokenized-gold spot volume hit $90.7B — more than the entire $84.6B from all of 2025. One quarter beat a full year.\n\nHere's the short version most people skip:\n• Tokenized gold = real, vaulted gold represented on-chain, tradable 24/7\n• ~90% of the segment sits in just the two largest tokens (XAU₮ + PAXG)\n• Gold is stable… but plain gold (and plain tokenized gold) pays you nothing\n\nThat last point is the interesting one. Xaue is a yield layer built on top of tokenized gold, so the gold you hold can also earn — with returns measured in gold. Example figures have been in the low single digits; it's institutional-grade and opening up (whitelist for now). Not a fixed or guaranteed rate.\n\nSave this for the next time someone says \"gold just sits there.\" 🔖\nFull breakdown → link sticker (Story) + bio.\n\nNot financial advice.",
+      "hashtags": [
+        "#tokenizedgold",
+        "#RWA",
+        "#realworldassets",
+        "#onchain",
+        "#gold",
+        "#digitalgold",
+        "#defi",
+        "#passiveincome",
+        "#yield",
+        "#web3",
+        "#fintech",
+        "#investingbasics"
+      ],
+      "externalLink": {
+        "slot": "IG = link sticker (top of Story cross-post) + bio link; note @quiet.yield is under 1000 followers, so in-feed external links are NOT available — CTA must route through the link sticker on the Story cross-post and the bio link, never an in-caption clickable URL",
+        "text": "Want the deep-dive on how gold can actually earn yield? Tap the link sticker (top of the Story cross-post) or the link in bio → Xaue: a yield layer built on tokenized gold, returns denominated in gold, institutional-grade and opening up (whitelist for now). Example figures only, not fixed or guaranteed. Not financial advice."
+      },
+      "postingTime": "Post the Carousel for SEA pan-English audience in the evening SEA window (roughly 7:00–9:30pm SGT/GMT+8, weekday). Cross-post a Story with the link sticker to drive the deep-dive; keep this Carousel live to capture saves, and reply to every comment within the first 60–90 minutes to boost early engagement.",
+      "compliance": "NFA: This is educational content, not financial advice — do your own research. Red-line self-check for this post: (1) DISCARDED all blacklisted pseudo-facts — did NOT use the $71B total-market-cap or the '+300%' figure, did NOT use any Fed/rate-cut claims, no fake $4,768 May-2026 record, no Robinhood AI-account claim, no 'final season' urgency, no BUIDL $25B figure, no stale sUSDe 10–15%, no App Store id 'downloadable Nina' claim; only the confirmed hook (Q1 2026 $90.7B > 2025 $84.6B, plus the qualitative ~90% two-token concentration) is rendered. (2) CORRECTED in this revision: removed the specific per-token market-cap data labels '≈$2.52B + $2.32B' from Slide 4, the caption, the externalLink and factsUsed — these are point-in-time Q1 figures (current live caps have drifted, e.g. PAXG ≈ $1.8B on CoinGecko as of Jul 2026) and rendering them contradicts this piece's own 'do NOT render any price/market-cap total' rule; the concentration story is now kept purely qualitative as '~90% in the two largest tokens (XAU₮ + PAXG)', which is verified (~89–90%). (3) Yield framing complies — Xaue described as 'example figures: low single digits, denominated in gold, institutional-grade and opening access,' explicitly labeled NOT fixed/guaranteed, and retail whitelist/institutional-grade nature noted; no promised return, no '示例约2%' fixed rate implied. (4) No single-source fraud case is named. (5) No dated-airdrop urgency in this piece (none applicable). (6) External-link gating respected — @quiet.yield under 1000 followers, so CTA is routed to link sticker (Story cross-post) + bio only, no in-caption clickable link assumed; carousels/feed can't carry link stickers, so the sticker is explicitly placed on the Story cross-post. (7) Language cleaned to pure English — internal Chinese color-palette tokens (収益金/交易蓝/深黒/化) translated to English (Yield Gold / Trade Blue / Deep Black) to keep this English account fully English. (8) Taiwan criminal-penalty separation not triggered (no TW-specific solicitation copy in this SEA-English piece).",
+      "hyperframesSpec": "Render as 8 vertical cards, 1080×1920 (9:16), one HTML page -> deterministic PNG per slide. Palette: primary background Deep Black #0B0B0F; primary accent = Yield Gold #F5B301 (Xaue's yield theme); secondary accent = Trade Blue #38bdf8 (used only for the 'rails / tokenized gold base' elements to separate 'stability' vs 'settlement'); text off-white #F5F5F0, muted grey #8A8A94 for sub-captions. No airdrop purple, no science green in this piece. Type hierarchy: H1 headline 96–120px bold grotesk (e.g. Inter/Sohne) with occasional serif accent word; H2 slide caption 60–72px; body/sub-caption 34–40px; disclaimer strip 24–28px muted. Consistent 96px safe margins; keep all text inside center 80% for IG UI crop. Motion: minimal/none (static PNGs); if animated for a Reel cover, only a single fade-in per card, no bouncing. Verified data points to render (ONLY these numbers): Slide 2 -> '$90.7B' (Q1 2026 tokenized-gold spot volume) vs '$84.6B' (all of 2025); Slide 4 -> '~90%' concentration in the two largest tokens (XAU_T + PAXG) rendered as a qualitative label with NO specific market-cap dollar figures; Slide 6 -> '0%' (plain gold yields nothing by itself); Slide 7 -> text-only 'example figures: low single digits' with NO specific percentage rendered as a data label. Do NOT render any price, ATH, market-cap total, per-token market-cap figure, or percentage-gain figure anywhere. Every slide carries a small bookmark 'save' glyph bottom corner except cover which says 'swipe ->'. Slides 7 and 8 must render the small disclaimer strip 'Not financial advice.'",
+      "factsUsed": [
+        {
+          "fact": "Tokenized gold spot trading volume in Q1 2026 was $90.7B, exceeding the $84.6B total for all of 2025 (one quarter beat a full year).",
+          "source": "Verified via CryptoBriefing / BeInCrypto / Crypto.news / CoinGecko-sourced reporting (Q1 2026 tokenized-gold spot volume $90.7B > 2025 full-year $84.6B). Confirmed across multiple outlets."
+        },
+        {
+          "fact": "Roughly 90% of the tokenized-gold segment is concentrated in the two largest tokens, Tether Gold (XAU₮) and PAX Gold (PAXG).",
+          "source": "Verified via CoinGecko tokenized-gold category (top two ≈ 89% of category market cap) and Q1 2026 reporting (XAU₮ + PAXG lead the segment). Rendered qualitatively as '~90%'; specific per-token market-cap dollar figures ($2.52B/$2.32B were point-in-time Q1 figures that have since drifted) were DROPPED and are not rendered."
+        },
+        {
+          "fact": "Plain gold / plain tokenized gold produces no yield on its own; Xaue is a yield layer built on top of tokenized gold (XAU-backed), with example returns denominated in gold, low single digits, institutional-grade and opening access (whitelist for now), not fixed or guaranteed.",
+          "source": "CTA direction + operations manual yield-framing rule (Xaue = yield layer on tokenized gold, gold-denominated low-single-digit example, institutional-grade/opening, retail whitelist, no promised return)."
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "Slide 4 / caption / factsUsed / externalLink: REMOVED the specific per-token market-cap data labels '≈$2.52B + $2.32B'. Reason: (a) they are point-in-time Q1 2026 figures that have already drifted (live CoinGecko Jul 2026 shows XAU₮ ≈ $2.47B, PAXG ≈ $1.8B — the '$2.32B' PAXG label is now materially off), and (b) rendering them contradicts the package's own hyperframesSpec rule 'do NOT render any price/market-cap total/percentage-gain figure.' The verified qualitative ~90% two-token concentration is kept.",
+          "Slide 4 visual + hyperframesSpec: updated to name the two leaders as XAU₮ + PAXG (verified) and to state 'no specific market-cap dollar figures rendered — qualitative concentration only.'",
+          "Language: translated internal Chinese color-palette tokens to English across all visual/hyperframesSpec fields to keep this English account pure English — 収益金 -> Yield Gold, 交易蓝 -> Trade Blue, 深黒 -> Deep Black; fixed the stray '化' typo in Slide 5 ('化 gold ingot texture' -> 'gold-ingot texture').",
+          "External link: clarified that the link sticker lives on the Story cross-post (carousels/feed can't carry link stickers) and that @quiet.yield is under 1000 followers, so CTA routes only via Story link sticker + bio — no in-caption clickable URL. Confirmed correct (no 'attach external link in feed' assumed).",
+          "Yield framing: added 'whitelist for now' to caption + externalLink to reinforce retail-whitelist per compliance rule; confirmed no fixed/guaranteed return and no '示例约2%' fixed rate implied — 'example figures: low single digits, denominated in gold, institutional-grade and opening access' retained.",
+          "Verified NO blacklisted pseudo-facts present (no $71B/+300%, no Fed/rate-cut, no fake $4,768 record, no Robinhood AI accounts, no Ostium 'final season', no BUIDL $25B, no stale sUSDe 10-15%, no App Store id Nina-download claim).",
+          "Platform red-line check passed: IG carousel Slide 1 hook is a volume comparison with no ticker/price/'100x'/guaranteed-return; NFA disclaimer present on Slides 7 and 8 and in caption; no dated-airdrop urgency; Taiwan penalty-separation not triggered (no TW solicitation copy). Publishable."
+        ]
+      }
+    },
+    {
+      "id": "QY-3",
+      "account": "Quiet Yield @quiet.yield",
+      "platform": "Instagram (Carousel)",
+      "language": "English",
+      "hook3s": "Slide 1 (thumb-stopper, no ticker/no price/no returns claim): \"Even Ethena is quietly moving toward real-world assets. Here's what that tells you about where yield is actually going.\" — big text over a clean split-arrow graphic (perps side fading, RWA side rising).",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "slide 1",
+          "narration": "Cover / hook. Frame the shift: the biggest synthetic-dollar protocol is rebalancing toward real-world-asset-backed yield. Curiosity, not hype. No price, no ticker.",
+          "onScreenCaption": "Even Ethena is pivoting to RWA",
+          "visual": "Split-screen arrow motif: left half labeled PERPS fading out, right half labeled RWA rising. Bottom strip: 'Where is yield actually going? Swipe →'. Yield-gold #F5B301 accent on the rising arrow. Quiet Yield logo lockup bottom-left. Info-graphic only, no chart screenshot."
+        },
+        {
+          "index": 2,
+          "seconds": "slide 2",
+          "narration": "Set the baseline: what USDe used to be. A synthetic dollar whose yield came largely from the funding rate on perpetual futures (long spot / short perp, delta-neutral). Great in bull funding, fragile when funding flips.",
+          "onScreenCaption": "The old engine: funding-rate yield",
+          "visual": "Simple mechanism diagram: spot long + perp short = delta-neutral 'basis' box, arrow out = 'funding yield'. Small caption: 'Yield rode perp funding.' Trading-blue #38bdf8 for the mechanism boxes. No numbers on this slide except the label."
+        },
+        {
+          "index": 3,
+          "seconds": "slide 3",
+          "narration": "The verified turn. In April 2026 Ethena reworked USDe: the perpetual long/short share was cut to roughly 11 percent of the backing. Perps went from the main engine to a minority sleeve.",
+          "onScreenCaption": "April 2026: perps cut to ~11% of backing",
+          "visual": "Donut / stacked bar with one slice labeled 'Perp long-short ≈ 11%' highlighted in trading-blue #38bdf8, the remaining majority slice greyed and labeled 'Other backing (see next)'. Big verified number '≈11%' in yield-gold. Data point is verified — render it."
+        },
+        {
+          "index": 4,
+          "seconds": "slide 4",
+          "narration": "What replaced it. The new backing mix adds stablecoin reserves, DeFi lending, credit, and investment-grade corporate bonds. In plain terms: more of the yield now leans on real-world and RWA-style, government-and-credit-backed sources instead of pure derivatives.",
+          "onScreenCaption": "New backing: stablecoin reserves · DeFi lending · credit · IG corporate bonds",
+          "visual": "Four clean icon tiles in a 2x2 grid: (1) stablecoin reserves, (2) DeFi lending, (3) credit, (4) investment-grade corporate bonds. Science-green #C6FF3A tick on each tile. Footer: 'From derivatives → toward real-world & credit yield.' No invented figures."
+        },
+        {
+          "index": 5,
+          "seconds": "slide 5",
+          "narration": "The demand signal. sUSDe supply shrank about 49 percent over 90 days — nearly cut in half — as capital rotated toward RWA and Treasury-backed / government-backed yield. When the 'smart money' leaves a pure-funding product, notice the direction.",
+          "onScreenCaption": "sUSDe supply: about -49% in 90 days",
+          "visual": "Downward step-line (info-graphic, NOT a live chart screenshot) with endpoints only labeled and the verified '≈ -49% / 90 days' called out large in yield-gold #F5B301. Small side note: 'Capital rotated toward RWA / Treasury-backed yield.' Keep animation to a single sweep."
+        },
+        {
+          "index": 6,
+          "seconds": "slide 6",
+          "narration": "Zoom out — the thesis. Yield's first half was mercenary and derivative-driven. The second half looks structural: real assets, real cash flows, credit and Treasuries under the hood. RWA isn't a side quest anymore; it's where durable yield is migrating.",
+          "onScreenCaption": "Yield's second half = RWA",
+          "visual": "Timeline bar split 'H1: funding / mercenary yield' (fading) → 'H2: RWA / real cash-flow yield' (solid, yield-gold #F5B301). Center headline 'The second half of yield belongs to real assets.' Editorial, spacious."
+        },
+        {
+          "index": 7,
+          "seconds": "slide 7",
+          "narration": "Where gold fits. Among RWAs, tokenized gold is one of the most volatility-resistant legs — a hard asset with a multi-thousand-year track record, now on-chain. If you want RWA exposure that isn't just another Treasury wrapper, gold is the anchor. Not investment advice — a framework.",
+          "onScreenCaption": "Within RWA, gold is one of the most shock-resistant legs",
+          "visual": "Single hero tile: gold bar icon on-chain (chain-link motif) with three neutral bullet chips: 'hard asset · low correlation · on-chain now'. Yield-gold #F5B301 dominant. Small 'NFA' chip bottom-right. No yield figure, no ticker, no price."
+        },
+        {
+          "index": 8,
+          "seconds": "slide 8",
+          "narration": "CTA / save prompt. Recap the arrow in one line and point to the link sticker + bio for the tokenized-gold explainer. Note it's an institutional-grade product opening to retail via whitelist — access first, no yield promised. Ask for a save. Friendly, not salesy.",
+          "onScreenCaption": "Save this. Tap the link sticker → tokenized gold, explained (institutional-grade, whitelist opening)",
+          "visual": "Closing card: mini-recap of the swipe (perps↓ → RWA↑ → gold anchor). 'Link sticker up top ↑ + link in bio' with a tap-icon. Small neutral chip: 'Institutional-grade · retail whitelist opening soon'. 'Save for later 🔖'. Quiet Yield wordmark. Yield-gold #F5B301 + clean off-white background. Repeat NFA microtext in footer."
+        }
+      ],
+      "platformCaption": "Even Ethena — the biggest synthetic-dollar protocol — is quietly rebalancing toward real-world assets. That's not a small tell.\n\nIn April 2026, USDe's backing was reworked: the perpetual long/short share was cut to roughly 11% of the mix, with stablecoin reserves, DeFi lending, credit, and investment-grade corporate bonds added in. Over 90 days, sUSDe supply shrank about 49% as capital rotated toward RWA and Treasury-backed yield.\n\nRead the direction, not the noise: the first half of the yield cycle was funding-rate and derivative-driven. The second half is looking structural — real assets, real cash flows.\n\nWithin RWA, tokenized gold is arguably one of the most shock-resistant legs: a hard asset, now on-chain.\n\nSwipe through the flow, then save it. The tokenized-gold explainer (Xaue) is in the link sticker + bio — it's an institutional-grade product with retail access opening via whitelist, so this is an access heads-up, not a yield promise.\n\nNot financial advice — a framework, not a recommendation.",
+      "hashtags": [
+        "#RWA",
+        "#realworldassets",
+        "#onchainyield",
+        "#DeFi",
+        "#tokenization",
+        "#stablecoins",
+        "#tokenizedgold",
+        "#passiveincomeideas",
+        "#financeeducation",
+        "#SEA"
+      ],
+      "externalLink": {
+        "slot": "IG link sticker (top of first story reshare) + link in bio — @quiet.yield is under 1,000 followers, so NO in-feed external link is assumed; drive to the link sticker + bio only",
+        "text": "Want the plain-English version of tokenized gold as an RWA yield leg? Tap the link sticker up top or the link in my bio → 'Tokenized gold, explained' (Xaue). It's an institutional-grade product with retail access opening via whitelist — an access heads-up, not a yield promise; no fixed return implied. Save this post so it comes back when you need it. NFA."
+      },
+      "postingTime": "Reels teaser first to pull reach, then this Carousel within 24h to bank saves. Post the Carousel in the SEA English evening window ~7:30-9:30pm SGT/PHT (weekday) to catch after-work scrollers; reply to comments in the first 90 minutes.",
+      "compliance": "NFA: This is education, not financial advice — a framework, not a recommendation; do your own research. Red-line self-check: (1) No banned pseudo-facts used — no $7.1B/300% gold-mktcap (real ~$5.5B/~289%), no Fed 'rate-cut/new-chair' (real: held 3.50-3.75% with hawkish/hike bias, 9 of 19 expecting a hike), no fake May-2026 $4,768 gold ATH (real ATH ~$5,590 on 2026-01-28), no Robinhood 70k AI-agent claim, no Ostium 'final quarter', no BUIDL $25B, no sUSDe '10-15%', no App Store id as 'downloadable Nina'. No gold price, ATH, Fed status, or gold market cap is stated anywhere in this piece, so none of those blacklist items are triggered. (2) Only the two confirmed hook facts + safe derivations rendered (April 2026 perps ~11% verified via Ethena overhaul reporting; sUSDe supply ~-49%/90d, within the confirmed decline band vs reported ~52% Q2 contraction). Four backing labels are a defensible subset of the reported new mix (stablecoin reserves / DeFi lending / credit / IG corporate bonds; CLOs also reported but omitted for simplicity — no figures invented). (3) Xaue yield NOT promised — no fixed/APY figure shown; framed as 'one of the most shock-resistant RWA legs' only (softened from absolute 'the most' to avoid overclaim), gold-denominated framing; institutional-grade + retail whitelist framing now surfaced in reader-facing copy (Slide 8, caption, external link) rather than only asserted internally; CTA is an access heads-up, not a purchase or yield CTA. (4) No airdrop/deadline claims in this piece (none applicable; no relative-deadline wording needed). (5) Taiwan-penalty separation not triggered (no fraud/unlicensed-operation legal claims made; if ever added, keep unlicensed-operation 7yr/NT$100M separate from fraud/manipulation 10yr/NT$200M). (6) IG under-1k handling: no assumed in-feed outbound link — CTA routes to link sticker + bio only. (7) IG platform fit: Carousel for saves (RWA is a durable/authority topic), swipe + save prompt included. Slide 1 (3s thumb-stopper) carries no ticker/price/'100x'/guaranteed-return.",
+      "hyperframesSpec": "Render 8 slides, 9:16 (1080x1920), deterministic HTML→PNG. Palette (Quiet Yield / RWA-yield account): primary YIELD-GOLD #F5B301 for headline accents, rising arrows, and all verified numbers; TRADING-BLUE #38bdf8 for mechanism diagrams (perp/funding boxes, the 11% slice); SCIENCE-GREEN #C6FF3A only for small ticks/checkmarks; airdrop-purple #8B5CFF NOT used (not an airdrop piece). Background: warm off-white (#F7F5EF) with near-black ink (#111) for calm 'quiet yield' editorial feel; one dark slide allowed for Slide 1 cover for contrast. Type hierarchy: H1 slide headline 96-120px bold, subhead 40-52px medium, body/caption 30-36px, footer/NFA microtext 22px. Grid: 96px side margins, generous vertical rhythm, one idea per slide. VERIFIED DATA POINTS to render (ONLY these numbers — no others): Slide 3 = 'Perp long/short ≈ 11% of backing (April 2026)'; Slide 4 = the four backing labels 'stablecoin reserves · DeFi lending · credit · investment-grade corporate bonds' (no figures); Slide 5 = 'sUSDe supply ≈ -49% over 90 days'. Charts on Slides 3 and 5 are ILLUSTRATIVE info-graphics (donut/step-line), clearly stylized, NOT screenshots of a live terminal, and must show only the two verified numbers. Motion: restrained — a single arrow sweep or fade per slide, no bouncing, no confetti. Every slide footer carries 'Quiet Yield' wordmark; Slides 7 and 8 carry an 'NFA' chip. Slide 8 shows link-sticker/bio CTA icon plus a small neutral 'institutional-grade · retail whitelist opening' chip (no raw URL rendered, no yield figure).",
+      "factsUsed": [
+        {
+          "fact": "In April 2026 Ethena reworked USDe so the perpetual long/short share fell to roughly 11% of the backing, adding stablecoin reserves, DeFi lending, credit, and investment-grade corporate bonds.",
+          "source": "Verified hook (verify=confirmed): Ethena 2026-04 USDe overhaul, perp long-short share ~11%, new backing = stablecoin reserves / DeFi lending / credit / investment-grade corporate bonds (subset of reported mix which also includes CLOs / short-duration credit)."
+        },
+        {
+          "fact": "sUSDe supply shrank about 49% over 90 days as capital rotated toward RWA / Treasury-backed yield.",
+          "source": "Verified hook (verify=confirmed): sUSDe supply ~-49% over 90 days (within reported band; Q2 2026 sUSDe contraction ~52%); funds moving to RWA / Treasury-backed yield."
+        },
+        {
+          "fact": "The yield narrative's second half favors RWA, and within RWA tokenized gold is one of the most volatility-resistant legs (used only as qualitative framing, no numeric yield claim).",
+          "source": "Brief CTA direction (qualitative framing, not a numeric claim): bio/link-sticker → Xaue, 'the second half of yield belongs to RWA, gold is one of the most shock-resistant legs'; kept qualitative per compliance (no fixed yield promised; institutional-grade + retail whitelist access surfaced)."
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "No blacklisted pseudo-facts were present — verified the pack states no gold price/ATH, no Fed claim, no gold market cap, no Robinhood/Ostium/BUIDL/sUSDe-10-15%/App-Store-id items. Confirmed via web search that the correct reference values would be gold ATH ~$5,590 (2026-01-28), Fed held 3.50-3.75% with hawkish/hike bias, gold mktcap ~$5.5B/~289% — none needed since the pack never mentions them.",
+          "Verified the two rendered hook numbers: April 2026 perps ~11% (confirmed by Ethena USDe overhaul reporting) and sUSDe supply ~-49%/90d (within the reported decline band; Q2 2026 contraction reported ~52%). Left both as-is; annotated factsUsed sources with the confirmation and noted CLOs are part of the reported mix but omitted from the four displayed labels for simplicity (no figure invented).",
+          "CHANGED: XAUE framing now surfaces the required 'institutional-grade / retail whitelist opening' language to the reader (Slide 8 caption+visual, platformCaption, externalLink, hyperframesSpec) — previously it was only asserted inside the internal compliance note, not shown to the audience. Still no fixed/APY yield promised; explicitly framed as an access heads-up, not a yield or purchase CTA.",
+          "CHANGED: Softened the gold claim from absolute 'the most shock-resistant/volatility-resistant leg' to 'one of the most' on Slide 7, its onScreenCaption, the platformCaption, and factsUsed — removes an unverifiable superlative overclaim while keeping the qualitative framing.",
+          "Confirmed platform red-lines pass: Slide 1 (3s thumb-stopper) has no ticker/price/'100x'/guaranteed-return; USDe/sUSDe are product/mechanism names, not price tickers. IG under-1k CTA correctly routes to link sticker + bio only (no assumed in-feed outbound link). No X first-reply rule applies (this is IG). No airdrop deadlines in this piece, so no relative-deadline wording needed. Language is pure English as required. NFA present on Slides 7, 8, caption, and compliance. Taiwan penalty separation not triggered (no legal claims made). Directly publishable."
+        ]
+      }
+    },
+    {
+      "id": "QY-4",
+      "account": "Quiet Yield @quiet.yield",
+      "platform": "Instagram (Carousel)",
+      "language": "English",
+      "hook3s": "Swipe 1 (cover, the 3-second stopper): \"While price chops sideways, the on-chain footprints are getting bigger. Here's the receipt.\" — no ticker, no price, no \"100x\" on the cover. Big bold text: \"The quiet gold rotation — on-chain proof.\"",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "slide 1",
+          "narration": "Cover / hook. Frame the whole thesis in one line: when BTC chops, the interesting money leaves footprints on-chain. This carousel is the evidence, not a hot take. Set the 'save this' expectation.",
+          "onScreenCaption": "THE QUIET GOLD ROTATION\nOn-chain proof · not a price call",
+          "visual": "Dark background, single large gold coin/ingot icon (generic, not a logo). Faint on-chain node-graph texture behind. Small tag top-right: 'SEA · English'. Bottom micro-line: 'Swipe → the data'. NO price, NO ticker, NO percentage on cover."
+        },
+        {
+          "index": 2,
+          "seconds": "slide 2",
+          "narration": "Fact 1, the headline data point. On-chain tokenized-gold usage just printed a record: daily active addresses hit an all-time high of 8,830 on Jul 6, 2026. More unique wallets touching on-chain gold in a single day than ever before. That's participation, not price.",
+          "onScreenCaption": "8,830\nrecord daily active addresses",
+          "visual": "Big number 8,830 in gold. Small caption below: 'tokenized gold · daily active addresses · all-time high · Jul 6, 2026'. Simple rising bar/line micro-chart ending in a highlighted 'ATH' dot. Source chip: 'on-chain data (PAXG · Santiment)'."
+        },
+        {
+          "index": 3,
+          "seconds": "slide 3",
+          "narration": "Fact 2. It's not just tourists poking around — the money is in profit and holders realized a five-month high in gains. When realized profit rises alongside record active wallets, that's usually accumulation behavior, not panic.",
+          "onScreenCaption": "Realized profit:\n5-MONTH HIGH",
+          "visual": "Gold-to-teal bar stepping up to a highlighted final bar labeled '5-mo high'. Caption: 'realized profit on tokenized gold · highest in 5 months'. Source chip: 'on-chain data'."
+        },
+        {
+          "index": 4,
+          "seconds": "slide 4",
+          "narration": "Fact 3, zoom out to the sector. The whole real-world-asset category — tokenized treasuries, credit, gold and more — crossed sixty-three point six billion dollars in total market cap in early July 2026. Real assets are moving on-chain at scale.",
+          "onScreenCaption": "RWA sector:\n$63.6B+ total market cap",
+          "visual": "Clean donut or stacked-bar of the RWA category with 'gold' as one highlighted slice. Big figure '$63.6B+'. Caption: 'real-world assets on-chain · total market cap · early July 2026'. Source chip: 'RWA aggregators'."
+        },
+        {
+          "index": 5,
+          "seconds": "slide 5",
+          "narration": "The honest slide — this is why people trust the account. Record wallets does NOT mean price is at the top. On-chain gold is still roughly 28% below its January peak. So this reads as accumulation into weakness, not chasing a green candle. Say the quiet part out loud.",
+          "onScreenCaption": "Reality check:\nstill ~28% below Jan peak",
+          "visual": "Line chart: peak in Jan, dip, current level clearly marked '~28% below peak' with a down-arrow, plus rising activity bars underneath to show 'usage up while price is off highs'. Caption: 'accumulation ≠ new highs'. Muted colors, honest tone."
+        },
+        {
+          "index": 6,
+          "seconds": "slide 6",
+          "narration": "So what? Connect dots without predicting. When BTC ranges, some capital quietly rotates toward on-chain gold as a hedge and a yield base — you can watch that rotation on-chain instead of guessing. This is a behavior pattern to track, not a signal to act on.",
+          "onScreenCaption": "When BTC chops,\ncapital looks for a floor",
+          "visual": "Simple two-node diagram: 'BTC (choppy)' arrow → 'on-chain gold (hedge + yield base)'. Neutral, educational. Caption: 'a rotation you can verify on-chain'. No price targets."
+        },
+        {
+          "index": 7,
+          "seconds": "slide 7",
+          "narration": "Where yield fits, framed carefully. Beyond just holding gold on-chain, tokenized-gold yield products let the metal itself work — think low-single-digit returns denominated in gold, e.g. an example around 2%, with institutional-grade access opening up. Not a fixed or guaranteed rate; retail access is whitelist-gated. That's the frontier Quiet Yield tracks.",
+          "onScreenCaption": "Gold that can earn\n(low single digits, in gold)",
+          "visual": "Icon of a gold ingot with a small circular-arrow 'compounding' motif. Caption in smaller type: 'example ~2% · denominated in gold · not fixed/guaranteed · institutional-grade access · retail = whitelist'. Small NFA badge in corner."
+        },
+        {
+          "index": 8,
+          "seconds": "slide 8",
+          "narration": "Close + CTA. Recap: record on-chain gold usage, profit at a 5-month high, RWA over $63.6B — while price is still off its peak. Save this to watch the rotation. To go deeper on tokenized gold yield, the Xaue link is in bio and the link sticker up top. Follow Quiet Yield for the calm data, not the noise.",
+          "onScreenCaption": "Save this. Watch the rotation.\nDeeper dive → link in bio",
+          "visual": "Recap grid of the 3 verified numbers (8,830 · 5-mo high · $63.6B+) as small chips, plus '~28% below peak' reality chip. Big 'SAVE + FOLLOW' prompt. Footer: 'Not financial advice · @quiet.yield'. Link-sticker placeholder marker top area (added in-app, since <1k followers = no in-caption link)."
+        }
+      ],
+      "platformCaption": "The whales are quiet — the chain isn't. 🧵➡️ swipe for the on-chain proof.\n\nWhile price chops sideways, on-chain gold just printed its most-used day ever: a record 8,830 daily active addresses on Jul 6, and realized profit at a 5-month high. Zoom out and the whole real-world-asset sector is now $63.6B+ (early July).\n\nThe honest part: on-chain gold is still ~28% below its January peak. So this looks like accumulation into weakness — not a top-chase. Usage up while price is off highs is exactly the kind of quiet rotation worth watching, not chasing.\n\nSave this so you can check back as the rotation plays out. If you want the deeper dive on tokenized-gold yield (the metal actually earning, in gold terms), the link's in our bio + the sticker up top.\n\nNot financial advice. Just the data. 🟡\n\nWhich number surprised you most — drop it below 👇",
+      "hashtags": [
+        "#RWA",
+        "#tokenizedgold",
+        "#onchaindata",
+        "#defi",
+        "#passiveincome",
+        "#digitalgold",
+        "#realworldassets",
+        "#yield",
+        "#SEAcrypto",
+        "#NFA"
+      ],
+      "externalLink": {
+        "slot": "IG = link sticker (added in-app on the last slide) + bio link. NOTE: @quiet.yield is under 1,000 followers, so do NOT assume a swipe-up/in-caption link — route only via bio link + Story/post link sticker + pinned comment. No clickable URL in the caption body.",
+        "text": "Bio + link sticker → Xaue: 'Want the metal to actually earn? Tokenized-gold yield explained — link in bio.' Follow-up pinned comment: 'Deeper dive on on-chain gold yield is in our bio 🟡 (institutional-grade access opening; retail is whitelist). NFA.'"
+      },
+      "postingTime": "IG SEA English audience: post the Carousel around 12:00-13:00 or 20:00-21:00 SGT (lunch + evening scroll peaks). Ideal pairing: publish a Reel first to pull reach, then drop this Carousel within 24h to convert into saves. Reply to every comment in the first 60-90 minutes.",
+      "compliance": "NFA — this is educational content, not financial advice; do your own research. Red-line self-check for this post: (1) No blacklisted pseudo-facts used — NO $7.1B gold mcap / +300%, NO fake price records ($4,768 / May-2026), NO Fed rate-cut claims, NO Robinhood AI-agent stat, NO Ostium/BUIDL claims, NO stale sUSDe 10-15%, NO 'download Nina' App Store id. (2) Only the 4 confirmed hook facts are on-slide: 8,830 DAU ATH (Jul 6, per Santiment), realized profit 5-mo high, RWA $63.6B+ (early July), and the honest ~28%-below-Jan-peak disclosure — the required honest caveat IS included (slide 5). NOTE: the ~28% figure was corrected from an earlier ~26% to match verified data (PAXG ATH ~$5,620-5,630 on Jan 29 2026 vs ~$4,050-4,110 mid-July 2026 ≈ -28%); the RWA date was softened from a specific 'Jul 4' to 'early July 2026' because only the $63.6B sector figure is source-confirmed, not the exact day. (3) XAUE yield never promised as fixed/guaranteed — framed as 'example ~2% / low-single-digit, denominated in gold / institutional-grade access opening / retail = whitelist' (slide 7). (4) No named single-source scam individual; no fabricated urgency; no airdrop deadline in this piece. (5) Taiwan criminal-penalty note not applicable here (no Taiwan-jurisdiction unlicensed-operation vs fraud claim made), and no legal-penalty figures cited. (6) Link handling respects <1,000-follower gate: bio + link sticker + pinned comment only, no in-caption clickable URL. (7) Cover slide obeys front-3s discipline (no ticker/price/'100x'/guaranteed-return on the stopper).",
+      "hyperframesSpec": "Render as an 8-slide Instagram Carousel via HyperFrames (HTML → deterministic PNG per slide). Canvas: 1080×1350 (IG portrait 4:5) — NOTE this is a Carousel, not a 9:16 video, so use 4:5 for feed; export each slide as its own PNG. Palette (Quiet Yield = yield-gold account): primary Income Gold #F5B301, secondary Trade Blue #38bdf8 for supporting chart lines, background near-black #0B0E13 with #14181F cards; keep Airdrop Purple #8B5CFF and Science Green #C6FF3A OUT (this is a yield/RWA piece). Type hierarchy: Display (hero numbers) 120-180px bold; Slide title 52-64px semibold; body/caption 30-36px; source chips + NFA badge 22-26px muted #8A94A6. Font: clean geometric sans (Inter/Söhne-like). Layout: consistent 72px safe margins, one dominant number per data slide, a small labeled source chip bottom-left on every data slide, persistent '@quiet.yield' + tiny NFA badge in the footer of every slide, subtle swipe-arrow bottom-right on slides 1-7. Motion: this is stills — keep it deterministic and static (no animation); if any subtle build is exported as a short loop, cap it at a single 300ms fade, no bouncy easing. ONLY render these verified data points as literal on-screen numbers: Slide2 '8,830' (record daily active addresses, tokenized gold, Jul 6 2026); Slide3 'realized profit — 5-month high'; Slide4 '$63.6B+' (RWA sector total market cap, early July 2026 — do NOT print a specific day); Slide5 '~28% below Jan peak' (honest caveat, with an up-trending activity bar under a down-marked price line); Slide7 example '~2%' shown explicitly as 'example, not fixed/guaranteed'. Do NOT render any other numbers, prices, tickers, or dates that aren't in this list. Charts must be schematic/illustrative (label them as such) — do not imply exact tick values beyond the stated figures.",
+      "factsUsed": [
+        {
+          "fact": "Tokenized gold (PAXG) daily active addresses hit an all-time high of 8,830 on 2026-07-06 (Santiment on-chain data).",
+          "source": "Verified hotspot hook (on-chain data / Santiment via CoinDesk, BeInCrypto), confirmed"
+        },
+        {
+          "fact": "Realized profit on tokenized gold (PAXG) reached a five-month high (~$6.77M).",
+          "source": "Verified hotspot hook (on-chain data), confirmed"
+        },
+        {
+          "fact": "RWA sector total market cap crossed $63.6B in early July 2026 (specific calendar day not source-confirmed; softened from 'Jul 4' to 'early July').",
+          "source": "Verified hotspot hook (RWA aggregators / KuCoin), figure confirmed"
+        },
+        {
+          "fact": "Honest disclosure: on-chain gold (PAXG) is still down ~28% from its January 2026 peak (ATH ~$5,620-5,630 on Jan 29 vs ~$4,050-4,110 mid-July). Corrected from an earlier ~26% to match verified price data.",
+          "source": "Verified price data (CoinGecko / MetaMask / historical) — required honest framing, confirmed"
+        },
+        {
+          "fact": "XAUE (Aurise) offers tokenized-gold yield denominated in gold, framed as example ~2% / low-single-digit, not fixed or guaranteed, with institutional-grade access opening and retail gated by whitelist.",
+          "source": "Product positioning per global operations handbook (Xaue = Aurise RWA gold yield); framed within compliance rails, not a promised return"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "FIXED (fact/accuracy): The honest-caveat 'still ~26% below Jan peak' understated reality. Verified PAXG ATH is ~$5,620-5,630 on Jan 29, 2026 vs ~$4,050-4,110 mid-July 2026, i.e. approximately -28%. Since slide 5 is the credibility anchor, changed '~26%' to '~28%' in slide 5, slide 8 recap chip, platformCaption, compliance note, hyperframesSpec, and factsUsed.",
+          "FIXED (unverifiable date precision): The '$63.6B RWA' figure is source-confirmed, but the specific date 'Jul 4, 2026' is not corroborated by sources (they say broadly 'July 2026'). Softened 'Jul 4, 2026' / 'Jul 4' to 'early July 2026' in slide 4, slide 8, platformCaption, compliance note, hyperframesSpec, and factsUsed; kept the $63.6B figure and the hyperframes instruction to NOT print a specific day.",
+          "ADDED (source clarity): Attributed the 8,830 DAU ATH to Santiment on the slide-2 source chip and in factsUsed, matching the confirmed on-chain source (CoinDesk/BeInCrypto).",
+          "VERIFIED (no change needed): Zero blacklisted pseudo-facts present — no fake $4,768/May-2026 gold record (package correctly uses the real January peak), no $7.1B/+300% gold mcap, no Fed rate-cut claim, no Robinhood AI-agent stat, no Ostium/BUIDL claims, no stale sUSDe 10-15%, no 'download Nina' App Store id.",
+          "VERIFIED (no change needed): Cover/front-3s discipline holds — no ticker/price/percentage/'100x'/guaranteed-return on slide 1. XAUE yield framed as example ~2% / low-single-digit in gold / not fixed or guaranteed / institutional-grade opening / retail whitelist. NFA present. Taiwan split-penalty note correctly N/A (no jurisdiction claim made). No airdrop deadlines in this piece.",
+          "VERIFIED (no change needed): Link handling respects @quiet.yield's <1,000-follower gate — bio link + in-app link sticker + pinned comment only, no clickable URL in the caption body. Not routed as an assumed swipe-up/in-caption external link. Language is pure English throughout."
+        ]
+      }
+    },
+    {
+      "id": "AU-1",
+      "account": "Aurea @askaurea",
+      "platform": "TikTok",
+      "language": "繁體中文",
+      "hook3s": "「在台灣,把幣拿去『生利息』的那種平台——未來可能通通不合法。」（前3秒不出現任何幣價、代號或報酬數字，只講法規衝擊）",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-3s",
+          "narration": "在台灣,把幣拿去『生利息』的那種平台,未來可能通通不合法。",
+          "onScreenCaption": "未來,這種平台可能不合法",
+          "visual": "Aurea 數字人形象2A 正面口播,近未來戰袍,手托金色 agent-core 光球;背景暗色。純口播鉤子,前3秒不出現任何幣價/代號/報酬字樣。"
+        },
+        {
+          "index": 2,
+          "seconds": "3-10s",
+          "narration": "台灣的《虛擬資產服務法》已經在立法院三讀通過,由金管會擔任主管機關。這是台灣第一次,把加密平台正式納管。",
+          "onScreenCaption": "《虛擬資產服務法》三讀通過 · 金管會主管",
+          "visual": "真實素材:立法院/新聞畫面截圖 +『三讀通過』字卡疊加。右下角持續掛 NFA 小字。Aurea 切小窗口播。"
+        },
+        {
+          "index": 3,
+          "seconds": "10-22s",
+          "narration": "第一件事:VASP,也就是虛擬資產服務業者,方向是改成『許可制』。以前用登記聲明就能開,以後要拿到許可才能做。所以你現在用的交易所、錢包服務,之後合不合法,是要重新確認的。",
+          "onScreenCaption": "① VASP 方向:登記制 → 許可制",
+          "visual": "資訊圖:從『登記制』箭頭指向『許可制』的對比動畫(克制、單次滑入)。真實素材:法條條文截圖一角。"
+        },
+        {
+          "index": 4,
+          "seconds": "22-36s",
+          "narration": "第二件事,穩定幣的規矩變超嚴。方向上是限定『銀行』發行,而且要有十足準備、資產信託,還有——不得付息。也就是說,拿穩定幣『躺著領利息』這種玩法,在台灣的框架下是被關掉的。",
+          "onScreenCaption": "② 穩定幣:限銀行發 · 十足準備 · 資產信託 · 不得付息",
+          "visual": "資訊圖四格逐條亮起(銀行/十足準備/資產信託/不得付息),收益金 #F5B301 高亮『不得付息』那格。真實素材:條文截圖佐證。"
+        },
+        {
+          "index": 5,
+          "seconds": "36-50s",
+          "narration": "第三件事,罰得很重,而且要分清楚是兩件不同的事。『無照經營』是一條;『詐欺、操縱市場』是另外一條,兩者的刑度並不一樣。這兩件事別混在一起講。",
+          "onScreenCaption": "③ 罰則要分開｜無照經營 vs 詐欺·操縱（兩條不同罪責）",
+          "visual": "資訊圖兩欄並列(左『無照經營』/右『詐欺·操縱』),中間一條分隔線強調『兩條不同罪責』。真實素材:罰則條文截圖佐證(細部刑度以官方條文為準)。"
+        },
+        {
+          "index": 6,
+          "seconds": "50-62s",
+          "narration": "第四件事,時間點。這部法還沒正式上路,還有一段緩衝期。所以現在不是恐慌,而是趁這段時間去搞懂:你手上的平台,到時候拿不拿得到許可。",
+          "onScreenCaption": "④ 尚未正式施行（仍有緩衝期）",
+          "visual": "資訊圖:時間軸『三讀通過 → 正式施行(尚未上路)』,標注『施行日以官方公告為準』。動效單次滑入。"
+        },
+        {
+          "index": 7,
+          "seconds": "62-74s",
+          "narration": "第五件事,也是最實用的:規則會越來越細,一般人根本記不完。與其自己猜合不合法,不如把它交給工具去查。",
+          "onScreenCaption": "⑤ 記不完？把『查合規』交給工具",
+          "visual": "Aurea 口播特寫,手邊全息面板浮現一個對話框圖示(示意,不出現真實產品畫面)。動效克制。"
+        },
+        {
+          "index": 8,
+          "seconds": "74-84s",
+          "narration": "我平常會用一個對話式的 Web3 AI 助手叫 Nina,直接問它『某個平台合不合規、要注意什麼』,它幫我查、幫我列紅旗。不確定的時候,問比自己猜安全。連結我放在個人簡介,想試的自己去看。這不是投資建議喔。",
+          "onScreenCaption": "不確定就問 Nina 幫你查｜連結在 bio｜非投資建議 NFA",
+          "visual": "Aurea 收尾口播,胸口金色 A 徽標入鏡;畫面下方箭頭指向『簡介 / bio』(未滿1000粉不可掛外連,只導 bio)。結尾定格 NFA。"
+        }
+      ],
+      "platformCaption": "台灣《虛擬資產服務法》三讀過了，這 5 件事跟你手上的平台直接有關👇\\n① VASP 方向改許可制 ② 穩定幣限銀行發、不得付息 ③ 罰則分兩條(無照 vs 詐欺·操縱) ④ 尚未正式施行、仍有緩衝期 ⑤ 規則太細，不確定就用工具查。\\n不是要你恐慌，是給你緩衝期先搞懂。你現在用的平台，到時候拿得到許可嗎？留言告訴我你在用哪家，我幫你看方向。想自己查合規的，工具連結在我的簡介。細部條文與施行日以官方公告為準。非投資建議。",
+      "hashtags": [
+        "#虛擬資產服務法",
+        "#台灣金管會",
+        "#VASP",
+        "#穩定幣",
+        "#加密法規",
+        "#金融科普",
+        "#台灣",
+        "#理財知識",
+        "#區塊鏈"
+      ],
+      "externalLink": {
+        "slot": "bio (TikTok · 未滿1000粉不可掛外連，只能導 bio / 個人簡介連結)",
+        "text": "個人簡介放了 Nina —— 對話式 Web3 AI 助手，可以直接問它『這個平台合不合規、有什麼紅旗要注意』，它幫你查。不確定就問，別自己猜。點我頭像進簡介。非投資建議。"
+      },
+      "postingTime": "台灣時間晚上 7:30–8:30（黃金時段 18:00–22:00 內），發布後前 90 分鐘留守回覆每一則留言",
+      "compliance": "NFA：本片為教育／資訊分享，非投資建議，請自行研究並評估風險(DYOR)。本條紅線自檢：①前3秒零幣價/零ticker/零『100x』/零保證收益，純法規衝擊鉤子——過 TikTok 金融過濾器；②未使用 #crypto/#bitcoin 硬標籤；③台灣刑度嚴格分開陳述——無照經營 vs 詐欺·操縱為兩條不同罪責，未混為一談;因具體刑度/罰金數字缺可驗證官方引用,已從上字幕移除,改『兩條不同罪責+以官方條文為準』定性表述;④全程未承諾任何收益、未出現任何報酬率數字(穩定幣段只講『不得付息』的法規事實，非產品收益);⑤未點名任何單一詐騙個案;⑥未把 App Store id 當『可下載 Nina』宣稱、未出現任何未核實產品下載頁畫面;⑦施行時間改用『尚未正式施行、仍有緩衝期、施行日以官方公告為準』相對措辭(原『最快 2027 Q1』因無可驗證引用改為定性);⑧法案通過的具體日期(原 2026-06-30)、總條數(原 56 條)因來源僅為自我標記『confirmed』無實際引用,已改為定性『已在立法院三讀通過』,避免上字幕未核實數字/日期;⑨未滿1000粉→CTA 僅走 bio，未假設可掛外連;⑩結尾與 caption 均掛 NFA。導流僅到 Nina(合規查詢用途)，未導 Xaue(避免在法規恐慌片中談收益)。本片無帶截止日空投,不涉相對措辭重算。",
+      "hyperframesSpec": "HyperFrames 渲染規格(HTML→確定性 MP4/圖)：畫布 9:16 / 1080×1920。主色=科普綠 #C6FF3A(法規/教育定位)為主調，收益金 #F5B301 僅用於高亮『不得付息』字樣，交易藍 #38bdf8 作次要輔助線；背景近黑 #0A0A0F 保持嚴肅感。字體層級：H1 屏幕大字 96–120px 粗體(如『未來可能不合法』『① VASP 改許可制』)、H2 副標 56–64px、內文/數據標籤 40–44px、NFA 常駐頁尾 28px 半透明。版式：頂部條放章節序號『① ~ ⑤』膠囊標籤，中央資訊圖，底部常駐 @askaurea + NFA。動效克制：僅『單次滑入 + 序號亮起』，禁彈跳/閃爍/自動輪播。每屏只渲染『已核實/定性可陳述的資訊點』：《虛擬資產服務法》立法院三讀通過、金管會主管、VASP 登記制→許可制、穩定幣(限銀行發/十足準備/資產信託/不得付息)、罰則兩欄(無照經營 vs 詐欺·操縱,中間分隔線標『兩條不同罪責』,不渲染未核實刑度/罰金數字)、時間軸(三讀通過 → 正式施行·尚未上路,標『施行日以官方公告為準』)。禁止渲染任何幣價、報酬率、市值,以及任何缺可驗證官方引用的具體條數/日期/刑度/罰金數字。真實法條/新聞截圖以子層插入並打薄遮罩,確保字幕可讀;靜音 70% 場景全程字幕 overlay。",
+      "factsUsed": [
+        {
+          "fact": "台灣《虛擬資產服務法》已在立法院三讀通過，由金管會擔任主管機關(具體通過日期與總條數因缺可驗證官方引用，已改為定性、未上字幕為硬數字)",
+          "source": "熱點鉤子(僅自我標記 verify=confirmed，無實際官方連結；具體日期/條數已降級為定性)"
+        },
+        {
+          "fact": "VASP(虛擬資產服務業者)方向改為許可制(登記制→許可制)",
+          "source": "熱點鉤子(verify=confirmed，方向性陳述)"
+        },
+        {
+          "fact": "穩定幣方向限銀行發行、須十足準備、資產信託、不得付息",
+          "source": "熱點鉤子(verify=confirmed，方向性陳述)"
+        },
+        {
+          "fact": "刑度分開:無照經營與詐欺·操縱市場為兩條不同罪責(具體刑期/罰金因缺可驗證官方引用已從上字幕移除，僅保留『兩條不同、以官方條文為準』的合規性定性)",
+          "source": "硬性合規要求=刑度必須分開陳述；具體數字待官方條文二次確認前不上字幕"
+        },
+        {
+          "fact": "該法尚未正式施行、仍有緩衝期(原『最快 2027 Q1』因無可驗證官方引用改為定性，施行日以官方公告為準)",
+          "source": "熱點鉤子(僅自我標記 verify=confirmed；具體施行季度已降級為定性)"
+        },
+        {
+          "fact": "Nina = Antalpha 旗下對話式 Web3 AI 助手(AI×Crypto)，可用於查詢平台合規/紅旗(導流用途，僅走 bio，不承諾產品下載/不提 App Store id)",
+          "source": "運營總手冊北極星(導流目標定義)"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "黑名單伪事实清单:逐项排查,原包未使用任何一条(无黄金代币市值/涨幅、无美联储降息叙事、无金价假高点、无Robinhood AI agent、无Ostium、无BUIDL持仓、无sUSDe旧收益、无App Store id当可下载)。穩定幣『不得付息』为法规事实非产品收益,保留合规。",
+          "已改(降级为定性,原因=factsUsed来源仅自我标记 confirmed 无实际官方引用,清单要求可疑数字/日期须删或改为定性):①法案通过日期『2026-06-30』从旁白/字幕/hyperframes/caption全部移除,改『已在立法院三讀通过』;②总条数『共56条』全部移除;③穩定幣『全額信託』改为更保守的『資產信託』(全額信託为未核实措辞)。",
+          "已改(刑度):台湾刑度原本已正确分开,但具体刑期罚金『无照7年/1亿、诈欺·操纵10年/2亿』缺可验证官方引用,依清单『可疑数字→删或改为定性』,已从旁白、onScreenCaption、hyperframes、caption全部移除具体数字,保留『两条不同罪责/以官方条文为准』的硬性合规定性表述。刑度分开的合规要求仍满足。",
+          "已改(施行时间):原『最快2027 Q1施行』及hook与scene1的『2027年』因无可验证官方引用改为相对/定性措辞『尚未正式施行、仍有缓冲期、施行日以官方公告为准』。",
+          "平台红线复核:前3秒纯法规冲击钩子,零币价/零ticker/零100x/零保证收益——通过TikTok金融过滤器。",
+          "挂链门槛复核:@askaurea未满1000粉,CTA仅走bio/个人简介,externalLink slot正确标注不可挂外链,未假设可挂外链。TikTok无X首条回复问题。",
+          "语言复核:Aurea账号全程纯繁体中文,无夹杂英文号内容,正确。",
+          "NFA复核:hook后各段、scene8、caption、compliance、externalLink均挂NFA/非投资建议,正确。",
+          "收益承诺复核:全片未出现任何报酬率数字、未承诺固定收益;穩定幣段仅陈述『不得付息』法规事实。本片为Aurea法规科普片、未导流Xaue,故XAUE收益措辞不适用,无违规。",
+          "空投复核:本片不含任何带截止日空投(GRVT/Hyperlynx等),无相对措辞/重算提示需求,不适用。",
+          "factsUsed复核:已把所有来源从含糊的『verify=confirmed』改写为诚实标注(自我标记、无实际官方连结、具体数字已降级),使每条fact与其可陈述层级对齐;所有上字幕内容现仅保留方向性/定性可陈述项。",
+          "最终结论:pass=true。降级后内容包在钩子止滑力、CTA自然度、8卡/84秒时长上仍可直接发布;唯一遗留建议(非阻断)=若运营方能补上金管会/立法院官方条文连结,可在二次确认后把具体条数、刑度、施行季度加回上字幕以增强说服力。"
+        ]
+      }
+    },
+    {
+      "id": "AU-2",
+      "account": "Aurea @askaurea",
+      "platform": "TikTok",
+      "language": "繁體中文",
+      "hook3s": "「你按下這一個按鈕，錢包就被清空了——連轉帳都不用。」（畫面：手指懸在一個「領取獎勵」按鈕上方，鏡頭拉近）",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-3",
+          "narration": "你按下這一個按鈕，錢包就被清空了——連轉帳都不用。",
+          "onScreenCaption": "這一下 就沒了",
+          "visual": "Aurea 數字人正面口播，手指懸在一個假的「領取獎勵 Claim」按鈕上方，鏡頭快速推近按鈕。低 AI 感、自然打光。"
+        },
+        {
+          "index": 2,
+          "seconds": "3-9",
+          "narration": "我是 Aurea。今天不談漲跌，只教你一件事：怎麼一眼看出「假交易所、假領取頁」長什麼樣。學會這 5 招，比任何內線都值錢。",
+          "onScreenCaption": "假交易所 5 招辨真偽",
+          "visual": "Aurea 口播，右側浮出 5 個空格編號的清單框（逐一亮起）。品牌紫底。"
+        },
+        {
+          "index": 3,
+          "seconds": "9-20",
+          "narration": "先看一個真實案例。就在 2026 年 7 月，有人在一個「免費領取」頁面，只按了一次授權簽名，錢包就被搬走了將近一百萬 USDT。他沒有轉帳、沒有輸密碼——他只是「簽了名」。",
+          "onScreenCaption": "一次簽名 ≈ 999,999 USDT 沒了\\n2026/07 真實案例",
+          "visual": "【真實素材】區塊鏈瀏覽器/Scam Sniffer 類型的交易截圖(打碼地址)，紅框標出授權(Approval)那一筆。畫面壓暗、紅色警示描邊。不點名任何個人。"
+        },
+        {
+          "index": 4,
+          "seconds": "20-35",
+          "narration": "為什麼會這樣？騙局的核心不是偷你的密碼，而是騙你「主動簽名授權」。像 approve、setApprovalForAll、Permit2 這些字，翻成人話就是：你把錢包的動用權，親手交給了對方。",
+          "onScreenCaption": "重點：他們騙的是「你的簽名」\\napprove / setApprovalForAll / Permit2",
+          "visual": "【真實素材】錢包彈出的簽名視窗錄屏，紅框圈出 setApprovalForAll / Permit2 欄位。旁邊用大白話標註「= 交出動用權」。"
+        },
+        {
+          "index": 5,
+          "seconds": "35-48",
+          "narration": "第一招：看網址。真站是主網域，假站常常是它的「子網域」或多一個字母。第二招：看頁面標記。很多假領取頁會直接寫 verify = confirmed、already verified，用『已驗證』讓你放下戒心——真站不會這樣哄你。",
+          "onScreenCaption": "① 看網址：子網域/多一字母 = 紅旗\\n② verify=confirmed 這種字 = 紅旗",
+          "visual": "【真實素材】before/after 對比截圖：左邊假領取頁(圈出可疑子網域網址 + verify=confirmed 字樣)，右邊合法平台頁。低 AI 感、真截圖。"
+        },
+        {
+          "index": 6,
+          "seconds": "48-62",
+          "narration": "第三招：看它急不急。倒數計時、「最後名額」、「錯過就沒了」——製造緊迫感，就是要你來不及思考。第四招：任何頁面要你簽名，先停三秒，讀懂你在簽什麼；看不懂，就是不簽。",
+          "onScreenCaption": "③ 倒數/最後名額 = 心理操控\\n④ 看不懂的簽名 = 不簽",
+          "visual": "Aurea 口播，畫面左側閃現假頁的「倒數計時器」與「最後名額」彈窗(打碼)。右側浮出「STOP 3 秒」圖示。"
+        },
+        {
+          "index": 7,
+          "seconds": "62-75",
+          "narration": "第五招，也是最重要的：定期檢查、並取消你錢包裡那些用不到的舊授權。很多人被盜，是因為半年前隨手簽的授權，一直還開著。",
+          "onScreenCaption": "⑤ 定期撤銷(revoke)舊授權",
+          "visual": "【真實素材】授權管理頁面錄屏，示範找到一筆舊 approval 並點「撤銷 Revoke」。綠色 OK 描邊。"
+        },
+        {
+          "index": 8,
+          "seconds": "75-88",
+          "narration": "如果你連自己在簽什麼都看不懂——這很正常，那些字本來就寫得像天書。你可以在簽名前，讓 Nina 幫你翻譯成白話：這個授權會動到你哪些錢、風險在哪。工具連結我放在個人檔案。",
+          "onScreenCaption": "簽名前，讓 Nina 幫你看懂你在授權什麼\\n→ 個人檔案 bio",
+          "visual": "Aurea 口播，畫面模擬一個對話助手把 setApprovalForAll 翻成白話的氣泡(示意，非承諾具體產品畫面)。指向下方 bio。"
+        },
+        {
+          "index": 9,
+          "seconds": "88-95",
+          "narration": "記住這 5 招，轉給那個最容易上當的朋友。這不是投資建議，是保命常識。",
+          "onScreenCaption": "存起來 · 轉給家人朋友\\n非投資建議 NFA",
+          "visual": "Aurea 收尾，5 招清單一次全亮起做總結卡。品牌紫底 + 收益金點綴。"
+        }
+      ],
+      "platformCaption": "假交易所、假「領取獎勵」頁，長得越來越像真的了。\n\n7 月才傳出的真案：有人只按了一次「授權簽名」，錢包就被搬走近百萬 USDT——沒轉帳、沒輸密碼，就一個簽名。\n\n這支影片教你 5 招一眼分辨真偽 👇（第 4、5 招最多人忽略）\n\n記住：騙局騙的不是你的密碼，是你的「簽名授權」。看不懂的，就別簽。\n\n存起來，轉給最容易上當的家人。這不是投資建議，是保命常識。",
+      "hashtags": [
+        "#資安",
+        "#防詐騙",
+        "#錢包安全",
+        "#網路安全",
+        "#理財知識",
+        "#Web3",
+        "#區塊鏈",
+        "#台灣",
+        "#學起來",
+        "#長知識"
+      ],
+      "externalLink": {
+        "slot": "bio(TikTok,@askaurea 未滿 1000 粉,不可掛外連;僅走個人檔案 bio / pinned 留言)",
+        "text": "個人檔案 bio 一句話:『簽名前看不懂?讓 Nina 幫你把授權翻成白話 → 點 bio 連結』。置頂留言複述:『第 4 招要停 3 秒——看不懂的簽名別簽。工具在 bio。NFA』。滿 1000 粉前不假設可掛站內外連。"
+      },
+      "postingTime": "台灣時間週四至週日 晚上 8:00–9:00 發布；發布後 90 分鐘內守著回覆每一則留言(TikTok 回覆權重高，前 90 分鐘最關鍵)。",
+      "compliance": "NFA：本片為資安科普，非投資建議，不推薦任何幣種或交易所。紅線自檢：①前 3 秒無幣價/ticker/'100x'/保證收益(鉤子用「按鈕清空錢包」情緒鉤，合規)；②全片靜音可看——每鏡皆有字幕 overlay，9:16；③未用任何黑名單偽事實(無黃金市值/降息/金價高點/Robinhood AI 帳戶/Ostium 最後一季/BUIDL 持倉/sUSDe 舊值)；④999,999 USDT 真案僅講手法+紅旗，不點名個人；來源為 Scam Sniffer(2026-07-09 通報)，畫面與 factsUsed 一律用相對措辭「2026/07」，不落具體日；⑤未承諾任何收益，未提 XAUE 收益數字(本片不導 Xaue，只導 Nina)；⑥未使用 #crypto 硬標籤；⑦導流僅走 bio(未滿 1000 粉，不假設可掛外連)；⑧App Store id 未提及；⑨無空投截止日承諾。台灣刑度：本片未描述具體法律刑度，如後續留言補充須分開陳述(無照經營=7年/1億；詐欺操縱=10年/2億)，本片不涉及。",
+      "hyperframesSpec": "目標：HyperFrames 渲染「假頁 vs 合法頁」對比卡 + 5 招總結卡 + 真案止滑卡，輸出 9:16 (1080×1920) 幀，供剪輯疊在 Aurea 口播上。主色=空投紫 #8B5CFF(此片主題=授權/簽名/空投釣魚，選紫)；輔色=科普綠 #C6FF3A(安全/正確/Revoke 用綠) + 警示紅(危險/紅旗用純紅 #FF3B3B，非品牌色但安全語意必需)；收益金 #F5B301 僅用於品牌尾卡點綴。字體層級：主標 96–120px 粗體、副標 56–64px、註解/來源 32–36px 中灰。版式：頂部固定「假交易所 5 招辨真偽」品牌條 + @askaurea 水印(右下小字)。\\n\\n每屏已核實數據點(只放這些，不得新增任何數字)：\\n- 止滑卡：大字「一次簽名 ≈ 999,999 USDT」+ 小字「2026/07 真實案例 · 來源 Scam Sniffer 通報 · 打碼地址」(紅底紫描邊)。\\n- 手法卡：「approve / setApprovalForAll / Permit2」三個代碼字(等寬字體)＋白話註「= 交出錢包動用權」。\\n- 紅旗卡(before/after 雙欄)：左欄假頁圈出『子網域網址』『verify=confirmed』；右欄合法頁對照。\\n- 5 招總結卡：① 看網址(子網域/多一字母) ② verify=confirmed 等字 ③ 倒數/最後名額 ④ 看不懂的簽名不簽 ⑤ 定期 Revoke 舊授權。①②③④用紅旗圖標，⑤用綠盾圖標。\\n- 尾卡：「簽名前讓 Nina 幫你看懂你在授權什麼 → bio」+「非投資建議 NFA」小字。\\n動效克制：僅用 8% 位移淡入 + 紅框描邊 0.3s 脈動一次；禁旋轉/彈跳/粒子。所有真截圖區保留原始像素、地址一律打碼。字幕安全區距上下邊 ≥12%(避開 TikTok UI)。",
+      "factsUsed": [
+        {
+          "fact": "簽名釣魚的核心機制是誘導用戶主動簽署 approve / setApprovalForAll / Permit2 授權，等同交出錢包資產動用權(非竊取密碼)。",
+          "source": "已核實：EIP-712/Permit2 簽名釣魚機制(Ledger/MetaMask/DEXTools 2026 說明，approve/setApprovalForAll/Permit2)"
+        },
+        {
+          "fact": "免費子域名 claim(領取)頁常見紅旗：頁面標記 verify=confirmed 等「已驗證」字樣以降低戒心。",
+          "source": "已核實鉤子：免費子域名 claim 頁紅旗(verify=confirmed)"
+        },
+        {
+          "fact": "2026 年 7 月傳出單人簽署一次「領取/授權」即損失約 999,999 USDT 的真實個案；僅講手法與紅旗，不點名個人，畫面用相對措辭『2026/07』不落具體日。",
+          "source": "已核實：Scam Sniffer 2026-07-09 通報之近百萬 USDT Permit2 簽名釣魚個案(BeInCrypto/Cointelegraph/Cryptonomist 多源報導)"
+        },
+        {
+          "fact": "防護行為建議：定期檢查並撤銷(revoke)錢包中用不到的舊授權。",
+          "source": "已核實：Etherscan/Ledger 授權撤銷(revoke)標準防護做法"
+        },
+        {
+          "fact": "導流方向：簽名前可讓 Nina(Antalpha 對話式 Web3 AI 助手)把授權內容翻成白話、說明風險。",
+          "source": "任務指定 CTA：bio→Nina"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "黑名單偽事實：全部 8 項均未出現(無黃金市值/降息/金價高點/Robinhood AI 帳戶/Ostium 最後一季/BUIDL 持倉/sUSDe 舊值/App Store id 未當可下載)，無需刪換。",
+          "事實核查(已上網核實)：999,999 USDT 簽名釣魚案為真——Scam Sniffer 於 2026-07-09 通報、多家(BeInCrypto/Cointelegraph/Cryptonomist)報導，屬 Uniswap Permit2/授權簽名一次即被搬空;機制(approve/setApprovalForAll/Permit2=交出動用權)、verify=confirmed 紅旗、revoke 撤銷防護均與 Ledger/MetaMask/DEXTools 說明一致。",
+          "已修正[日期過度精確]：原 factsUsed 寫『2026-07-08 發生』屬對事件日的具體斷言，但可核實來源為 Scam Sniffer 2026-07-09『通報』日。已改為相對措辭『2026 年 7 月』並將 source 標明為 2026-07-09 通報+多源報導;on-screen caption 原本已是安全的『2026/07』,維持不動。",
+          "已修正[來源標註]：factsUsed 每條 source 由『已核實鉤子』抽象標籤補實為可對應的公開來源(Scam Sniffer 通報/Ledger/MetaMask/DEXTools/Etherscan),使每條事實可對上已核實來源。",
+          "已修正[compliance 第④點]：同步把來源日與『畫面用相對措辭 2026/07、不落具體日』寫入合規自檢,與 factsUsed 對齊。",
+          "已微調[platformCaption]：『7 月才發生的真案』→『7 月才傳出的真案』,與『相對措辭+以通報日為準』一致,避免對事件確切發生日的斷言。",
+          "TikTok 紅線：前 3 秒為情緒鉤(按鈕清空錢包),無幣價/ticker/100x/保證收益——通過。",
+          "導流合規：@askaurea 未滿 1000 粉,CTA 僅走 bio/置頂留言,未假設可掛外連——通過(本片為 TikTok/Aurea,X 首條回覆規則不適用)。",
+          "語言：Aurea 全片繁體中文,僅保留必要技術詞(approve/setApprovalForAll/Permit2/verify=confirmed/Revoke)與專有名詞(USDT/Nina),符合純繁中要求。",
+          "NFA/刑度/收益：NFA 已標;台灣刑度未寫入本片正文(正確),合規備註保留分開陳述(無照 7年/1億 vs 詐欺 10年/2億);本片不導 Xaue、未提任何收益數字,無固定收益承諾。",
+          "空投截止日：本片無任何空投截止日,N/A。",
+          "可發布性：鉤子止滑力強、5 招結構清晰、CTA 自然(bio→Nina)、時長 95 秒/9 卡對 TikTok 資安長知識類合理。結論:修正後可直接發布。"
+        ]
+      }
+    },
+    {
+      "id": "AU-3",
+      "account": "Aurea @askaurea",
+      "platform": "TikTok",
+      "language": "繁體中文",
+      "hook3s": "「阿嬤的金條放在保險箱裡,三十年只長了灰塵——不是它不值錢,是它睡著了。」",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-3",
+          "narration": "阿嬤的金條放在保險箱裡,三十年只長了灰塵——不是它不值錢,是它睡著了。",
+          "onScreenCaption": "阿嬤的金條,睡了三十年",
+          "visual": "Aurea 數字人正面口播,暖光棚拍;右下角疊一張老式保險箱+金條的意象畫面(素材:自製示意圖,非真實鏈上數據)。前3秒不出現任何幣價/ticker。"
+        },
+        {
+          "index": 2,
+          "seconds": "3-10",
+          "narration": "實體黃金最大的問題,不是保管,是它一整天什麼都不做。你放著它,它就只是躺著。",
+          "onScreenCaption": "實體黃金的痛點:只會躺著",
+          "visual": "Aurea 口播為主;切一組對比示意圖(左:金條靜止/右:數位化流動的黃金圖示)。標註『示意,非投資建議』小字。"
+        },
+        {
+          "index": 3,
+          "seconds": "10-20",
+          "narration": "但 2026 年有件事悄悄發生了:黃金正在『上鏈』。今年第一季,代幣化黃金的現貨成交就衝到 907 億美元,直接超過了 2025 一整年的 846 億。",
+          "onScreenCaption": "代幣化黃金 Q1 現貨 $90.7B > 2025全年 $84.6B",
+          "visual": "真實素材:代幣化黃金 Q1 2026 現貨成交 $90.7B vs 2025 全年 $84.6B 的長條對比信息圖(鏈上/行業數據截圖風格)。數字逐一浮現,動效克制。"
+        },
+        {
+          "index": 4,
+          "seconds": "20-30",
+          "narration": "這不是小圈子的事。整個真實世界資產、也就是 RWA 板塊,七月初已經突破 636 億美元;連老牌代幣化黃金的每日活躍地址,都在七月初創下歷史新高。",
+          "onScreenCaption": "RWA 板塊 07-04 破 $63.6B｜代幣化黃金日活創 ATH",
+          "visual": "真實素材:RWA 板塊 $63.6B(2026-07-04)數據卡 + 代幣化黃金日活創 ATH(2026-07-06)折線示意。鏈上數據截圖風格,不出現 ticker 大字。"
+        },
+        {
+          "index": 5,
+          "seconds": "30-42",
+          "narration": "那『上鏈』到底解鎖了阿嬤金條做不到的什麼?一句話:黃金可以像存錢一樣,開始生息——而且是用黃金本身來計價,不是換成別的東西。",
+          "onScreenCaption": "上鏈解鎖:黃金也能『生息』(以黃金計價)",
+          "visual": "Aurea 口播;疊一張『金條 → 數位黃金 → 以黃金計價累積』的三步流程信息圖。強調『以黃金計價』,不出現任何百分比收益數字。"
+        },
+        {
+          "index": 6,
+          "seconds": "42-54",
+          "narration": "這正是 Xaue 在做的事。它 2026 年四月發布,是一個黃金的收益與金庫層,採 1000 比 1 的拆分設計;而且它的匯率是單調遞增設計——只往一個方向走。",
+          "onScreenCaption": "Xaue:黃金收益/金庫層｜1000:1 拆分｜匯率單調遞增",
+          "visual": "真實素材:Xaue(Aurise)產品卡——2026-04-22 發布、XAU₮ 收益/Treasury Layer、1000:1 拆分、單調遞增匯率。四個要點逐條亮起。收益金 #F5B301 為主色。"
+        },
+        {
+          "index": 7,
+          "seconds": "54-64",
+          "narration": "先說清楚:這是機構級的設計,零售參與要看白名單、即將開放,我不承諾任何固定報酬。這支只是帶你看懂敘事——真正想搞懂,我把 Nina 跟 Xaue 都放在個人檔案了。",
+          "onScreenCaption": "機構級·即將開放·白名單｜NFA 非投資建議",
+          "visual": "Aurea 口播收尾,眼神看鏡頭;下方箭頭指向大頭貼/bio 方向的動態提示(『點個人檔案』)。合規小字常駐:非投資建議。"
+        }
+      ],
+      "platformCaption": "阿嬤的金條放在保險箱裡三十年,只長了灰塵😮‍💨 不是它不值錢,是它「睡著了」。\n\n2026 最大的敘事之一,就是黃金開始「上鏈」——今年第一季,代幣化黃金光現貨成交就超過了 2025 一整年。上鏈解鎖了實體金條做不到的事:讓黃金可以像存錢一樣、用黃金本身計價地慢慢累積。\n\n想搞懂黃金上鏈跟 Xaue 是什麼?我把入口放個人檔案了,順路帶你認識 Nina👇\n\n非投資建議,自己做功課🙏",
+      "hashtags": [
+        "#黃金上鏈",
+        "#RWA",
+        "#代幣化黃金",
+        "#數位資產",
+        "#Aurea",
+        "#理財知識",
+        "#學習",
+        "#fyp台灣"
+      ],
+      "externalLink": {
+        "slot": "bio(TikTok,@askaurea 未確認滿1000粉,不可假設可掛外鏈;CTA 只走個人檔案 bio 連結)",
+        "text": "個人檔案 bio 有一支帶你認識 Nina(對話式 Web3 AI 助手)和 Xaue(黃金能像存錢一樣以黃金計價地生息,機構級·即將開放)。想搞懂『黃金上鏈』從那裡開始。非投資建議。"
+      },
+      "postingTime": "台灣時間 週間晚上 20:00–21:00(晚6-10點黃金時段);發布後前 90 分鐘積極回評、優先回覆帶問題的留言。",
+      "compliance": "NFA 非投資建議,內容僅供教育參考,參與前請自行研究。本條紅線自檢:①前3秒無幣價/ticker/'100x'/保證收益,全程未出現任何 ticker 大字;②靜音可看——全程字幕 overlay;③9:16、TikTok 未用 #crypto 硬標籤;④收益只用『以黃金計價/像存錢一樣生息/機構級·即將開放/白名單』,零售強調白名單,未承諾任何固定收益、未出現具體收益百分比;⑤台灣刑度未混用(本條未點名個案、未做金融牌照宣稱,故不觸發;若後續補充須把無照經營7年以下/罰金1億以下 與 詐欺·操縱10年以下/罰金2億以下 分開陳述,不可合併);⑥@askaurea 未確認滿1000粉,CTA 僅走 bio,不假設可掛外鏈;⑦全程只用已核實數字($90.7B/$84.6B/$63.6B/日活 ATH/1000:1/單調遞增/2026-04-22),未引入任何黑名單偽事實(未提黃金代幣總市值$71億或涨300%/未做降息或加息表述/未用假金價高點$4,768/未提 Robinhood AI 帳戶/未提 Ostium 最後一季/未提 BUIDL 250億/未用 sUSDe 舊值10-15%/未把 App Store id 當可下載);⑧空投截止類資訊本條未涉及(GRVT/Hyperlynx 皆未出現);⑨審校修訂:場景6 原本以「讓小額也能參與」框定 1000:1 拆分,恐暗示零售可直接參與,已改為中性「採 1000 比 1 的拆分設計」,與白名單門檻一致。70%教育/30%推廣結構達標(場景1-5科普、6-7產品+CTA)。",
+      "hyperframesSpec": "畫布 9:16(1080×1920),幀率 30fps,確定性渲染。品牌主色=收益金 #F5B301(黃金主題選號),輔以交易藍 #38bdf8 作數據強調,背景深炭 #0B0B0F,正文白 #F5F5F5。字體層級:大標 Noto Sans TC Black 96–120px、次級數據數字 84px(#F5B301)、說明文 44px、常駐合規小字 28px(#9A9A9A,底部安全區內)。動效克制:數字用 count-up 或淡入(≤400ms),長條圖用寬度掃入,禁止彈跳/旋轉。逐屏需渲染的『已核實數據點』——屏A:代幣化黃金 Q1 2026 現貨 $90.7B(對比長條)vs 2025 全年 $84.6B;屏B:RWA 板塊 2026-07-04 破 $63.6B;屏C:代幣化黃金日活 2026-07-06 創 ATH(折線示意,不標具體軸值,僅示『歷史新高』);屏D:Xaue(Aurise)四要點——2026-04-22 發布、XAU₮ 收益/Treasury Layer、1000:1 拆分、匯率單調遞增。所有屏底部常駐『非投資建議 NFA』。嚴禁渲染任何未核實數字、幣價 ticker、收益百分比。字幕 overlay 全程開啟(靜音可讀),置於下三分之一安全區,避開 TikTok UI 右側與底部。",
+      "factsUsed": [
+        {
+          "fact": "代幣化黃金 Q1 2026 現貨成交 $90.7B,超過 2025 全年 $84.6B",
+          "source": "已核實熱點鉤子(verify=confirmed)"
+        },
+        {
+          "fact": "老牌代幣化黃金(PAXG)每日活躍地址於 2026-07-06 創歷史新高",
+          "source": "已核實熱點鉤子(verify=confirmed)"
+        },
+        {
+          "fact": "RWA 板塊於 2026-07-04 突破 $63.6B",
+          "source": "已核實熱點鉤子(verify=confirmed)"
+        },
+        {
+          "fact": "XAUE(Aurise)於 2026-04-22 發布,為 XAU₮ 收益/Treasury Layer",
+          "source": "已核實熱點鉤子(verify=confirmed)"
+        },
+        {
+          "fact": "Xaue 採 1000:1 拆分",
+          "source": "已核實熱點鉤子(verify=confirmed)"
+        },
+        {
+          "fact": "Xaue 匯率為單調遞增設計",
+          "source": "已核實熱點鉤子(verify=confirmed)"
+        },
+        {
+          "fact": "導流方向:黃金能像存錢一樣以黃金計價地生息,機構級即將開放、零售須看白名單;bio 帶認識 Nina 與 Xaue",
+          "source": "任務指定 CTA 方向 + 全局手冊收益合規措辭"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "場景6 narration 原文『把黃金做了 1000 比 1 的拆分,讓小額也能參與』會暗示零售可直接小額參與,與『零售須看白名單、即將開放』的合規要求衝突。已改為中性『採 1000 比 1 的拆分設計』,移除『讓小額也能參與』字樣,拆分事實本身(1000:1,verify=confirmed)保留不變。",
+          "factsUsed 第7條同步補上『零售須看白名單』字樣,與正文合規措辭對齊(原本僅寫『機構級即將開放』)。",
+          "compliance 欄新增第⑨條記錄本次修訂;台灣刑度陳述改為更精確的『無照經營7年以下/罰金1億以下』與『詐欺·操縱10年以下/罰金2億以下 分開、不可合併』,強調分開陳述。",
+          "黑名單複核:8 項偽事實全數未出現(黃金代幣總市值$71億/涨300%、降息或新主席/僅1人預期、假金價$4,768、Robinhood 7萬 AI 帳戶、Ostium 最後一季、BUIDL 250億、sUSDe 10-15% 舊值、App Store id6771070397 當可下載)——皆未引用,無需刪換。",
+          "factsUsed 逐條可對上已核實鉤子($90.7B/$84.6B、日活 ATH、$63.6B、2026-04-22 發布/XAU₮ Treasury Layer、1000:1、單調遞增),無可疑數字或日期需刪改。",
+          "平台紅線通過:前3秒(場景1)無幣價/ticker/'100x'/保證收益;TikTok 平台無 X 首條回復外鏈規則需套用;@askaurea 未滿1000粉,CTA 僅走 bio(非外鏈),未誤設可掛外鏈。",
+          "語言檢查:Aurea 全程純繁體中文,無混入英文行銷句,通過。",
+          "NFA 全程在場;XAUE 收益僅用定性措辭(以黃金計價/像存錢一樣生息/機構級·即將開放/白名單),未承諾固定收益、無收益百分比,通過。任務允許但不強制使用『示例約2%』,本稿採純定性亦合規。",
+          "空投截止措辭 N/A:本條未涉及 GRVT(07-17/TGE 07-21)、Hyperlynx(2x)等帶截止日空投,無需相對措辭與『發布前按當日重算』提示。",
+          "可發布性:hook 具懸念與止滑力、CTA 自然導向 bio、64 秒 7 卡節奏合理(教育5卡+產品2卡),符合 70/30 結構,可直接發布。"
+        ]
+      }
+    },
+    {
+      "id": "AU-4",
+      "account": "Aurea @askaurea",
+      "platform": "TikTok",
+      "language": "繁體中文",
+      "hook3s": "「大家都在怕，圖表卻在漲——這種違和感，你有沒有發現？」",
+      "scenes": [
+        {
+          "index": 1,
+          "seconds": "0-3s",
+          "narration": "大家都在怕，圖表卻在漲——這種違和感，你有沒有發現？",
+          "onScreenCaption": "恐懼 vs 上漲｜哪個在騙你？",
+          "visual": "Aurea數字人正面口播，微微皺眉再轉為好奇表情。背景左半是暗紅「恐懼」情緒色塊，右半是上揚曲線剪影（示意，非任何真實ticker）。禁止出現幣價/代號/百分比。"
+        },
+        {
+          "index": 2,
+          "seconds": "3-9s",
+          "narration": "心理學上這叫「情緒與價格背離」。大家嘴上說怕，盤面的結構卻悄悄轉多——這不是巧合，是週期常見的訊號。",
+          "onScreenCaption": "情緒 ≠ 價格｜背離是常態",
+          "visual": "Aurea半身口播。右側疊一張情緒指數示意圖（自製資訊圖，非截圖）：一條紅色「情緒」線往下、一條中性色「結構」線往上，形成交叉。標『示意，非投資建議』小字。"
+        },
+        {
+          "index": 3,
+          "seconds": "9-16s",
+          "narration": "為什麼會這樣？一個真實的宏觀背景是：政策其實偏向偏緊，市場一邊擔心利率、一邊又不想錯過機會，情緒才會這麼矛盾。",
+          "onScreenCaption": "政策偏緊 → 情緒才這麼矛盾",
+          "visual": "切換到中性宏觀對比示意畫面（自製資訊圖，不放任何具體數值，避免誤導）。旁邊小字標注『政策偏緊，情緒偏怕』。Aurea畫中畫口播。"
+        },
+        {
+          "index": 4,
+          "seconds": "16-24s",
+          "narration": "更有意思的是工具端。最近不少交易平台都在把 AI 助理接進來，讓你更快看懂行情——不過真正下單，仍然需要你本人確認。",
+          "onScreenCaption": "AI 進場輔助｜下單仍需本人確認",
+          "visual": "一張新聞式資訊卡（自製，非平台商標盜用），高亮『下單需人工確認』。Aurea在旁引導手勢。不點名未經二次確認的平台與日期。"
+        },
+        {
+          "index": 5,
+          "seconds": "24-31s",
+          "narration": "重點不是誰漲誰跌，而是：當市場最怕的時候，往往也是資訊最混亂的時候。這時候你需要的不是預測，是能幫你把行情講清楚的第二個腦袋。",
+          "onScreenCaption": "最怕的時候＝資訊最亂的時候",
+          "visual": "Aurea正面口播，情緒穩定。背景把前面的紅色恐懼色塊淡出，畫面轉為冷靜的深色。字幕強調『不是預測，是理解』。"
+        },
+        {
+          "index": 6,
+          "seconds": "31-38s",
+          "narration": "連 Claude 都能幫你分析行情了。而 Nina，是專為華語用戶做的 AI × 加密助手。想被帶著看懂市場心理，個人檔案有連結，去看看。這不是投資建議，記得自己判斷。",
+          "onScreenCaption": "看我個人檔案 → 認識 Nina｜NFA 非投資建議",
+          "visual": "Aurea收尾口播＋微笑，手指向上方bio方向。畫面下緣放『主頁連結』提示箭頭（bio導流，未挂外連）。結尾定格品牌收束畫面。"
+        }
+      ],
+      "platformCaption": "大家都在喊怕，圖表卻在往上走。這種「情緒和價格背離」其實是週期裡很常見的心理現象——政策其實偏緊，市場一邊怕利率、一邊又不想錯過，難怪大家這麼矛盾。連 AI 都開始被接進交易平台幫人看行情了（不過下單還是要本人確認喔）。最怕的時候，往往資訊最亂。與其猜漲跌，不如找個能把行情講清楚的第二個腦袋。想被帶著看懂市場心理？主頁連結去看看。非投資建議，請自己判斷。",
+      "hashtags": [
+        "#市場心理學",
+        "#投資心理",
+        "#理財學習",
+        "#AI工具",
+        "#金融科普",
+        "#台灣投資人",
+        "#學習理財"
+      ],
+      "externalLink": {
+        "slot": "TikTok=bio(未滿1000粉,不可挂外連,CTA只走個人檔案/主頁連結/pinned)",
+        "text": "主頁連結：認識 Nina——專為華語用戶做的 AI × 加密助手，帶你把混亂的行情心理講清楚。連 Claude 都能分析行情了，你也值得一個懂中文的第二個腦袋。非投資建議。"
+      },
+      "postingTime": "台灣時間晚上 8:00–9:00（黃金時段內），發布後前 90 分鐘持續回覆留言",
+      "compliance": "NFA｜本條全程為市場心理科普，非投資建議，請自行判斷並自負風險。紅線自檢：①前3秒無幣價/無ticker/無「100x」/無保證收益/無百分比；②靜音可看——全程字幕overlay；③9:16、晚6-10點台灣時間發＋前90分鐘回評；④未用#crypto硬標籤；⑤70%教育/30%推廣，真人口播；⑥宏觀只用「政策偏緊」定性表述，未碰任何降息/新主席/僅1人預期降息黑名單伪事实，且已移除未在核實集內的「六月CPI具體降溫」具體數據宣稱，改為定性；⑦AI工具端已改為定性「不少平台把AI助理接進來」＋高亮『下單需人工確認』，移除未能二次確認的Robinhood 07/11、Revolut X 07/10接入Claude/Gemini之具體日期與整合宣稱（避免疑似無來源/單一來源紧迫感）；⑧未提黃金市值/金價高點/App Store id/BUIDL/sUSDe黑名單数字；⑨未點名任何詐騙個案；⑩未滿1000粉，CTA只走bio/主頁連結/pinned，未假設可挂外連；⑪Nina未承諾收益。刑度分開規範已備註（無照經營7年/1億 vs 詐欺操縱10年/2億，不混用）。無帶截止日的空投內容（N/A）。",
+      "hyperframesSpec": "目標：HTML→確定性MP4，9:16（1080×1920），60fps，動效克制（僅淡入/交叉線緩動，無花俏轉場）。品牌配色：本條為Aurea/交易情緒主題，主色用交易藍 #38bdf8（結構/上漲線）＋科普綠 #C6FF3A（重點強調/CTA），恐懼情緒色塊用低飽和暗紅（僅作對比，非品牌色，佔比隨劇情淡出）；背景深色 #0B1220。字體層級：大標 72–84px 粗體（如『恐懼 vs 上漲』），副標/字幕 40–48px，數據標注/免責小字 24–28px（灰 #94A3B8）。版式：上1/3放主標題，中段放資訊圖/對比曲線，下1/3固定字幕帶＋NFA角標。需渲染的『已核實/定性資料點』（只放這些）：屏A『情緒 ≠ 價格：背離是常態』（無數字，純概念）；屏B『政策偏緊 → 情緒矛盾』（宏觀定性，不放任何具體數值以免误導）；屏C『AI進場輔助交易』＋高亮徽章『下單需人工確認』（不放平台名/日期/整合對象等未二次確認之具體項）；屏D『bio→認識 Nina｜AI×加密助手（華語）』。全屏固定右下角角標『NFA 非投資建議 示意用途』。禁止渲染任何幣價、ticker、百分比收益、金價、市值、具體CPI數值、平台整合日期等黑名單/未核實數字。",
+      "factsUsed": [
+        {
+          "fact": "情緒與價格背離：市場處於極度恐懼，而盤面結構同步轉多（概念化表述，未上具體幣價/ticker/百分比）",
+          "source": "已核實熱點鉤子：情緒vs價格背離（verify=confirmed）"
+        },
+        {
+          "fact": "宏觀政策偏緊（維持利率高檔、委員傾向年內至少加息一次），市場情緒因此矛盾；以定性表述呈現，不放具體CPI數值",
+          "source": "已核實加息版宏觀核實數據（政策偏緊；已剔除未核實的「六月CPI具體降溫」具體宣稱）"
+        },
+        {
+          "fact": "多家交易平台正把 AI 助理接進交易流程輔助看盤，但下單仍需本人確認（定性表述，未點名平台/日期/整合對象）",
+          "source": "定性行業趨勢；已移除未能二次確認的 Robinhood 07/11 與 Revolut X 07/10 接入 Claude/Gemini 之具體日期與整合宣稱"
+        },
+        {
+          "fact": "Nina 為 Antalpha 出品、專為華語用戶的對話式 AI × 加密助手（導流定位，未承諾收益）",
+          "source": "運營總手冊北極星＋本條CTA方向：bio→Nina"
+        }
+      ],
+      "qa": {
+        "pass": true,
+        "issues": [
+          "移除 Robinhood 2026-07-11 擴展加密 與 Revolut X 2026-07-10 接入 Claude/Gemini 的具體日期與整合宣稱：這兩條在 factsUsed 標為 confirmed，但屬於帶高度具體性且無法在本審提供的核實鉤子集內二次確認的宣稱，且黑名單明列『Robinhood 7萬+ AI agent 帳戶（無來源）』相關方向須謹慎；已將場景4、caption、hyperframesSpec、factsUsed 一律改為定性『不少交易平台把 AI 助理接進來、下單仍需本人確認』，去除疑似無/單一來源的紧迫感與具體日期。",
+          "移除場景3與 caption 中『六月 CPI 通膨降溫』的具體月份數據宣稱：核實宏觀立場為加息/偏緊版（維持 3.50–3.75%、9/18 委員預期年內至少加息一次），『六月 CPI 具體降溫』不在核實集內，改為純定性『政策偏緊、市場情緒矛盾』，並確保未渲染任何具體 CPI 數值。",
+          "場景2 narration 原寫『鏈上和盤面的結構同步轉多』，刪去無法佐證的『鏈上』字樣，改為『盤面的結構』，避免暗示未核實的鏈上數據。",
+          "場景1 視覺註記補上『禁止出現百分比』，與 TikTok 前3秒紅線（無幣價/ticker/100x/保證收益）對齊並延伸至全片禁百分比收益。",
+          "將英文行話 risk-on / agentic 改為繁體中文表述（Aurea 需純繁體中文；Claude/Nina/AI 等專有名詞保留）。",
+          "externalLink.slot 補上 pinned 選項，明確 <1000 粉僅走 bio/主頁連結/pinned、不挂外連（原已正確，未新增外鏈風險）。",
+          "更新 compliance 與 hyperframesSpec 自檢條目以反映上述修訂；確認 NFA 全程在位、台灣刑度兩檔分開（無照經營7年/1億 vs 詐欺操縱10年/2億）未混用、未點名詐騙個案、Nina 未承諾收益、無黃金市值/金價高點/App Store id/BUIDL/sUSDe 黑名單數字、無帶截止日空投內容。",
+          "結論：修訂後不含任何黑名單伪事实，factsUsed 每條均對應核實鉤子或已降級為定性，TikTok 三秒與外鏈紅線通過，語言為純繁體中文，可直接發布。"
+        ]
+      }
+    }
+  ]
+}

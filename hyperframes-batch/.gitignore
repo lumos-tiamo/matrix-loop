@@ -1,0 +1,8 @@
+# generated / cached artifacts — regenerable, never commit
+__pycache__/
+*.pyc
+material/          # per-scene TTS mp3 + voice tracks (regenerated on render)
+compositions/      # generated HTML compositions (built from packages)
+captures/          # OHLC cache + any scraped screenshots
+node_modules/
+*.silent.mp4
