@@ -225,3 +225,40 @@ class TrendIn(BaseModel):
 
 class TrendIngest(BaseModel):
     trends: list[TrendIn]
+
+
+class CalibrationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    video_asset_id: int
+    account_id: int
+    rubric_version: str
+    quality_score: float
+    breakdown: dict
+    predicted: dict
+    prediction_note: str | None
+    actual: dict
+    error: dict
+    calibration_error: float | None
+    gate_passed: bool
+    status: str
+    locked_at: datetime
+    reviewed_at: datetime | None
+
+
+class CalibrationReviewIn(BaseModel):
+    # optional manual override; when omitted the review pulls actual metrics from ContentItem
+    actual: dict | None = None
+
+
+class SmartSearchIn(BaseModel):
+    query: str
+    sources: list[str] | None = None
+    niche: str | None = None
+    limit: int = 8
+    distill: bool = True
+
+
+class OpenClawPublishIn(BaseModel):
+    platform: str | None = None
+    caption: str | None = None

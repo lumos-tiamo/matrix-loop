@@ -87,5 +87,15 @@ class Settings(BaseSettings):
     waoowaoo_sf_base_url: str = "https://api.siliconflow.cn/v1"
     waoowaoo_sf_video_model: str = "Wan-AI/Wan2.2-I2V-A14B"
 
+    # --- content calibration (盲预测校准闭环, borrowed from xiaobei content-calibrator) ---
+    calibration_review_days: int = 3          # T+Nd before a published work is due for review
+    calibration_enforce_gate: bool = True     # block publish when the quality門 fails
+
+    # --- openclaw key-free publish + smart-search gateway (borrowed from xiaobei) ---
+    # openclaw drives logged-in browsers, so matrix-loop can publish + search platforms without
+    # official API keys. Empty base = feature off (adapters no-op / raise cleanly).
+    openclaw_base_url: str = ""                # e.g. http://127.0.0.1:18789
+    openclaw_token: str = ""
+
 
 settings = Settings()

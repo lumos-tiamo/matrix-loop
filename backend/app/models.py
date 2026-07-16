@@ -276,3 +276,35 @@ class Trend(Base):
     distilled_topic: Mapped[str | None] = mapped_column(String, nullable=True)  # LLM-distilled angle to make
     score: Mapped[float] = mapped_column(Float, default=0.0)
     captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, index=True)
+
+
+class Calibration(Base):
+    """One work = one blind prediction = one review (per-work calibration, borrowed from
+    xiaobei's content-calibrator). Before publish we score the work against a platform-wide
+    rubric AND blind-predict its metrics — both frozen at `locked_at`, immutable. At T+Nd we
+    fill `actual` from real interaction data, compute `error`, and the aggregate feeds rubric
+    evolution. `gate_passed` is the quality門 that guards publish."""
+    __tablename__ = "calibrations"
+    __table_args__ = (UniqueConstraint("video_asset_id", name="uq_calibration_asset"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    video_asset_id: Mapped[int] = mapped_column(ForeignKey("video_assets.id"), index=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
+    rubric_version: Mapped[str] = mapped_column(String(24))
+    quality_score: Mapped[float] = mapped_column(Float, default=0.0)          # 0-100 blind rubric score
+    breakdown: Mapped[dict] = mapped_column(JSON, default=dict)               # per-dimension scores + notes
+    predicted: Mapped[dict] = mapped_column(JSON, default=dict)               # {views, engagement_rate, ...} — immutable
+    prediction_note: Mapped[str | None] = mapped_column(String, nullable=True)
+    actual: Mapped[dict] = mapped_column(JSON, default=dict)                  # filled at review
+    error: Mapped[dict] = mapped_column(JSON, default=dict)                   # per-metric signed % error
+    calibration_error: Mapped[float | None] = mapped_column(Float, nullable=True)  # aggregate mean abs % error
+    gate_passed: Mapped[bool] = mapped_column(default=True, server_default="true", nullable=False)
+    status: Mapped[str] = mapped_column(String(16), default="predicted")      # predicted|published|reviewed
+    locked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)  # prediction frozen
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    def __init__(self, **kw):
+        for k in ("breakdown", "predicted", "actual", "error"):
+            kw.setdefault(k, dict())
+        super().__init__(**kw)

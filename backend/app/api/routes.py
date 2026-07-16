@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 from app.ingest.manual_import import import_snapshots_csv
 from app.loop.engine import run_loop
 from app.api.overview import build_overview
-from app.models import Account, AccountSegment, AudienceSegment, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, PublishDispatch, Recommendation, Snapshot, Trend, VideoAsset
+from app.models import Account, AccountSegment, AudienceSegment, Calibration, ChannelBrief, ContentItem, Draft, Endpoint, Evaluation, LoopRun, PublishDispatch, Recommendation, Snapshot, Trend, VideoAsset
 from app.flow.build import build_flow
 from app.flow.classify import classify_audience
 from app.analysis.claude_client import ClaudeClient
@@ -687,3 +687,105 @@ def flywheel_events_route(since_id: int | None = None, account_id: int | None = 
 @router.get("/flywheel")
 def flywheel(db: Session = Depends(get_db)) -> dict:
     return {**flywheel_state(db), "scheduler_running": scheduler_running()}
+
+
+# ---------------------------------------------------------------- content calibration
+# 盲预测校准闭环 (borrowed from xiaobei content-calibrator): blind score+predict → gate →
+# T+Nd review → rubric evolution.
+
+@router.post("/video-assets/{asset_id}/calibrate", response_model=schemas.CalibrationOut)
+def calibrate_asset(asset_id: int, db: Session = Depends(get_db)) -> Calibration:
+    from app.calibration import calibrator
+    asset = db.get(VideoAsset, asset_id)
+    if asset is None:
+        raise HTTPException(status_code=404, detail="video asset not found")
+    return calibrator.score_and_predict(db, asset, client=resolve_llm_client())
+
+
+@router.get("/video-assets/{asset_id}/calibration", response_model=schemas.CalibrationOut)
+def get_calibration(asset_id: int, db: Session = Depends(get_db)) -> Calibration:
+    cal = db.scalar(select(Calibration).where(Calibration.video_asset_id == asset_id))
+    if cal is None:
+        raise HTTPException(status_code=404, detail="not calibrated yet")
+    return cal
+
+
+@router.get("/calibration/rubric")
+def get_rubric_route(db: Session = Depends(get_db)) -> dict:
+    from app.calibration import rubric
+    return rubric.get_rubric(db)
+
+
+@router.get("/calibration/summary")
+def calibration_summary_route(db: Session = Depends(get_db)) -> dict:
+    from app.calibration import calibrator
+    return calibrator.calibration_summary(db)
+
+
+@router.get("/calibration/pending-reviews", response_model=list[schemas.CalibrationOut])
+def calibration_pending(db: Session = Depends(get_db)) -> list[Calibration]:
+    from app.calibration import calibrator
+    return calibrator.pending_reviews(db, min_age_days=settings.calibration_review_days)
+
+
+@router.post("/calibration/{cal_id}/review", response_model=schemas.CalibrationOut)
+def calibration_review(cal_id: int, payload: schemas.CalibrationReviewIn,
+                       db: Session = Depends(get_db)) -> Calibration:
+    from app.calibration import calibrator
+    cal = db.get(Calibration, cal_id)
+    if cal is None:
+        raise HTTPException(status_code=404, detail="calibration not found")
+    try:
+        return calibrator.review(db, cal, actual=payload.actual)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@router.post("/calibration/evolve-rubric")
+def calibration_evolve(db: Session = Depends(get_db)) -> dict:
+    from app.calibration import calibrator
+    try:
+        return calibrator.evolve_rubric(db, client=resolve_llm_client())
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+# ---------------------------------------------------------------- smart search (intel intake)
+
+@router.post("/smart-search")
+def smart_search_route(payload: schemas.SmartSearchIn, db: Session = Depends(get_db)) -> dict:
+    from app.analysis import smart_search
+    return smart_search.smart_search(
+        db, payload.query, sources=payload.sources, niche=payload.niche,
+        limit=payload.limit, client=resolve_llm_client(), distill=payload.distill)
+
+
+@router.get("/smart-search/sources")
+def smart_search_sources() -> dict:
+    from app.analysis import smart_search
+    return {"sources": smart_search.available_sources()}
+
+
+# ---------------------------------------------------------------- key-free publish + track
+
+@router.post("/video-assets/{asset_id}/publish-openclaw", response_model=schemas.PublishDispatchOut)
+def publish_openclaw_route(asset_id: int, payload: schemas.OpenClawPublishIn,
+                           db: Session = Depends(get_db)) -> PublishDispatch:
+    from app.publish.openclaw import publish_via_openclaw
+    from app.publish.dispatch import PublishNotReady
+    asset = db.get(VideoAsset, asset_id)
+    if asset is None:
+        raise HTTPException(status_code=404, detail="video asset not found")
+    account = db.get(Account, asset.account_id)
+    try:
+        return publish_via_openclaw(
+            db, account, asset, platform=payload.platform, caption=payload.caption,
+            enforce_gate=settings.calibration_enforce_gate)
+    except PublishNotReady as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@router.get("/publish/track")
+def publish_track_route(account_id: int | None = None, db: Session = Depends(get_db)) -> dict:
+    from app.publish.track import track_summary
+    return track_summary(db, account_id=account_id)

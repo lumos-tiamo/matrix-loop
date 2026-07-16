@@ -36,6 +36,24 @@ docs/      交付说明 / 演示 / Palmier 精修流程
 - **去重**:`sha256(account, script, provider)` 复用已成片;跨账号近似脚本拒绝。
 - **真实进度**:provider 回调 `on_progress(stage, pct)` 落库,前端轮询真实进度而非假计时。
 
+### 内容校准闭环(`app/calibration/`)
+
+盲预测 + rubric 打分 → 质量门 → T+Nd 复盘 → rubric 进化(方法论借鉴自 xiaobei content-calibrator):
+
+- **盲预测**:发布前对成片按全平台统一 rubric 盲打分(0-100),并预测 views/互动率,写入 `Calibration` 后**冻结不可改**(`locked_at`)。有 LLM 走 LLM 评审,无 key 退化到确定性文本启发式。
+- **质量门**:低于 rubric 阈值的成片 `gate_passed=False`,openclaw 发布会被拦截。
+- **T+Nd 复盘**:到期后用真实互动数据(ContentItem)算「预测 vs 实际」误差,进入 `reviewed`。
+- **rubric 进化**:累计 ≥3 条复盘后,依据系统性误差自动调阈值(有 LLM 再微调各维度指引),**版本自增**;旧版本打分被标记需重打(升级=全量重打)。
+- 接口:`POST /video-assets/{id}/calibrate`、`GET /calibration/{rubric,summary,pending-reviews}`、`POST /calibration/{id}/review`、`POST /calibration/evolve-rubric`。
+
+### Smart Search 情报采集(`app/analysis/smart_search.py`)
+
+多源路由器(借鉴 xiaobei smart-search):把查询路由到可插拔的源(默认含 openclaw 无 key 浏览器源),归一化后 LLM 提炼「拍什么」角度,落库为 `Trend` 供选题池。`POST /smart-search`。
+
+### 免 key 发布(`app/publish/openclaw.py`)
+
+通过 openclaw 网关驱动已登录浏览器发布(借鉴 xiaobei 各平台发布技能),无需各平台官方 API key,补齐「先不接 key」缺口。人审 + 质量门双闸。`POST /video-assets/{id}/publish-openclaw`;跨平台复盘视图 `GET /publish/track`。
+
 ---
 
 ## 快速开始
