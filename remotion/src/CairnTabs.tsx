@@ -141,26 +141,74 @@ const CairnMark: React.FC<{ size?: number; built?: number }> = ({ size = 22, bui
 };
 
 // ---------------------------------------------------------------- browser chrome context (behind panel)
-const CHROME_TABS = ["react/re", "Convert", "Convert", "microso", "404 — B", "Quick S", "Quick S", "JavaSc", "java - W", "iterator", "How to", "javascri", "localho", "Hacker", "Elevate"];
-const BrowserBg: React.FC<{ panelW?: number }> = ({ panelW = 620 }) => (
+// loose (pre-grouping) individual tabs
+const CHROME_TABS: [string, string][] = [
+  ["react/re", "react"], ["Convert", "github"], ["Convert", "github"], ["microso", "vscode"],
+  ["404 — B", "bitbucket"], ["Quick S", "react"], ["JavaSc", "mdn"], ["java - W", "so"],
+  ["iterator", "so"], ["How to", "so"], ["localho", "localhost"], ["Hacker", "hn"],
+  ["QA Pl", "qa"], ["Elevate", "elevate"], ["claude", "claude"],
+];
+// native Chrome tab-groups shown AFTER grouping (mirrors the real screenshot)
+const TAB_GROUPS: { name: string; color: string; favs: string[] }[] = [
+  { name: "React Dev", color: "#4F86F7", favs: ["react", "github", "github", "github"] },
+  { name: "JS & Python", color: "#F5A623", favs: ["so", "mdn", "so", "so"] },
+  { name: "本地开发", color: "#16B8A6", favs: ["localhost"] },
+  { name: "Hacker News", color: "#2E9E6B", favs: ["hn"] },
+  { name: "QA Platform", color: "#E5484D", favs: ["qa", "elevate"] },
+  { name: "查看代码提交", color: "#5A6472", favs: ["bitbucket"] },
+  { name: "claude.ai", color: "#8B5CF6", favs: ["claude"] },
+];
+
+// one native tab-group pill: colored label + its tabs on a colored underline; `p` (0..1) drives entrance
+const TabGroupPill: React.FC<{ g: { name: string; color: string; favs: string[] }; p: number }> = ({ g, p }) => (
+  <div style={{ display: "flex", alignItems: "flex-end", gap: 2, opacity: p }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 4, background: g.color, color: "#fff", fontFamily: FONT,
+      fontWeight: 700, fontSize: 12, height: 26, padding: "0 9px", borderRadius: "8px 8px 0 0",
+      transform: `scaleX(${interpolate(p, [0, 1], [0.4, 1])})`, transformOrigin: "left", whiteSpace: "nowrap" }}>
+      {g.name}
+    </div>
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 2, borderBottom: `3px solid ${g.color}`, background: `${g.color}14`, borderRadius: "6px 6px 0 0", padding: "0 3px", overflow: "hidden", width: `${interpolate(p, [0.2, 1], [0, g.favs.length * 26 + 6], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })}px` }}>
+      {g.favs.map((fav, i) => (
+        <div key={i} style={{ width: 24, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: i === 0 ? "#fff" : "transparent", borderRadius: "6px 6px 0 0" }}>
+          <Favicon kind={fav} size={15} />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const BrowserBg: React.FC<{ panelW?: number; grouped?: number; url?: string }> = ({ panelW = 620, grouped = 1, url }) => (
   <AbsoluteFill style={{ background: C.desk }}>
-    {/* tab bar */}
-    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 44, background: C.bar, display: "flex", alignItems: "flex-end", padding: "0 12px", gap: 3 }}>
+    {/* tab bar — morphs from loose tabs (grouped=0) to native colored tab-groups (grouped=1) */}
+    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 44, background: C.bar, display: "flex", alignItems: "flex-end", padding: "0 12px", gap: 4 }}>
       <div style={{ display: "flex", gap: 8, alignSelf: "center", marginRight: 10 }}>
         {["#FF5F57", "#FEBC2E", "#28C840"].map((c) => <div key={c} style={{ width: 12, height: 12, borderRadius: 6, background: c }} />)}
       </div>
-      {CHROME_TABS.map((t, i) => (
-        <div key={i} style={{ width: 96, height: 32, background: i === 9 ? "#fff" : "transparent", borderRadius: "8px 8px 0 0",
-          display: "flex", alignItems: "center", gap: 5, padding: "0 8px", opacity: i === 9 ? 1 : 0.75 }}>
-          <div style={{ width: 12, height: 12, borderRadius: 3, background: ["#F48024", "#1B1F24", "#1B1F24", "#0A66C2", "#2684FF", "#61DAFB", "#61DAFB", "#000", "#F48024", "#1B1F24", "#F48024", "#F48024", "#D6409F", "#FF6600", "#5B8DEF"][i] }} />
-          <span style={{ fontFamily: FONT, fontSize: 12, color: C.ink, whiteSpace: "nowrap", overflow: "hidden" }}>{t}</span>
+      {/* loose tabs fade out as grouping happens */}
+      {grouped < 0.6 && (
+        <div style={{ display: "flex", gap: 3, alignItems: "flex-end", opacity: interpolate(grouped, [0, 0.5], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }), position: grouped > 0 ? "absolute" : "relative", left: grouped > 0 ? 76 : undefined, bottom: grouped > 0 ? 0 : undefined }}>
+          {CHROME_TABS.map(([t, fav], i) => (
+            <div key={i} style={{ width: 84, height: 32, background: i === 8 ? "#fff" : "transparent", borderRadius: "8px 8px 0 0", display: "flex", alignItems: "center", gap: 5, padding: "0 8px", opacity: i === 8 ? 1 : 0.7 }}>
+              <Favicon kind={fav} size={13} />
+              <span style={{ fontFamily: FONT, fontSize: 12, color: C.ink, whiteSpace: "nowrap", overflow: "hidden" }}>{t}</span>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
+      {/* grouped pills appear, staggered */}
+      {grouped > 0 && (
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+          {TAB_GROUPS.map((g, i) => (
+            <TabGroupPill key={g.name} g={g} p={interpolate(grouped, [i * 0.05, i * 0.05 + 0.45], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} />
+          ))}
+        </div>
+      )}
+      <span style={{ marginLeft: "auto", color: C.muted, fontSize: 18, alignSelf: "center" }}>＋</span>
     </div>
     {/* url bar */}
     <div style={{ position: "absolute", top: 44, left: 0, right: 0, height: 40, background: "#fff", borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", gap: 12, padding: "0 16px" }}>
       <span style={{ color: C.muted, fontSize: 15 }}>‹ › ⟳</span>
-      <div style={{ flex: 1, background: "#F1F3F6", borderRadius: 14, padding: "6px 14px", fontFamily: FONT, fontSize: 13, color: "#5A6472", maxWidth: 1000 }}>stackoverflow.com/questions/231767/what-does-the-yield-keyword-do-in-python</div>
+      <div style={{ flex: 1, background: "#F1F3F6", borderRadius: 14, padding: "6px 14px", fontFamily: FONT, fontSize: 13, color: "#5A6472", maxWidth: 1000 }}>{url || "stackoverflow.com/questions/231767/what-does-the-yield-keyword-do-in-python"}</div>
       <span style={{ fontFamily: FONT, fontSize: 12, color: "#fff", background: "#7A828F", padding: "3px 8px", borderRadius: 6 }}>H 工作</span>
       <span style={{ fontFamily: FONT, fontSize: 12, color: "#fff", background: C.green, padding: "4px 10px", borderRadius: 7 }}>重新启动即可更新</span>
     </div>
@@ -226,7 +274,7 @@ const S1: React.FC = () => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill>
-      <BrowserBg />
+      <BrowserBg grouped={0} />
       <Panel tabs="17" tasks="0">
         <Banner site="stackoverflow.com" n={4} />
         <Banner site="github.com" n={4} />
@@ -246,7 +294,7 @@ const S2: React.FC = () => {
   const pop = spring({ frame: f, fps: 30, config: { damping: 200 }, durationInFrames: 20 });
   return (
     <AbsoluteFill>
-      <BrowserBg />
+      <BrowserBg grouped={0} />
       <Panel tabs="17" tasks="3">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 420, gap: 20, transform: `scale(${interpolate(pop, [0, 1], [0.9, 1])})`, opacity: ease(f, 4, 18, 0, 1) }}>
           <CairnMark size={92} />
@@ -267,7 +315,7 @@ const S3: React.FC = () => {
   const jsItems = [IT.soContains, IT.mdn, IT.soDetect, IT.soJava, IT.soYield];
   return (
     <AbsoluteFill>
-      <BrowserBg />
+      <BrowserBg grouped={ease(f, 24, 140, 0, 1)} />
       <Panel tabs="17" tasks="3">
         <GroupHeader name="React Dev" color={C.blue} count={4} />
         {reactItems.slice(0, Math.ceil(reactItems.length * rev)).map((it, i) => (
