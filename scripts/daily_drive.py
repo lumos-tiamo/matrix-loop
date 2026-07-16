@@ -72,8 +72,10 @@ def refresh_data():
 
 
 def daily_16():
-    """Generate the day's 16 fresh scheduled videos (additive). NEVER touches the seed 16."""
-    r = subprocess.run([PY, "scripts/run_daily_cycle.py", "--rounds", "4"],
+    """Generate the day's fresh scheduled videos from the B-layer's VERIFIED trends (data-rich,
+    real numbers). Additive — NEVER touches the seed 16. (Run B-layer research first to refresh
+    trends; falls back to whatever verified trends are currently in the DB.)"""
+    r = subprocess.run([PY, "scripts/run_daily_cycle.py", "--from-trends", "--rounds", "4"],
                        cwd=BACKEND, capture_output=True, text=True, timeout=5400)
     for ln in r.stdout.strip().splitlines()[-6:]:
         log(f"   {ln}")

@@ -650,9 +650,12 @@ def reschedule_asset(asset_id: int, payload: dict, db: Session = Depends(get_db)
 
 
 @router.post("/schedule/generate-daily", status_code=202)
-def generate_daily(rounds: int = Query(default=4, ge=1, le=8)) -> dict:
-    """Fire the daily-16 generator (4 accounts x `rounds`) as a detached background job — the UI's
-    '生成今日 N 条' button. Returns immediately; new videos appear in GET /schedule as they render."""
+def generate_daily(rounds: int = Query(default=4, ge=1, le=8),
+                   from_trends: bool = Query(default=True)) -> dict:
+    """Fire the daily generator (4 accounts x `rounds`) as a detached background job — the UI's
+    '生成今日 N 条' button. from_trends=true (default) uses the B-layer's VERIFIED hot topics
+    (data-rich, real numbers); false uses in-house topic generation. Returns immediately; new
+    videos appear in GET /schedule as they render."""
     import os
     import subprocess
     import sys
@@ -660,11 +663,11 @@ def generate_daily(rounds: int = Query(default=4, ge=1, le=8)) -> dict:
     logdir = os.path.join(backend_dir, "..", "logs")
     os.makedirs(logdir, exist_ok=True)
     logf = open(os.path.join(logdir, "generate_daily_api.log"), "a")
-    subprocess.Popen(
-        [sys.executable, "scripts/run_daily_cycle.py", "--rounds", str(rounds)],
-        cwd=backend_dir, stdout=logf, stderr=logf, start_new_session=True,
-    )
-    return {"started": True, "rounds": rounds, "expected_new": rounds * 4}
+    cmd = [sys.executable, "scripts/run_daily_cycle.py", "--rounds", str(rounds)]
+    if from_trends:
+        cmd.append("--from-trends")
+    subprocess.Popen(cmd, cwd=backend_dir, stdout=logf, stderr=logf, start_new_session=True)
+    return {"started": True, "rounds": rounds, "from_trends": from_trends}
 
 
 def _caption_from_plan(db: Session, asset_id: int) -> str | None:

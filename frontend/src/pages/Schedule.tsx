@@ -186,7 +186,7 @@ export function Schedule() {
     setGenning(true); setMsg(null);
     try {
       const r = await api.generateDaily(4);
-      setMsg(`已启动生成 ${r.expected_new} 条(4账号×4)。渲染约需 20–35 分钟,视频会陆续出现在下方,自动刷新。`);
+      setMsg(`已启动生成(4账号×${r.rounds}${r.from_trends ? "·基于已核实热点" : ""})。渲染约需 20–35 分钟,视频会陆续出现在下方,自动刷新。`);
     } catch (e) { setMsg(String(e)); }
     finally { setTimeout(() => setGenning(false), 3000); }
   }

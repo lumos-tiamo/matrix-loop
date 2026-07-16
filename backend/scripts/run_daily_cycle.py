@@ -59,11 +59,77 @@ def _caption_for(s, asset):
     return first
 
 
+def daily_from_trends(s, rounds, only=None):
+    """DATA-RICH path: use the B-layer's VERIFIED trends (distilled_topic + real numbers, matched to
+    each account's sub_niches) DIRECTLY as the video topics — skipping generic topic invention. This
+    is what makes the daily set hit the curated quality bar (real, dated, sourced facts)."""
+    from app.analysis.script import generate_script
+    from app.analysis.trends import trend_prompt_block
+    from app.models import ChannelBrief, Draft, LoopRun, Trend
+    from app.video.governor import generate_video
+    llm = resolve_llm_client()
+    resolver = make_account_provider_resolver()
+    today = datetime.now()
+    accounts = s.query(Account).order_by(Account.id).all()
+    if only:
+        accounts = [a for a in accounts if str(a.id) == str(only)]
+    report = {}
+    for a in accounts:
+        report[a.handle] = []
+        brief = s.query(ChannelBrief).filter(ChannelBrief.account_id == a.id).first()
+        if not brief:
+            print(f"  {a.handle}: no brief, skip"); continue
+        trends = (s.query(Trend).filter(Trend.niche.in_(brief.sub_niches))
+                  .order_by(Trend.captured_at.desc(), Trend.id.desc()).limit(rounds).all())
+        if not trends:
+            print(f"  {a.handle}: no matching verified trends, skip"); continue
+        trend_block = trend_prompt_block(s, brief.sub_niches)
+        run = LoopRun(account_id=a.id, diagnosis="B-layer daily (verified trends)")
+        s.add(run); s.commit()
+        provider = resolver(a) if callable(resolver) else resolver
+        slots = SLOTS.get(a.id, [9, 13, 18, 21])
+        for i, t in enumerate(trends):
+            topic = t.distilled_topic or t.title
+            try:
+                text = generate_script(topic, brief, llm, trends=trend_block)
+            except Exception as e:  # noqa: BLE001
+                print(f"  {a.handle} t{i} script error: {e}"); continue
+            draft = Draft(loop_run_id=run.id, kind="script", content=text, review_status="adopted")
+            s.add(draft); s.commit()
+            try:
+                asset = generate_video(s, a, draft, provider=provider)
+            except Exception as e:  # noqa: BLE001
+                print(f"  {a.handle} t{i} video error: {e.__class__.__name__}: {e}"); continue
+            hr = slots[i % len(slots)]
+            pt = today.replace(hour=hr, minute=0, second=0, microsecond=0)
+            if hr < today.hour:
+                pt = pt + timedelta(days=1)
+            from app.models import PublishPlan
+            plan = s.query(PublishPlan).filter(PublishPlan.video_asset_id == asset.id).first()
+            if not plan:
+                plan = PublishPlan(account_id=a.id, video_asset_id=asset.id); s.add(plan)
+            plan.platform = a.platform
+            plan.caption = topic[:180]
+            plan.external_link_slot = LINK_SLOT.get(a.platform or "", "bio")
+            plan.posting_time = pt.strftime("%Y-%m-%d %H:%M")
+            plan.status = "ready"
+            asset.review_status = "approved"
+            s.commit()
+            report[a.handle].append({"asset": asset.id, "post_at": plan.posting_time, "media": asset.media_url})
+            print(f"  ✓ {a.handle} t{i}: asset {asset.id} @ {plan.posting_time} <- {topic[:52]}")
+    total = sum(len(v) for v in report.values())
+    print(f"DAILY_BATCH: {total} videos scheduled (from verified trends)")
+    print(json.dumps(report, default=str)[:1500])
+    return 0
+
+
 def main() -> int:
     rounds = int(_opt("--rounds", ROUNDS))
     only = _opt("--only")
     s = SessionLocal()
     try:
+        if "--from-trends" in sys.argv:
+            return daily_from_trends(s, rounds, only)
         llm = resolve_llm_client()
         resolver = make_account_provider_resolver()   # avatar_handles empty -> hyperframes per brand
         today = datetime.now()   # LOCAL time — posting slots are the user's local calendar

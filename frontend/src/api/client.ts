@@ -150,7 +150,7 @@ export const api = {
       method: "PUT", body: JSON.stringify({ posting_time }),
     }),
   generateDaily: (rounds = 4) =>
-    req<{ started: boolean; rounds: number; expected_new: number }>(
+    req<{ started: boolean; rounds: number; from_trends: boolean }>(
       `/schedule/generate-daily?rounds=${rounds}`, { method: "POST" }),
   getTrends: (niche?: string) =>
     req<TrendItem[]>(`/trends${niche ? `?niche=${encodeURIComponent(niche)}` : ""}`),
