@@ -13,6 +13,8 @@ frontend/vite.config.d.ts
 data/*.db
 data/*.sqlite*
 .env
+.env.bak*
+*.bak.waoowaoo
 *.local
 # brainstorm scratch (visual companion)
 .superpowers/

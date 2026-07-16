@@ -165,6 +165,9 @@ class FacelessVideoProvider:
         narration = self._narration(script)
         tts_result = self._tts.synthesize(text=narration, voice=params.get("voice"))
         duration = round(float(tts_result.duration_seconds), 2)
+        # tell the visual how long the narration is, so it can build b-roll that spans the whole
+        # video (scenes in script order) instead of a short clip we'd have to loop.
+        params["target_duration"] = duration
         os.makedirs(self._output_dir, exist_ok=True)
         tmp = tempfile.mkdtemp(prefix="faceless_")
         try:

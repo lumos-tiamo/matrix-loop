@@ -78,7 +78,7 @@ def test_orchestration_sequence_returns_broll(monkeypatch, tmp_path):
     # isolate orchestration from SiliconFlow + ffmpeg
     monkeypatch.setattr(prov, "_panel_clip_urls", lambda pid, eid, ids, rep=None: ["c0", "c1"])
     monkeypatch.setattr(prov, "_concat_clips",
-                        lambda urls, eid: (str(tmp_path / f"{eid}.mp4"), 12.5))
+                        lambda urls, eid, target_duration=None: (str(tmp_path / f"{eid}.mp4"), 12.5))
 
     res = prov.generate(script="Bitcoin halving explained.", brief=None, params={})
 

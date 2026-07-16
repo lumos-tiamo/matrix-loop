@@ -164,7 +164,8 @@ class WaoowaooBrollProvider:
         if not clip_urls:
             raise RuntimeError(f"waoowaoo: no panel clips for episode {episode_id}")
         rep("拼接剧情片段", 88)
-        broll_path, duration = self._concat_clips(clip_urls, episode_id)
+        broll_path, duration = self._concat_clips(
+            clip_urls, episode_id, target_duration=(params or {}).get("target_duration"))
 
         return VideoResult(
             media_url=broll_path,        # local abs path; faceless uses it as the video bg
@@ -391,7 +392,18 @@ class WaoowaooBrollProvider:
         if rc != 0:
             raise RuntimeError(f"waoowaoo normalize failed rc={rc}: {(e or o or '').strip()[:200]}")
 
-    def _concat_clips(self, clip_urls: list[str], episode_id: str) -> tuple[str, float]:
+    def _stretch(self, src: str, dest: str, factor: float) -> None:
+        """Time-stretch a clip by `factor` (setpts) so it fills its narration slice — turns
+        short i2v clips into full-length scenes instead of a loop."""
+        rc, o, e = self._run([
+            "ffmpeg", "-y", "-i", src, "-filter:v", f"setpts={factor:.4f}*PTS", "-an", "-r", "30",
+            "-c:v", "libx264", "-pix_fmt", "yuv420p", dest,
+        ])
+        if rc != 0:
+            raise RuntimeError(f"waoowaoo stretch failed rc={rc}: {(e or o or '').strip()[:200]}")
+
+    def _concat_clips(self, clip_urls: list[str], episode_id: str,
+                      target_duration: float | None = None) -> tuple[str, float]:
         os.makedirs(self.output_dir, exist_ok=True)
         tmp = tempfile.mkdtemp(prefix="waoowaoo_")
         try:
@@ -401,6 +413,19 @@ class WaoowaooBrollProvider:
                 norm = os.path.join(tmp, f"clip_{i:03d}.mp4")
                 self._normalize(raw, norm)
                 norm_paths.append(norm)
+
+            # Span the whole narration: give each panel an equal slice (target/N) and time-stretch
+            # it to fill — scenes progress with the script instead of a short loop.
+            if target_duration and norm_paths:
+                slice_dur = float(target_duration) / len(norm_paths)
+                stretched: list[str] = []
+                for i, np_ in enumerate(norm_paths):
+                    d = ffprobe_duration(np_, run=self._run)
+                    factor = max(0.25, min(6.0, slice_dur / max(0.2, d)))
+                    dst = os.path.join(tmp, f"stretch_{i:03d}.mp4")
+                    self._stretch(np_, dst, factor)
+                    stretched.append(dst)
+                norm_paths = stretched
 
             list_file = os.path.join(tmp, "concat.txt")
             with open(list_file, "w") as fh:
