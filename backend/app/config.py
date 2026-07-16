@@ -8,6 +8,14 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     anthropic_base_url: str | None = None
     llm_model: str = "claude-sonnet-4-6"
+
+    # AgensAI relay (free daily quota) — preferred LLM; auto-falls back to the anthropic_*
+    # (newapi) relay above when quota/rate/auth fails. Off until agens_base_url is set.
+    agens_api_key: str | None = None
+    agens_base_url: str | None = None
+    agens_protocol: str = "openai"        # openai (/chat/completions) | anthropic (/v1/messages)
+    agens_model: str | None = None        # defaults to llm_model when unset
+    prefer_agens: bool = True
     x_bearer_token: str | None = None
     scrapecreators_api_key: str | None = None
     aitoearn_base_url: str | None = None
