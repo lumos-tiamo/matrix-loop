@@ -1,30 +1,50 @@
 from __future__ import annotations
 
 _SYSTEM = (
-    "You are a short-form video scriptwriter for a faceless explainer channel. "
-    "Write a tight spoken script with a strong hook, concrete points, and a soft "
-    "call-to-follow. Target length is specified in the prompt. Output ONLY the script "
-    "text, no headings or notes."
+    "You are a senior short-form crypto/finance scriptwriter for ONE branded account in a "
+    "private-traffic matrix. You write SHARP, SPECIFIC, publish-ready spoken scripts — never "
+    "generic evergreen filler. Hard rules:\n"
+    "1. Open with a 3-second HOOK built on a specific fact, number, dated event, or contrarian "
+    "claim — never a vague premise.\n"
+    "2. Every beat carries a CONCRETE detail: a real number, a named protocol/event, a date, or a "
+    "precise mechanism. Use ONLY numbers/facts given in the topic/trends — if none are given, stay "
+    "concrete about the mechanism/angle but INVENT NO statistics, prices, dates, or percentages.\n"
+    "3. This narration is the VOICEOVER layer: it will be auto-split into ~6 short scenes with "
+    "rolling captions and moving data visuals. Write punchy, front-loaded sentences — put the key "
+    "number/claim FIRST in each sentence. 5-7 short sentences total.\n"
+    "4. Match the channel's brand voice + niche. End with ONE soft, on-brand CTA (follow / link in "
+    "bio) — no hard sell.\n"
+    "5. Compliance: information/education only, NOT investment advice; NEVER promise returns. "
+    "For Traditional-Chinese (Taiwan) channels, keep any legal/penalty framing careful and separate.\n"
+    "BANNED phrases: 'stay ahead of the curve', 'in today's fast-paced world', 'operational hygiene', "
+    "'game-changer', 'unlock', 'dive in', and any hollow filler. If you cannot be specific, be shorter.\n"
+    "Output ONLY the spoken script text — no headings, no scene labels, no notes."
 )
 
 
 def build_script_prompt(topic: str, brief, performance: str | None = None, trends: str | None = None) -> str:
     secs = int(getattr(brief, "target_seconds", None) or 50)
     words = round(secs * 2.7)
+    lang = getattr(brief, "language", None) or "en"
+    is_cjk = str(lang).startswith(("繁", "zh"))
     lines = [
         f"Channel main direction: {getattr(brief, 'main_direction', '')}",
         f"Sub-niches: {'、'.join(getattr(brief, 'sub_niches', None) or []) or '(none)'}",
         f"Host persona: {getattr(brief, 'persona', None) or '(faceless voiceover)'}",
-        f"Tone: {getattr(brief, 'tone', None) or 'clear and energetic'}",
-        f"Language: {getattr(brief, 'language', None) or 'en'}",
-        f"Topic for this video: {topic}",
-        f"Target length: a ~{secs}-second spoken script (~{words} words). Do not pad; match this length.",
+        f"Tone: {getattr(brief, 'tone', None) or 'clear, sharp, credible'}",
+        f"Language: {lang}" + ("  (write the script in Traditional Chinese)" if is_cjk else ""),
         "",
-        "Compliance: frame as information/education only, NOT investment advice or a "
-        "trading solicitation. Avoid promises of returns.",
+        f"TOPIC (the specific angle for THIS video): {topic}",
+        f"Target length: a ~{secs}-second spoken script (~{words} words). Match this length; do not pad.",
+        "",
+        "Write the sharpest version of this exact topic: lead with its most specific hook, hang each "
+        "sentence on a concrete detail, and land one clear takeaway before the CTA. If the topic is "
+        "vague, narrow it to the single most concrete, current angle you can defend — do not drift "
+        "into generic advice.",
     ]
     if trends:
-        lines += ["", trends]
+        lines += ["", "CURRENT DATA / TRENDS to ground this script (cite the concrete numbers/events "
+                  "verbatim; do not alter them):", trends]
     if performance:
         lines += ["", performance]
     return "\n".join(lines)

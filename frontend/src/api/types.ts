@@ -185,6 +185,25 @@ export interface PublishDispatchOut {
 }
 
 // ---- Publish plan (step-6 companion content) ----
+export interface ScheduleItem {
+  date: string;                 // YYYY-MM-DD (from posting_time)
+  posting_time: string;         // "YYYY-MM-DD HH:MM"
+  account_id: number;
+  handle: string;
+  platform: string | null;
+  vertical: string | null;
+  asset_id: number;
+  media_url: string | null;
+  duration: number | null;
+  asset_status: string;         // generating | ready | failed
+  review_status: string;        // pending | approved | rejected
+  caption: string | null;
+  hashtags: string[];
+  external_link_slot: string | null;
+  plan_status: string;          // draft | ready
+  is_seed: boolean;             // true = the frozen curated 16 (batch-*)
+}
+
 export interface PublishPlanOut {
   id: number;
   account_id: number;

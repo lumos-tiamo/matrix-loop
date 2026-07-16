@@ -254,6 +254,24 @@ def produce(pid):
     return _render_pkg(pid, trim_pkg(PKGS[pid]), VOICE[pre], out)
 
 
+_HL_TRAIL = {"a", "an", "the", "is", "are", "was", "were", "of", "to", "for", "and", "in", "on",
+             "with", "that", "this", "your", "you", "it", "be", "as", "at", "by", "or", "but", "so",
+             "into", "from", "than", "then", "just"}
+
+
+def _headline(sent, is_cjk):
+    """Punchy, COMPLETE headline from a sentence — never ends mid-phrase on an article/prep/copula
+    (fixes '...five chains is a'). CJK: first clause capped; EN: first clause <=8 words, trailing
+    weak words trimmed."""
+    first = re.split(r"[，,。.!?！？;；:：—]|(?: - )", sent)[0].strip()
+    if is_cjk:
+        return first[:18]
+    words = first.split()[:8]
+    while words and words[-1].lower().strip(",.:;\"'") in _HL_TRAIL:
+        words.pop()
+    return " ".join(words) or first
+
+
 def build_pkg_from_script(script_text, brand_prefix, language=None, headlines=None):
     """Turn an arbitrary adopted-script narration into a watchable package (for on-demand /
     autopilot generation). Splits into <=6 scenes on sentences; each scene's headline is a short
@@ -272,10 +290,7 @@ def build_pkg_from_script(script_text, brand_prefix, language=None, headlines=No
         nar = " ".join(g)
         hl = (headlines[gi] if headlines and gi < len(headlines) else None)
         if not hl:
-            # short headline = first clause, capped
-            first = re.split(r"[，,。.!?！？;；:：]", g[0])[0].strip()
-            words = first.split()
-            hl = first if (is_cjk or len(words) <= 7) else " ".join(words[:7])
+            hl = _headline(g[0], is_cjk)
         scenes.append({"onScreenCaption": hl, "narration": nar})
     return {"id": f"{brand_prefix}-0", "language": language or ("繁中" if is_cjk else "en"), "scenes": scenes}
 

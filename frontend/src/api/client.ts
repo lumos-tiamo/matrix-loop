@@ -7,6 +7,7 @@ import type {
   PublishPlanOut, PublishPlanIn,
   FlywheelState,
   FlywheelAccountLive, FlywheelEventLive,
+  ScheduleItem,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE as string) ?? "http://localhost:8000";
@@ -125,6 +126,8 @@ export const api = {
     }),
   queuePalmier: (id: number) =>
     req<VideoAssetOut>(`/video-assets/${id}/queue-palmier`, { method: "POST" }),
+  regenerateVideo: (id: number) =>
+    req<VideoAssetOut>(`/video-assets/${id}/regenerate`, { method: "POST" }),
   getVideoUsage: () => req<VideoUsage>("/video/usage"),
   publish: (accountId: number, videoAssetId: number, caption?: string) =>
     req<PublishDispatchOut>(`/accounts/${accountId}/publish`, {
@@ -139,6 +142,9 @@ export const api = {
     req<PublishPlanOut>(`/video-assets/${assetId}/publish-plan`, {
       method: "PUT", body: JSON.stringify(body),
     }),
+
+  // ---- Schedule / 排期日历(每日16条) ----
+  getSchedule: () => req<ScheduleItem[]>("/schedule"),
 
   // ---- Flywheel ----
   getFlywheel: () => req<FlywheelState>("/flywheel"),

@@ -554,6 +554,85 @@ def upsert_publish_plan(asset_id: int, payload: schemas.PublishPlanIn, db: Sessi
     return plan
 
 
+@router.get("/schedule")
+def get_schedule(db: Session = Depends(get_db)) -> list[dict]:
+    """Every scheduled/generated video with its publish plan, for the date-grouped frontend
+    calendar (排期). Ordered by posting_time. Each item carries the date so the UI can bucket
+    by day (每日 16 条 = 4 账号 × 4)."""
+    rows = db.execute(
+        select(PublishPlan, VideoAsset, Account)
+        .join(VideoAsset, VideoAsset.id == PublishPlan.video_asset_id)
+        .join(Account, Account.id == PublishPlan.account_id)
+    ).all()
+    items: list[dict] = []
+    for plan, asset, acc in rows:
+        pt = plan.posting_time or ""
+        items.append({
+            "date": (pt.split(" ")[0] if pt else ""),
+            "posting_time": pt,
+            "account_id": acc.id,
+            "handle": acc.handle,
+            "platform": acc.platform,
+            "vertical": acc.vertical,
+            "asset_id": asset.id,
+            "media_url": asset.media_url,
+            "duration": asset.duration,
+            "asset_status": asset.status,
+            "review_status": asset.review_status,
+            "caption": plan.caption,
+            "hashtags": plan.hashtags or [],
+            "external_link_slot": plan.external_link_slot,
+            "plan_status": plan.status,
+            "is_seed": bool(asset.dedup_key and asset.dedup_key.startswith("batch-")),
+        })
+    items.sort(key=lambda x: (x["posting_time"] or "~", x["handle"]))
+    return items
+
+
+@router.post("/video-assets/{asset_id}/regenerate", response_model=schemas.VideoAssetOut, status_code=201)
+def regenerate_video(asset_id: int, db: Session = Depends(get_db)) -> VideoAsset:
+    """Regenerate a FRESH alternative for this asset's account (new topic->script->hyperframes
+    video). Produces a new hf_gen_* asset (never overwrites the old one / the seed 16) and inherits
+    the old asset's scheduled posting slot if any. 429 if the daily quota is hit."""
+    old = db.get(VideoAsset, asset_id)
+    if old is None:
+        raise HTTPException(status_code=404, detail="video asset not found")
+    acc = db.get(Account, old.account_id)
+    if acc is None:
+        raise HTTPException(status_code=404, detail="account not found")
+    from app.analysis.factory import resolve_llm_client
+    from app.orchestrator.engine import advance_account
+    from app.video.factory import make_account_provider_resolver
+
+    def _latest(aid: int) -> int:
+        v = db.scalar(select(VideoAsset).where(VideoAsset.account_id == aid).order_by(VideoAsset.id.desc()))
+        return v.id if v else 0
+
+    before = _latest(acc.id)
+    try:
+        advance_account(db, acc, llm=resolve_llm_client(), video=make_account_provider_resolver(), sync=False)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"regenerate failed: {exc}") from exc
+    after = _latest(acc.id)
+    if after <= before:
+        raise HTTPException(status_code=409, detail="no new video produced (daily quota reached, or the brain returned no fresh topic)")
+    new = db.get(VideoAsset, after)
+    new.review_status = "approved"
+    # inherit the old asset's posting slot so the calendar keeps its place
+    old_plan = db.scalar(select(PublishPlan).where(PublishPlan.video_asset_id == asset_id))
+    if old_plan is not None:
+        plan = db.scalar(select(PublishPlan).where(PublishPlan.video_asset_id == new.id))
+        if plan is None:
+            plan = PublishPlan(account_id=acc.id, video_asset_id=new.id)
+            db.add(plan)
+        plan.platform = old_plan.platform
+        plan.posting_time = old_plan.posting_time
+        plan.external_link_slot = old_plan.external_link_slot
+        plan.status = "ready"
+    db.commit()
+    return new
+
+
 def _caption_from_plan(db: Session, asset_id: int) -> str | None:
     """Compose a single dispatch caption from the stored publish plan (caption + hashtags)."""
     plan = db.scalar(select(PublishPlan).where(PublishPlan.video_asset_id == asset_id))

@@ -6,6 +6,7 @@ import { Compare } from "./pages/Compare";
 import { ContentLibrary } from "./pages/ContentLibrary";
 import { Flow } from "./pages/Flow";
 import { Video } from "./pages/Video";
+import { Schedule } from "./pages/Schedule";
 import { Flywheel } from "./pages/Flywheel";
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/content" element={<ContentLibrary />} />
         <Route path="/flow" element={<Flow />} />
         <Route path="/video" element={<Video />} />
+        <Route path="/schedule" element={<Schedule />} />
         <Route path="/accounts/:id" element={<AccountDetail />} />
       </Routes>
     </Layout>

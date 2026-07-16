@@ -7,6 +7,7 @@ const NAV = [
   { to: "/", label: "飞轮" },
   { to: "/overview", label: "总览" },
   { to: "/video", label: "视频" },
+  { to: "/schedule", label: "排期" },
   { to: "/flow", label: "导流" },
   { to: "/content", label: "爆文库" },
   { to: "/compare", label: "对比" },
