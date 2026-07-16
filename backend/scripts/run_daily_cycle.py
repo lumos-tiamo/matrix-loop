@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import os
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -66,7 +66,7 @@ def main() -> int:
     try:
         llm = resolve_llm_client()
         resolver = make_account_provider_resolver()   # avatar_handles empty -> hyperframes per brand
-        today = datetime.now(timezone.utc)
+        today = datetime.now()   # LOCAL time — posting slots are the user's local calendar
         accounts = s.query(Account).order_by(Account.id).all()
         if only:
             accounts = [a for a in accounts if str(a.id) == str(only)]

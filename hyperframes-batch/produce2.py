@@ -278,7 +278,7 @@ def build_pkg_from_script(script_text, brand_prefix, language=None, headlines=No
     key clause (or a supplied headline). Same downstream pipeline => same quality bar."""
     is_cjk = (language or "").startswith(("繁", "zh")) or brand_prefix == "AU"
     text = clean_text(drop_placeholders(script_text or ""))
-    sents = [s.strip() for s in re.split(r"(?<=[。.!?！？])\s*", text) if s.strip()]
+    sents = [s.strip() for s in _split_sentences(text) if s.strip()]   # decimal-safe (keeps 4.5%/5.2%)
     if not sents:
         sents = [text or "…"]
     # group sentences into ~5-6 balanced scenes
