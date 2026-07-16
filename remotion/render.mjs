@@ -9,12 +9,18 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function main() {
-  const [, , propsPath, outPath] = process.argv;
-  if (!propsPath || !outPath) {
-    console.error("usage: node render.mjs <props.json> <out.mp4>");
+  // usage: node render.mjs <props.json> <out.mp4>   (BrandVideo, needs props)
+  //    or: COMP_ID=CairnTabs node render.mjs <out.mp4>   (propless compositions)
+  const compId = process.env.COMP_ID || "BrandVideo";
+  let [, , a1, a2] = process.argv;
+  let propsPath, outPath;
+  if (a2) { propsPath = a1; outPath = a2; }
+  else { outPath = a1; }        // single arg = output; empty props
+  if (!outPath) {
+    console.error("usage: node render.mjs <props.json> <out.mp4>  |  COMP_ID=CairnTabs node render.mjs <out.mp4>");
     process.exit(2);
   }
-  const inputProps = JSON.parse(readFileSync(propsPath, "utf8"));
+  const inputProps = propsPath ? JSON.parse(readFileSync(propsPath, "utf8")) : {};
 
   const bundleDir = path.join(__dirname, ".bundle");
   let serveUrl;
@@ -28,7 +34,7 @@ async function main() {
     });
   }
 
-  const composition = await selectComposition({ serveUrl, id: "BrandVideo", inputProps });
+  const composition = await selectComposition({ serveUrl, id: compId, inputProps });
   await renderMedia({
     composition,
     serveUrl,
