@@ -93,16 +93,20 @@ def _have(bin_):
 
 @pytest.mark.skipif(not (_have("ffmpeg") and _have("ffprobe")), reason="ffmpeg/ffprobe required")
 def test_faceless_still_bg_makes_fulllength_clip(tmp_path):
-    from app.image.fake import FakeImageProvider
+    from PIL import Image
     from app.video.faceless import FacelessVideoProvider
     from app.video.ffmpeg_util import ffprobe_duration
 
-    # a real (tiny) still to loop
-    img = FakeImageProvider(output_dir=str(tmp_path)).generate(prompt="x")
+    # A realistic-sized still (like a newapi key visual). NOTE: FakeImageProvider emits a
+    # degenerate 1x1 PNG — scaling that 360x into zoompan overflows ffmpeg 8.1.1's buffer and
+    # hangs the process indefinitely (accumulated stuck ffmpeg for days). _still_bg is fine on
+    # real images; use one here so the test exercises the Ken Burns path without the 1px overflow.
+    img_path = str(tmp_path / "still.png")
+    Image.new("RGB", (1024, 1024), (40, 20, 60)).save(img_path)
     fv = FacelessVideoProvider(tts=None, visual=None, output_dir=str(tmp_path),
                                resolution=(360, 640))
     tmp = str(tmp_path)
-    bg = fv._still_bg(img.path, duration=2.0, tmp=tmp)
+    bg = fv._still_bg(img_path, duration=2.0, tmp=tmp)
     assert os.path.exists(bg)
     dur = ffprobe_duration(bg)
     assert 1.7 <= dur <= 2.4      # ~2s looped background
