@@ -128,10 +128,16 @@ def chunk_caption(narration, is_cjk):
             depth = max(0, depth - 1)
         buf += ch
         if depth == 0 and ch in "。.!?！？；;，,、—:：":
-            # NEVER split inside a number: . , : between two digits (keep $63.6B, 8,830, 3:1 intact)
+            # NEVER split inside a number/date: . , : between two digits (keep $63.6B, 8,830, 3:1)
             pd = idx > 0 and text[idx - 1].isdigit()
             nd = idx + 1 < ntext and text[idx + 1].isdigit()
-            if ch in ".,:：" and pd and nd:
+            # a comma date/number "July 22, 2026" or "1, 234": digit , [space] digit -> keep together
+            if ch in ",，" and pd and not nd:
+                j = idx + 1
+                while j < ntext and text[j] == " ":
+                    j += 1
+                nd = j < ntext and text[j].isdigit()
+            if ch in ".,:：，" and pd and nd:
                 continue
             clauses.append(buf); buf = ""
     if buf.strip():
