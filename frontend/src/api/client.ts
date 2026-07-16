@@ -7,7 +7,7 @@ import type {
   PublishPlanOut, PublishPlanIn,
   FlywheelState,
   FlywheelAccountLive, FlywheelEventLive,
-  ScheduleItem,
+  ScheduleItem, TrendItem,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE as string) ?? "http://localhost:8000";
@@ -145,6 +145,15 @@ export const api = {
 
   // ---- Schedule / 排期日历(每日16条) ----
   getSchedule: () => req<ScheduleItem[]>("/schedule"),
+  rescheduleAsset: (id: number, posting_time: string) =>
+    req<{ asset_id: number; posting_time: string }>(`/video-assets/${id}/reschedule`, {
+      method: "PUT", body: JSON.stringify({ posting_time }),
+    }),
+  generateDaily: (rounds = 4) =>
+    req<{ started: boolean; rounds: number; expected_new: number }>(
+      `/schedule/generate-daily?rounds=${rounds}`, { method: "POST" }),
+  getTrends: (niche?: string) =>
+    req<TrendItem[]>(`/trends${niche ? `?niche=${encodeURIComponent(niche)}` : ""}`),
 
   // ---- Flywheel ----
   getFlywheel: () => req<FlywheelState>("/flywheel"),

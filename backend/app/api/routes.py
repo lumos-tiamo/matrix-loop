@@ -633,6 +633,40 @@ def regenerate_video(asset_id: int, db: Session = Depends(get_db)) -> VideoAsset
     return new
 
 
+@router.put("/video-assets/{asset_id}/reschedule")
+def reschedule_asset(asset_id: int, payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Change a video's scheduled posting time from the calendar UI. Body: {posting_time:"YYYY-MM-DD HH:MM"}."""
+    pt = (payload or {}).get("posting_time")
+    plan = db.scalar(select(PublishPlan).where(PublishPlan.video_asset_id == asset_id))
+    if plan is None:
+        asset = db.get(VideoAsset, asset_id)
+        if asset is None:
+            raise HTTPException(status_code=404, detail="video asset not found")
+        plan = PublishPlan(account_id=asset.account_id, video_asset_id=asset_id)
+        db.add(plan)
+    plan.posting_time = pt
+    db.commit()
+    return {"asset_id": asset_id, "posting_time": plan.posting_time}
+
+
+@router.post("/schedule/generate-daily", status_code=202)
+def generate_daily(rounds: int = Query(default=4, ge=1, le=8)) -> dict:
+    """Fire the daily-16 generator (4 accounts x `rounds`) as a detached background job — the UI's
+    '生成今日 N 条' button. Returns immediately; new videos appear in GET /schedule as they render."""
+    import os
+    import subprocess
+    import sys
+    backend_dir = os.getcwd()
+    logdir = os.path.join(backend_dir, "..", "logs")
+    os.makedirs(logdir, exist_ok=True)
+    logf = open(os.path.join(logdir, "generate_daily_api.log"), "a")
+    subprocess.Popen(
+        [sys.executable, "scripts/run_daily_cycle.py", "--rounds", str(rounds)],
+        cwd=backend_dir, stdout=logf, stderr=logf, start_new_session=True,
+    )
+    return {"started": True, "rounds": rounds, "expected_new": rounds * 4}
+
+
 def _caption_from_plan(db: Session, asset_id: int) -> str | None:
     """Compose a single dispatch caption from the stored publish plan (caption + hashtags)."""
     plan = db.scalar(select(PublishPlan).where(PublishPlan.video_asset_id == asset_id))

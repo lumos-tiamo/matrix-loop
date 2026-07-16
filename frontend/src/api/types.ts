@@ -185,6 +185,18 @@ export interface PublishDispatchOut {
 }
 
 // ---- Publish plan (step-6 companion content) ----
+export interface TrendItem {
+  id: number;
+  source: string;
+  title: string;
+  url: string | null;
+  niche: string | null;
+  engagement: number | null;
+  distilled_topic: string | null;
+  score: number;
+  captured_at: string | null;
+}
+
 export interface ScheduleItem {
   date: string;                 // YYYY-MM-DD (from posting_time)
   posting_time: string;         // "YYYY-MM-DD HH:MM"
