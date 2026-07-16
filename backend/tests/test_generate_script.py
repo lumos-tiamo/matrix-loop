@@ -1,4 +1,4 @@
-from app.analysis.script import generate_script, build_script_prompt
+from app.analysis.script import generate_script, build_script_prompt, _SYSTEM
 
 
 class _FakeLLM:
@@ -20,7 +20,8 @@ def test_build_script_prompt_includes_brief_and_topic():
     assert "Airdrop farming 101" in p
     assert "web3" in p and "空投猎人" in p and "Nina" in p
     assert "en" in p.lower()
-    assert "info" in p.lower() and "not" in p.lower()   # compliance: info/education, not advice
+    # compliance now lives in the always-sent system prompt (info/education, not advice)
+    assert "not investment advice" in _SYSTEM.lower()
 
 
 def test_generate_script_returns_llm_text():
