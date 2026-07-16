@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""matrix-loop DAILY DRIVER — the autonomous "self-driving" job (run by launchd/cron once a day).
+"""matrix-loop DAILY DRIVER — the autonomous "self-driving" job (run by launchd once a day).
 
-One deterministic pass that keeps the 4-account matrix fresh and publish-ready WITHOUT manual work:
-  1. REFRESH DATA   — drop the CoinGecko OHLC cache so charts re-fetch live prices on render
-  2. REFRESH TOPICS — best-effort: ping the backend autopilot loop (needs LLM key) to regenerate
-                      hot-topic + script drafts; on no-key it keeps the curated verified packages
-                      (never invents unverified numbers — the pre-flight blacklist would block them)
-  3. RENDER         — produce2.py all  (HyperFrames, deterministic, pre-flight quality-gated)
-  4. REGISTER       — attach_assets.py (matrix-loop: VideoAsset approved + PublishPlan)
-  5. OBSIDIAN       — gen_obsidian_publish.py  (the Obsidian export is a STEP OF THE LOOP, not manual)
-Each stage is isolated; a failure logs and the pass continues. Publish stays human-gated until
-AiToEarn is configured. Everything is idempotent + re-runnable.
+One deterministic pass that keeps the matrix producing FRESH daily content WITHOUT manual work:
+  1. REFRESH DATA  — drop the CoinGecko OHLC cache so charts re-fetch live prices on render
+  2. DAILY 16      — run_daily_cycle: 4 accounts x 4 = 16 FRESH hot-topic videos (hf_gen_*),
+                     each scheduled (posting_time) via the A brain + hyperframes provider.
+                     ADDITIVE — never overwrites the curated seed 16 (hf_<pid>.mp4).
+  3. OBSIDIAN      — refresh the seed publish set (the daily 16 live in the frontend /schedule
+                     calendar; the DB is the source of truth for daily content).
+Each stage is isolated; a failure logs and the pass continues. Publish stays human-gated.
 
-Usage:  python3 scripts/daily_drive.py [--no-render] [--topics-only]
-Logs:   ~/matrix-loop/logs/daily_drive_YYYY-MM-DD.log  (also stdout)
+Flags:
+  --rebuild-seed   re-render the curated seed 16 (produce2 all) — EXPLICIT only, overwrites them.
+  --no-daily       skip the daily-16 generation (data + obsidian only).
+Logs: ~/matrix-loop/logs/daily_drive_YYYY-MM-DD.log (also stdout).
 """
 from __future__ import annotations
 
@@ -21,14 +21,14 @@ import os
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 
 ROOT = "/Users/aa00102/matrix-loop"
 BATCH = os.path.join(ROOT, "hyperframes-batch")
-PY = os.path.join(ROOT, "backend", ".venv", "bin", "python")
+BACKEND = os.path.join(ROOT, "backend")
+PY = os.path.join(BACKEND, ".venv", "bin", "python")
 CAP = os.path.join(BATCH, "captures")
 LOGDIR = os.path.join(ROOT, "logs")
-BACKEND = "http://127.0.0.1:8000"
 OHLC_MAX_AGE_H = 12
 
 
@@ -58,7 +58,7 @@ def stage(name, fn):
 def refresh_data():
     """Age out the OHLC cache so the next render re-fetches live candles (daily 'fresh data')."""
     if not os.path.isdir(CAP):
-        log("   (no captures dir yet — charts will fetch fresh on first render)")
+        log("   (no captures dir yet — charts fetch fresh on first render)")
         return
     now = time.time()
     dropped = 0
@@ -71,32 +71,20 @@ def refresh_data():
     log(f"   dropped {dropped} stale OHLC cache file(s) -> live re-fetch on render")
 
 
-def refresh_topics():
-    """Best-effort daily hot-topic refresh via the backend autopilot loop (regenerates topic +
-    script drafts using the LLM + current Trends). No-key / backend-down => skip, keep curated."""
-    try:
-        import urllib.request
-        req = urllib.request.Request(f"{BACKEND}/batch/run", method="POST",
-                                     data=b"{}", headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=180) as r:
-            body = r.read().decode("utf-8", "ignore")[:200]
-        log(f"   backend /batch/run -> {body}")
-    except Exception as e:  # noqa: BLE001
-        log(f"   topic refresh skipped ({e.__class__.__name__}) — keeping curated verified packages")
+def daily_16():
+    """Generate the day's 16 fresh scheduled videos (additive). NEVER touches the seed 16."""
+    r = subprocess.run([PY, "scripts/run_daily_cycle.py", "--rounds", "4"],
+                       cwd=BACKEND, capture_output=True, text=True, timeout=5400)
+    for ln in r.stdout.strip().splitlines()[-6:]:
+        log(f"   {ln}")
+    if "DAILY_BATCH" not in r.stdout:
+        raise RuntimeError("run_daily_cycle did not report DAILY_BATCH")
 
 
-def render_all():
+def rebuild_seed():
+    """EXPLICIT only: re-render the curated seed 16 (overwrites hf_<pid>.mp4)."""
     r = subprocess.run([PY, "produce2.py", "all", "--quality=draft"],
-                       cwd=BATCH, capture_output=True, text=True, timeout=3600)
-    tail = "\n".join(r.stdout.strip().splitlines()[-4:])
-    log(f"   {tail}")
-    if "DONE" not in r.stdout:
-        raise RuntimeError("produce2 did not report DONE")
-
-
-def register():
-    r = subprocess.run([PY, "scripts/attach_assets.py"],
-                       cwd=os.path.join(ROOT, "backend"), capture_output=True, text=True, timeout=300)
+                       cwd=BATCH, capture_output=True, text=True, timeout=5400)
     log(f"   {r.stdout.strip().splitlines()[-1] if r.stdout.strip() else '(no output)'}")
 
 
@@ -108,15 +96,13 @@ def obsidian():
 
 def main():
     argv = sys.argv[1:]
-    log(f"===== DAILY DRIVE {datetime.now(timezone.utc).isoformat()} =====")
-    stage("1/5 refresh live data (OHLC)", refresh_data)
-    stage("2/5 refresh hot topics", refresh_topics)
-    if "--topics-only" in argv:
-        log("topics-only: stopping before render"); return
-    if "--no-render" not in argv:
-        stage("3/5 render 16 (HyperFrames, quality-gated)", render_all)
-    stage("4/5 register in matrix-loop", register)
-    stage("5/5 export to Obsidian (loop step)", obsidian)
+    log(f"===== DAILY DRIVE {datetime.now().isoformat()} =====")
+    stage("1 refresh live data (OHLC)", refresh_data)
+    if "--rebuild-seed" in argv:
+        stage("* rebuild curated seed 16 (overwrites)", rebuild_seed)
+    if "--no-daily" not in argv:
+        stage("2 daily 16 (fresh, scheduled, additive)", daily_16)
+    stage("3 export seed set to Obsidian", obsidian)
     log("===== DAILY DRIVE COMPLETE =====")
 
 
