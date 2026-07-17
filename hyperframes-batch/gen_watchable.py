@@ -231,17 +231,38 @@ def _uri(path):
     return f"data:image/{ext};base64," + base64.b64encode(open(path, "rb").read()).decode()
 
 
+def _fetch_ohlc(coin, path):
+    """Self-heal the OHLC cache from CoinGecko's free API (no auth). Pre-render data prep in Python
+    (NOT an in-composition fetch), so it refreshes live candles without breaking Chrome determinism."""
+    import urllib.request
+    url = f"https://api.coingecko.com/api/v3/coins/{coin}/ohlc?vs_currency=usd&days=30"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "matrix-loop/1.0", "accept": "application/json"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            data = json.load(r)
+        if isinstance(data, list) and len(data) >= 10:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            json.dump(data, open(path, "w"))
+            return data
+    except Exception:
+        pass
+    return None
+
+
 def _ohlc(pid):
     coin = COIN.get(pid)
+    if not coin and (pid or "").upper().startswith("CC"):
+        # generated CC clips (CC-gen-<hash>) have no fixed mapping -> deterministic coin by hash
+        coin = ("bitcoin", "ethereum", "solana")[sum(ord(c) for c in pid) % 3]
     if not coin:
         return None
     p = os.path.join(CAPDIR, f"ohlc_{coin}.json")
-    if not os.path.exists(p):
-        return None
-    try:
-        return json.load(open(p))
-    except Exception:
-        return None
+    if os.path.exists(p):
+        try:
+            return json.load(open(p))
+        except Exception:
+            pass
+    return _fetch_ohlc(coin, p)   # cache miss -> fetch live from CoinGecko
 
 
 def _candles(ohlc, i, n, st, du, b):
