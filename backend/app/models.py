@@ -265,6 +265,8 @@ class PublishPlan(Base):
     external_link_text: Mapped[str | None] = mapped_column(String, nullable=True)
     posting_time: Mapped[str | None] = mapped_column(String(64), nullable=True)
     status: Mapped[str] = mapped_column(String(16), default="draft")   # draft|ready
+    source_url: Mapped[str | None] = mapped_column(String, nullable=True)         # idea 来源(核实热点URL)
+    source_score: Mapped[float | None] = mapped_column(Float, nullable=True)      # 真实性评估(0-100 置信度)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 

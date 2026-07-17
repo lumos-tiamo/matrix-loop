@@ -144,13 +144,12 @@ font-family:{SANS};padding:64px 60px;display:flex;flex-direction:column;overflow
     return slides
 
 
-def render_carousel(pid, out_dir=None, coin=None):
-    pkg = PKGS.get(pid)
-    if not pkg:
-        print(f"!! no package {pid}"); return None
-    out_dir = out_dir or os.path.join(OUT_ROOT, pid)
+def _shoot(slides, out_dir):
     os.makedirs(out_dir, exist_ok=True)
-    slides = build_slides(pkg, coin)
+    # clear stale slides so a shorter regen doesn't leave orphans
+    for f in os.listdir(out_dir):
+        if f.startswith("slide") and f.endswith((".png", ".html")):
+            os.remove(os.path.join(out_dir, f))
     pngs = []
     for i, html in enumerate(slides):
         hp = os.path.join(out_dir, f"slide{i+1}.html")
@@ -162,8 +161,21 @@ def render_carousel(pid, out_dir=None, coin=None):
                        capture_output=True, timeout=60)
         if os.path.exists(pp):
             pngs.append(pp)
-    print(f"✓ carousel {pid}: {len(pngs)} slides -> {out_dir}")
     return pngs
+
+
+def render_pkg(pkg, out_dir, coin=None):
+    """Render a carousel from an ad-hoc package (id, language, scenes) — used by the daily/trend path."""
+    pngs = _shoot(build_slides(pkg, coin), out_dir)
+    print(f"✓ carousel {pkg.get('id')}: {len(pngs)} slides -> {out_dir}")
+    return pngs
+
+
+def render_carousel(pid, out_dir=None, coin=None):
+    pkg = PKGS.get(pid)
+    if not pkg:
+        print(f"!! no package {pid}"); return None
+    return render_pkg(pkg, out_dir or os.path.join(OUT_ROOT, pid), coin)
 
 
 if __name__ == "__main__":

@@ -1,297 +1,206 @@
 import { useMemo, useState } from "react";
 import { api, mediaSrc } from "../api/client";
 import { useAsync } from "../api/hooks";
-import type { ScheduleItem, TrendItem } from "../api/types";
+import type { DayItem, TrendItem } from "../api/types";
 
 const BRAND: Record<string, string> = {
-  airdrops: "#8B5CFF", "crypto-trading": "#38BDF8", "defi-yield": "#F5B301", web3_ai: "#C6FF3A",
+  askaurea: "#C6FF3A", "@AirdropEdge": "#8B5CFF", "@ClearChartsHQ": "#38BDF8", "@quiet.yield": "#F5B301",
 };
-const brandColor = (v: string | null) => BRAND[v ?? ""] ?? "#8B5CFF";
+const bc = (h: string | null) => BRAND[h ?? ""] ?? "#8B5CFF";
+const assetId = (it: DayItem) => (it.type === "video" ? parseInt(it.id.slice(1), 10) : 0);
 
-function groupByDate(items: ScheduleItem[]): [string, ScheduleItem[]][] {
-  const m = new Map<string, ScheduleItem[]>();
-  for (const it of items) {
-    const k = it.date || "未排期";
-    if (!m.has(k)) m.set(k, []);
-    m.get(k)!.push(it);
-  }
-  return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
-}
-
-/* ---------- B-layer hot-topics panel ---------- */
+/* ---- B-layer verified trends panel ---- */
 function TrendsPanel() {
   const [open, setOpen] = useState(false);
   const trends = useAsync<TrendItem[]>(() => api.getTrends(), []);
   const list = trends.data ?? [];
-  const byNiche = useMemo(() => {
-    const m = new Map<string, TrendItem[]>();
-    for (const t of list) { const k = t.niche || "其他"; if (!m.has(k)) m.set(k, []); m.get(k)!.push(t); }
-    return [...m.entries()];
-  }, [list]);
   return (
     <div className="rounded-xl border border-line bg-white/[.02]">
-      <button onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2 px-4 py-2.5 text-left font-mono text-xs">
-        <span className="text-lime">🔥 B层已核实热点</span>
-        <span className="text-dim">{list.length} 条 · 喂给 A 脑生成脚本(含来源)</span>
-        <span className="flex-1" />
-        <span className="text-dim">{open ? "▲" : "▼"}</span>
+      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-2 px-4 py-2.5 text-left font-mono text-xs">
+        <span className="text-lime">🔥 B层已核实热点</span><span className="text-dim">{list.length} 条 · 喂 A 脑(含来源)</span>
+        <span className="flex-1" /><span className="text-dim">{open ? "▲" : "▼"}</span>
       </button>
       {open && (
-        <div className="grid gap-3 border-t border-line p-3 sm:grid-cols-2 lg:grid-cols-4">
-          {byNiche.map(([niche, ts]) => (
-            <div key={niche} className="space-y-2">
-              <div className="font-mono text-[11px]" style={{ color: brandColor(niche) }}>{niche}</div>
-              {ts.map((t) => (
-                <div key={t.id} className="rounded-lg border border-line/60 p-2">
-                  <p className="text-xs text-text">{t.distilled_topic || t.title}</p>
-                  <div className="mt-1 flex items-center gap-2 font-mono text-[10px] text-dim">
-                    <span>{t.source}</span>
-                    {t.url && <a href={t.url} target="_blank" rel="noreferrer" className="text-sky-400 hover:underline">来源↗</a>}
-                    <span className="flex-1" />
-                    <span>{t.score ? `★${t.score.toFixed(1)}` : ""}</span>
-                  </div>
-                </div>
-              ))}
-              {!ts.length && <div className="font-mono text-[10px] text-dim">—</div>}
+        <div className="grid gap-2 border-t border-line p-3 sm:grid-cols-2 lg:grid-cols-4">
+          {list.map((t) => (
+            <div key={t.id} className="rounded-lg border border-line/60 p-2">
+              <p className="text-xs text-text">{t.distilled_topic || t.title}</p>
+              <div className="mt-1 flex gap-2 font-mono text-[10px] text-dim">
+                <span style={{ color: bc(null) }}>{t.niche}</span>
+                {t.url && <a href={t.url} target="_blank" rel="noreferrer" className="text-sky-400 hover:underline">来源↗</a>}
+                <span className="flex-1" /><span>{t.score ? `真实性 ${Math.round(t.score)}` : ""}</span>
+              </div>
             </div>
           ))}
-          {!list.length && <div className="col-span-full font-mono text-xs text-dim">
-            还没有热点。B 层研究(agent)跑完后会灌进来,A 脑据此写脚本。
-          </div>}
+          {!list.length && <div className="col-span-full font-mono text-[11px] text-dim">还没有热点。点「🤖全自动」会先研究再出片。</div>}
         </div>
       )}
     </div>
   );
 }
 
-/* ---------- one video card ---------- */
-function Card({ it, onAct }: { it: ScheduleItem; onAct: (id: number, label: string, fn: () => Promise<unknown>) => void }) {
-  const src = mediaSrc(it.media_url);
-  const [editing, setEditing] = useState(false);
-  const [cap, setCap] = useState(it.caption ?? "");
-  const [time, setTime] = useState((it.posting_time || "").slice(11, 16));
-  const [copied, setCopied] = useState(false);
-
-  const saveCaption = () =>
-    onAct(it.asset_id, "cap", () => api.putPublishPlan(it.asset_id, {
-      caption: cap, hashtags: it.hashtags, external_link_slot: it.external_link_slot,
-      external_link_text: null, posting_time: it.posting_time, status: "ready",
-    }).then(() => setEditing(false)));
-
-  const saveTime = () => {
-    const d = (it.posting_time || "").slice(0, 10) || it.date;
-    if (d && time) onAct(it.asset_id, "time", () => api.rescheduleAsset(it.asset_id, `${d} ${time}`));
-  };
-
-  const copy = () => { navigator.clipboard?.writeText(it.caption || ""); setCopied(true); setTimeout(() => setCopied(false), 1200); };
-
+/* ---- one expandable content card ---- */
+function Card({ it, onAct }: { it: DayItem; onAct: (label: string, fn: () => Promise<unknown>) => void }) {
+  const [open, setOpen] = useState(false);
+  const isVideo = it.type === "video";
+  const badge = isVideo ? "🎬" : "🖼";
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-line bg-white/[.02]">
-      <div className="relative aspect-[9/16] bg-black/40">
-        {src ? <video src={src} controls muted playsInline preload="metadata" className="h-full w-full object-cover" />
-          : <div className="flex h-full items-center justify-center font-mono text-[11px] text-dim">
-              {it.asset_status === "generating" ? "生成中…" : "无成片"}</div>}
-        <span className="absolute left-2 top-2 rounded px-1.5 py-0.5 font-mono text-[10px] font-bold text-black"
-          style={{ background: brandColor(it.vertical) }}>{it.handle}</span>
-        {it.is_seed && <span className="absolute right-2 top-2 rounded bg-black/60 px-1.5 py-0.5 font-mono text-[10px] text-lime">种子</span>}
-      </div>
+    <div className="rounded-lg border border-line bg-white/[.02]">
+      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-2 px-3 py-2 text-left">
+        <span>{badge}</span>
+        <span className="font-mono text-[11px] text-dim">{(it.posting_time || "").slice(11) || "图文"}</span>
+        <span className="flex-1 truncate text-xs text-text">{it.title || it.caption || "(无标题)"}</span>
+        {it.source_score != null && <span className="rounded bg-lime/[.12] px-1.5 py-0.5 font-mono text-[10px] text-lime">真 {Math.round(it.source_score)}</span>}
+        <span className={`font-mono text-[10px] ${it.review_status === "approved" ? "text-lime" : it.review_status === "rejected" ? "text-red-400" : "text-amber-400"}`}>
+          {it.review_status === "approved" ? "已采纳" : it.review_status === "rejected" ? "已驳回" : "待审"}
+        </span>
+        {it.is_seed && <span className="rounded bg-black/40 px-1 font-mono text-[9px] text-lime">种子</span>}
+        <span className="text-dim">{open ? "▲" : "▼"}</span>
+      </button>
 
-      <div className="flex flex-1 flex-col gap-2 p-2.5">
-        <div className="flex items-center gap-1.5 font-mono text-[11px]">
-          <input type="time" value={time} onChange={(e) => setTime(e.target.value)} onBlur={saveTime}
-            className="w-[68px] rounded border border-line bg-transparent px-1 py-0.5 text-dim" title="改发布时间" />
-          <span className="flex-1" />
-          <span className={it.review_status === "approved" ? "text-lime" : it.review_status === "rejected" ? "text-red-400" : "text-amber-400"}>
-            {it.review_status === "approved" ? "已采纳" : it.review_status === "rejected" ? "已驳回" : "待审"}
-          </span>
-        </div>
-
-        {editing ? (
-          <div className="space-y-1">
-            <textarea value={cap} onChange={(e) => setCap(e.target.value)} rows={3}
-              className="w-full rounded border border-line bg-transparent p-1.5 text-xs text-text" />
-            <div className="flex gap-1.5">
-              <button onClick={saveCaption} className="rounded border border-lime px-2 py-0.5 font-mono text-[10px] text-lime">保存</button>
-              <button onClick={() => { setEditing(false); setCap(it.caption ?? ""); }} className="rounded border border-line px-2 py-0.5 font-mono text-[10px] text-dim">取消</button>
+      {open && (
+        <div className="grid gap-3 border-t border-line p-3 md:grid-cols-[200px_1fr]">
+          <div>
+            {isVideo && it.media_url ? (
+              <video src={mediaSrc(it.media_url) || ""} controls muted playsInline preload="metadata" className="w-full rounded-lg" />
+            ) : it.slide_urls.length ? (
+              <div className="flex gap-1.5 overflow-x-auto">
+                {it.slide_urls.map((u, i) => <img key={i} src={mediaSrc(u) || u} loading="lazy" className="h-40 w-auto rounded border border-line/60" />)}
+              </div>
+            ) : <div className="flex h-40 items-center justify-center rounded bg-black/30 font-mono text-[11px] text-dim">无预览</div>}
+          </div>
+          <div className="space-y-2 text-xs">
+            <Row k="🕒 发布时间">{it.posting_time || "—"}</Row>
+            <Row k="📝 脚本">{it.script ? <span className="whitespace-pre-wrap text-muted">{it.script}</span> : "—"}</Row>
+            <Row k="📣 发布配套">
+              <div className="text-muted">{it.caption || "—"}</div>
+              {it.hashtags?.length ? <div className="mt-1 text-dim">{it.hashtags.join(" ")}</div> : null}
+              {it.external_link_slot && <div className="mt-1 font-mono text-[11px] text-dim">外链位: {it.external_link_slot}</div>}
+            </Row>
+            <Row k="💡 idea 来源">{it.source_url ? <a href={it.source_url} target="_blank" rel="noreferrer" className="text-sky-400 hover:underline break-all">{it.source_url}</a> : "—"}</Row>
+            <Row k="✅ 真实性评估">{it.source_score != null ? `${Math.round(it.source_score)}/100 · 全网 web_search 核实 + 来源可查` : "—(旧内容/未标注来源)"}</Row>
+            <div className="flex flex-wrap gap-1.5 pt-1 font-mono text-[11px]">
+              <button onClick={() => navigator.clipboard?.writeText(it.caption || "")} className="rounded border border-line px-2 py-1 text-muted hover:border-lime hover:text-lime">复制文案</button>
+              {isVideo && <>
+                <button onClick={() => onAct("regen", () => api.regenerateVideo(assetId(it)))} className="rounded border border-line px-2 py-1 text-muted hover:border-lime hover:text-lime">重新生成</button>
+                <button onClick={() => onAct("edit", () => api.queuePalmier(assetId(it)))} className="rounded border border-line px-2 py-1 text-muted hover:border-sky-400 hover:text-sky-400">剪辑</button>
+                <button disabled={it.review_status === "approved"} onClick={() => onAct("ok", () => api.setVideoReview(assetId(it), "approved"))} className="rounded border border-line px-2 py-1 text-muted hover:border-lime hover:text-lime disabled:opacity-40">采纳</button>
+                <button disabled={it.review_status === "rejected"} onClick={() => onAct("no", () => api.setVideoReview(assetId(it), "rejected"))} className="rounded border border-line px-2 py-1 text-muted hover:border-red-400 hover:text-red-400 disabled:opacity-40">驳回</button>
+              </>}
+              {!isVideo && it.account_id && <button onClick={() => onAct("regen", () => api.generateCarousels(it.account_id!))} className="rounded border border-line px-2 py-1 text-muted hover:border-lime hover:text-lime">重新生成图文</button>}
             </div>
           </div>
-        ) : (
-          <div className="group relative">
-            <p className="line-clamp-2 text-xs text-muted">{it.caption || <span className="text-dim">（无文案,点编辑）</span>}</p>
-            <div className="mt-1 flex gap-2 font-mono text-[10px] text-dim">
-              <button onClick={() => setEditing(true)} className="hover:text-lime">编辑文案</button>
-              <button onClick={copy} className="hover:text-lime">{copied ? "已复制✓" : "复制"}</button>
-              {src && <a href={src} download className="hover:text-lime">下载</a>}
-            </div>
-          </div>
-        )}
-
-        <div className="mt-auto grid grid-cols-2 gap-1.5 pt-1">
-          <Btn label="重新生成" it={it} onAct={onAct} fn={() => api.regenerateVideo(it.asset_id)} hover="lime" />
-          <Btn label="剪辑" it={it} onAct={onAct} fn={() => api.queuePalmier(it.asset_id)} hover="sky" />
-          <Btn label="采纳" it={it} onAct={onAct} fn={() => api.setVideoReview(it.asset_id, "approved")} hover="lime" disabled={it.review_status === "approved"} />
-          <Btn label="驳回" it={it} onAct={onAct} fn={() => api.setVideoReview(it.asset_id, "rejected")} hover="red" disabled={it.review_status === "rejected"} />
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
-const HOVER: Record<string, string> = {
-  lime: "hover:border-lime hover:text-lime",
-  sky: "hover:border-sky-400 hover:text-sky-400",
-  red: "hover:border-red-400 hover:text-red-400",
-};
-
-function Btn({ label, it, onAct, fn, hover, disabled }: {
-  label: string; it: ScheduleItem; hover: "lime" | "sky" | "red"; disabled?: boolean;
-  onAct: (id: number, label: string, fn: () => Promise<unknown>) => void; fn: () => Promise<unknown>;
-}) {
+function Row({ k, children }: { k: string; children: React.ReactNode }) {
   return (
-    <button disabled={disabled}
-      onClick={() => onAct(it.asset_id, label, fn)}
-      className={`rounded-md border border-line px-2 py-1 font-mono text-[11px] text-muted disabled:opacity-40 ${HOVER[hover]}`}>
-      {label}
-    </button>
+    <div className="grid grid-cols-[92px_1fr] gap-2">
+      <div className="font-mono text-[11px] text-dim">{k}</div>
+      <div className="min-w-0">{children}</div>
+    </div>
   );
 }
 
-/* ---------- page ---------- */
+/* ---- page ---- */
 export function Schedule() {
-  const sched = useAsync(() => api.getSchedule(), [], 12000);
-  const [busy, setBusy] = useState<Record<number, string>>({});
+  const dp = useAsync(() => api.getDayPlan(), [], 15000);
   const [msg, setMsg] = useState<string | null>(null);
-  const [fAccount, setFAccount] = useState("all");
-  const [fType, setFType] = useState<"all" | "daily" | "seed">("all");
-  const [fDate, setFDate] = useState("all");
-  const [fStatus, setFStatus] = useState<"all" | "pending" | "approved">("all");
-  const [query, setQuery] = useState("");
-  const [genning, setGenning] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [fType, setFType] = useState<"all" | "video" | "carousel">("all");
+  const [fAcc, setFAcc] = useState("all");
+  const [q, setQ] = useState("");
 
-  const all = sched.data ?? [];
-  const handles = useMemo(() => [...new Set(all.map((i) => i.handle))], [all]);
-  const dates = useMemo(() => [...new Set(all.map((i) => i.date).filter(Boolean))].sort().reverse(), [all]);
-  const q = query.trim().toLowerCase();
+  const all = dp.data ?? [];
+  const handles = useMemo(() => [...new Set(all.map((i) => i.handle).filter(Boolean))] as string[], [all]);
+  const query = q.trim().toLowerCase();
   const items = all.filter((i) =>
-    (fAccount === "all" || i.handle === fAccount) &&
-    (fType === "all" || (fType === "seed" ? i.is_seed : !i.is_seed)) &&
-    (fDate === "all" || i.date === fDate) &&
-    (fStatus === "all" || i.review_status === fStatus) &&
-    (!q || (i.caption || "").toLowerCase().includes(q) || i.handle.toLowerCase().includes(q)));
-  const groups = useMemo(() => groupByDate(items), [items]);
+    (fType === "all" || i.type === fType) &&
+    (fAcc === "all" || i.handle === fAcc) &&
+    (!query || (i.title || "").toLowerCase().includes(query) || (i.script || "").toLowerCase().includes(query) || (i.handle || "").toLowerCase().includes(query)));
 
-  async function bulkApprove() {
-    const pend = items.filter((i) => i.review_status !== "approved");
-    if (!pend.length) return;
-    setMsg(`批量采纳 ${pend.length} 条…`);
-    for (const i of pend) { try { await api.setVideoReview(i.asset_id, "approved"); } catch { /* skip */ } }
-    await sched.reload(); setMsg(`已采纳 ${pend.length} 条`);
-  }
-  function copyAllCaptions() {
-    const txt = items.map((i) => `【${i.handle} ${i.posting_time?.slice(5) || ""}】\n${i.caption || ""}`).join("\n\n---\n\n");
-    navigator.clipboard?.writeText(txt); setMsg(`已复制 ${items.length} 条文案到剪贴板`);
-  }
+  // group: date -> handle -> items
+  const byDate = useMemo(() => {
+    const m = new Map<string, Map<string, DayItem[]>>();
+    for (const it of items) {
+      const d = it.date || "未排期";
+      if (!m.has(d)) m.set(d, new Map());
+      const h = it.handle || "?";
+      const hm = m.get(d)!;
+      if (!hm.has(h)) hm.set(h, []);
+      hm.get(h)!.push(it);
+    }
+    return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  }, [items]);
 
-  async function act(id: number, label: string, fn: () => Promise<unknown>) {
-    setBusy((b) => ({ ...b, [id]: label })); setMsg(null);
-    try { await fn(); await sched.reload(); }
-    catch (e) { setMsg(String(e)); }
-    finally { setBusy((b) => { const n = { ...b }; delete n[id]; return n; }); }
+  async function act(_label: string, fn: () => Promise<unknown>) {
+    setMsg(null);
+    try { await fn(); await dp.reload(); } catch (e) { setMsg(String(e)); }
   }
-  // busy state is read inside Card via a data attribute-free closure; simplest: disable during any op
-  void busy;
-
-  async function genDaily() {
-    setGenning(true); setMsg(null);
-    try {
-      const r = await api.generateDaily(4);
-      setMsg(`已启动生成(4账号×${r.rounds}${r.from_trends ? "·基于已核实热点" : ""})。渲染约需 20–35 分钟,视频会陆续出现在下方,自动刷新。`);
-    } catch (e) { setMsg(String(e)); }
-    finally { setTimeout(() => setGenning(false), 3000); }
+  async function trigger(fn: () => Promise<unknown>, note: string) {
+    setBusy(true); setMsg(null);
+    try { await fn(); setMsg(note); } catch (e) { setMsg(String(e)); }
+    finally { setTimeout(() => setBusy(false), 3000); }
   }
 
-  async function genFull() {
-    setGenning(true); setMsg(null);
-    try {
-      await api.runFullDaily(4);
-      setMsg("🤖 已启动全自动一天:后端自己全网研究热点→核实→清昨日→出片→写Obsidian(约30–45分钟,无需我)。视频会陆续出现。");
-    } catch (e) { setMsg(String(e)); }
-    finally { setTimeout(() => setGenning(false), 3000); }
-  }
-
-  const daily = all.filter((i) => !i.is_seed);
-  const approved = daily.filter((i) => i.review_status === "approved").length;
-  const next = [...daily].filter((i) => i.posting_time).sort((a, b) => (a.posting_time < b.posting_time ? -1 : 1))[0];
+  const vids = all.filter((i) => i.type === "video" && !i.is_seed).length;
+  const imgs = all.filter((i) => i.type === "carousel").length;
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="font-display text-xl font-extrabold">排期日历</h1>
-        <span className="font-mono text-xs text-dim">
-          日更 {daily.length} 条 · 已采纳 {approved} · 种子 {all.length - daily.length}
-          {next && ` · 下一条 ${next.handle} @ ${next.posting_time?.slice(5)}`}
-        </span>
+      <div className="flex flex-wrap items-center gap-2">
+        <h1 className="font-display text-xl font-extrabold">排期</h1>
+        <span className="font-mono text-xs text-dim">按天 · 分账号/平台 · 视频{vids} 图文{imgs} · 展开看脚本/配套/来源/真实性</span>
         <div className="flex-1" />
-        <button onClick={genFull} disabled={genning}
-          className="rounded-lg border border-lime bg-lime/[.12] px-3 py-[6px] font-mono text-xs font-bold text-lime hover:bg-lime/[.2] disabled:opacity-50"
-          title="后端自己全网研究热点→核实→出片→排期→Obsidian,全程无需 Claude">
-          {genning ? "已启动…" : "🤖 全自动跑一天"}
-        </button>
-        <button onClick={genDaily} disabled={genning}
-          className="rounded-lg border border-line px-3 py-[6px] font-mono text-xs text-muted hover:text-text disabled:opacity-50"
-          title="用已有的已核实热点直接出16条(不重新研究)">
-          {genning ? "…" : "⚡ 仅出片16条"}
-        </button>
-        <button onClick={() => sched.reload()} className="rounded-lg border border-line px-3 py-[6px] font-mono text-xs text-muted hover:text-text">刷新</button>
+        <button onClick={() => trigger(() => api.runFullDaily(4), "🤖 已启动全自动一天(研究→出片→排期,约30-45分)")} disabled={busy}
+          className="rounded-lg border border-lime bg-lime/[.12] px-3 py-[6px] font-mono text-xs font-bold text-lime hover:bg-lime/[.2] disabled:opacity-50">🤖 全自动跑一天</button>
+        <button onClick={() => trigger(() => api.generateDaily(4), "⚡ 已启动出片(基于已核实热点)")} disabled={busy}
+          className="rounded-lg border border-line px-3 py-[6px] font-mono text-xs text-muted hover:text-text disabled:opacity-50">⚡ 仅出片</button>
+        <button onClick={() => trigger(() => api.generateCarousels(), "🖼 已启动图文(4账号,真数据)")} disabled={busy}
+          className="rounded-lg border border-line px-3 py-[6px] font-mono text-xs text-muted hover:text-text disabled:opacity-50">🖼 图文</button>
+        <button onClick={() => dp.reload()} className="rounded-lg border border-line px-3 py-[6px] font-mono text-xs text-muted hover:text-text">刷新</button>
       </div>
 
       <TrendsPanel />
 
       <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="🔎 搜文案/账号"
-          className="w-40 rounded border border-line bg-transparent px-2 py-1 text-text placeholder:text-dim" />
-        <select value={fAccount} onChange={(e) => setFAccount(e.target.value)} className="rounded border border-line bg-transparent px-2 py-1 text-muted">
-          <option value="all">全部账号</option>
-          {handles.map((h) => <option key={h} value={h}>{h}</option>)}
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔎 搜脚本/标题/账号" className="w-44 rounded border border-line bg-transparent px-2 py-1 text-text placeholder:text-dim" />
+        <select value={fAcc} onChange={(e) => setFAcc(e.target.value)} className="rounded border border-line bg-transparent px-2 py-1 text-muted">
+          <option value="all">全部账号</option>{handles.map((h) => <option key={h} value={h}>{h}</option>)}
         </select>
-        <select value={fDate} onChange={(e) => setFDate(e.target.value)} className="rounded border border-line bg-transparent px-2 py-1 text-muted">
-          <option value="all">全部日期</option>
-          {dates.map((d) => <option key={d} value={d}>{d}</option>)}
-        </select>
-        <select value={fStatus} onChange={(e) => setFStatus(e.target.value as typeof fStatus)} className="rounded border border-line bg-transparent px-2 py-1 text-muted">
-          <option value="all">全部状态</option>
-          <option value="pending">待审</option>
-          <option value="approved">已采纳</option>
-        </select>
-        {(["all", "daily", "seed"] as const).map((t) => (
-          <button key={t} onClick={() => setFType(t)}
-            className={`rounded px-2.5 py-1 ${fType === t ? "bg-lime/[.12] text-lime" : "text-dim hover:text-text"}`}>
-            {t === "all" ? "全部" : t === "daily" ? "日更" : "种子"}
+        {(["all", "video", "carousel"] as const).map((t) => (
+          <button key={t} onClick={() => setFType(t)} className={`rounded px-2.5 py-1 ${fType === t ? "bg-lime/[.12] text-lime" : "text-dim hover:text-text"}`}>
+            {t === "all" ? "全部" : t === "video" ? "视频" : "图文"}
           </button>
         ))}
-        <span className="flex-1" />
         <span className="text-dim">共 {items.length} 条</span>
-        <button onClick={bulkApprove} className="rounded border border-line px-2 py-1 text-muted hover:border-lime hover:text-lime">全部采纳</button>
-        <button onClick={copyAllCaptions} className="rounded border border-line px-2 py-1 text-muted hover:border-lime hover:text-lime">复制全部文案</button>
       </div>
 
       {msg && <div className="rounded-lg border border-lime/40 bg-lime/[.08] px-3 py-2 font-mono text-xs text-lime">{msg}</div>}
-      {sched.loading && !all.length && <div className="font-mono text-sm text-dim">加载中…</div>}
-      {!sched.loading && !items.length && (
-        <div className="rounded-lg border border-line px-4 py-8 text-center font-mono text-sm text-dim">
-          没有匹配的内容。点右上「⚡ 生成今日16条」跑一轮自驾。
-        </div>
-      )}
+      {dp.loading && !all.length && <div className="font-mono text-sm text-dim">加载中…</div>}
+      {!dp.loading && !items.length && <div className="rounded-lg border border-line px-4 py-8 text-center font-mono text-sm text-dim">没有内容。点「🤖 全自动跑一天」。</div>}
 
-      {groups.map(([date, list]) => (
+      {byDate.map(([date, hm]) => (
         <section key={date} className="space-y-3">
           <div className="flex items-center gap-2 border-b border-line pb-1">
             <span className="font-display text-base font-bold">{date}</span>
-            <span className="font-mono text-[11px] text-dim">{list.length} 条</span>
+            <span className="font-mono text-[11px] text-dim">{[...hm.values()].reduce((n, a) => n + a.length, 0)} 条</span>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {list.map((it) => <Card key={it.asset_id} it={it} onAct={act} />)}
+          <div className="grid gap-3 lg:grid-cols-2">
+            {[...hm.entries()].map(([handle, list]) => (
+              <div key={handle} className="rounded-xl border border-line/60 p-2.5">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="rounded px-1.5 py-0.5 font-mono text-[10px] font-bold text-black" style={{ background: bc(handle) }}>{handle}</span>
+                  <span className="font-mono text-[10px] text-dim">{list[0]?.platform} · {list.length} 条</span>
+                </div>
+                <div className="space-y-1.5">
+                  {list.sort((a, b) => (a.posting_time < b.posting_time ? -1 : 1)).map((it) => <Card key={it.id} it={it} onAct={act} />)}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       ))}

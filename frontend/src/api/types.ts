@@ -185,6 +185,37 @@ export interface PublishDispatchOut {
 }
 
 // ---- Publish plan (step-6 companion content) ----
+export interface DayItem {
+  id: string;                 // "v<assetId>" | "c<folder>"
+  type: "video" | "carousel";
+  date: string;
+  posting_time: string;
+  platform: string | null;
+  handle: string | null;
+  account_id: number | null;
+  title: string;
+  media_url: string | null;
+  slide_urls: string[];
+  script: string | null;
+  caption: string | null;
+  hashtags: string[];
+  external_link_slot: string | null;
+  source_url: string | null;
+  source_score: number | null;   // 真实性评估 0-100
+  review_status: string;
+  is_seed: boolean;
+}
+
+export interface CarouselItem {
+  folder: string;
+  handle: string | null;
+  brand: string | null;
+  date: string | null;
+  topic: string | null;
+  source: string | null;
+  slide_urls: string[];
+}
+
 export interface TrendItem {
   id: number;
   source: string;

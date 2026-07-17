@@ -687,6 +687,115 @@ def run_full_daily(rounds: int = Query(default=4, ge=1, le=8)) -> dict:
     return {"started": True, "rounds": rounds, "steps": ["research", "generate", "obsidian"]}
 
 
+@router.get("/carousels")
+def list_carousels() -> list[dict]:
+    """List generated 图文 carousels (PNG slide folders under data/carousels/) for the frontend gallery."""
+    import glob
+    import json as _json
+    import os
+    root = os.path.abspath(os.path.join(os.getcwd(), "data", "carousels"))
+    out = []
+    if not os.path.isdir(root):
+        return out
+    for folder in sorted(os.listdir(root), reverse=True):
+        fdir = os.path.join(root, folder)
+        if not os.path.isdir(fdir):
+            continue
+        slides = sorted(glob.glob(os.path.join(fdir, "slide*.png")),
+                        key=lambda p: int("".join(c for c in os.path.basename(p) if c.isdigit()) or 0))
+        if not slides:
+            continue
+        meta = {}
+        mp = os.path.join(fdir, "meta.json")
+        if os.path.exists(mp):
+            try:
+                meta = _json.load(open(mp))
+            except Exception:
+                meta = {}
+        out.append({
+            "folder": folder,
+            "handle": meta.get("handle"),
+            "brand": meta.get("brand"),
+            "date": meta.get("date"),
+            "topic": meta.get("topic"),
+            "source": meta.get("source"),
+            "slide_urls": [f"/carousels/{folder}/{os.path.basename(p)}" for p in slides],
+        })
+    return out
+
+
+@router.get("/day-plan")
+def day_plan(db: Session = Depends(get_db)) -> list[dict]:
+    """Unified day view: every piece of content (video + 图文) with full detail for the expandable
+    card UI — 脚本 / 发布时间 / 发布配套内容 / idea来源 / 真实性评估. Grouped client-side by day."""
+    import glob
+    import json as _json
+    import os
+    items: list[dict] = []
+    # videos
+    rows = db.execute(
+        select(PublishPlan, VideoAsset, Account)
+        .join(VideoAsset, VideoAsset.id == PublishPlan.video_asset_id)
+        .join(Account, Account.id == PublishPlan.account_id)
+    ).all()
+    for plan, asset, acc in rows:
+        draft = db.get(Draft, asset.script_draft_id) if asset.script_draft_id else None
+        pt = plan.posting_time or ""
+        items.append({
+            "id": f"v{asset.id}", "type": "video", "date": (pt.split(" ")[0] if pt else ""),
+            "posting_time": pt, "platform": acc.platform, "handle": acc.handle, "account_id": acc.id,
+            "title": (plan.caption or "")[:80], "media_url": asset.media_url, "slide_urls": [],
+            "script": draft.content if draft else None, "caption": plan.caption,
+            "hashtags": plan.hashtags or [], "external_link_slot": plan.external_link_slot,
+            "source_url": plan.source_url, "source_score": plan.source_score,
+            "review_status": asset.review_status,
+            "is_seed": bool(asset.dedup_key and asset.dedup_key.startswith("batch-")),
+        })
+    # carousels (图文)
+    root = os.path.abspath(os.path.join(os.getcwd(), "data", "carousels"))
+    if os.path.isdir(root):
+        for folder in os.listdir(root):
+            fdir = os.path.join(root, folder)
+            mp = os.path.join(fdir, "meta.json")
+            slides = sorted(glob.glob(os.path.join(fdir, "slide*.png")),
+                            key=lambda p: int("".join(c for c in os.path.basename(p) if c.isdigit()) or 0))
+            if not slides or not os.path.exists(mp):
+                continue
+            try:
+                m = _json.load(open(mp))
+            except Exception:
+                continue
+            items.append({
+                "id": f"c{folder}", "type": "carousel", "date": m.get("date", ""),
+                "posting_time": (m.get("date", "") + " 图文"), "platform": m.get("platform"),
+                "handle": m.get("handle"), "account_id": m.get("account_id"),
+                "title": (m.get("topic") or "")[:80],
+                "media_url": None, "slide_urls": [f"/carousels/{folder}/{os.path.basename(p)}" for p in slides],
+                "script": m.get("script"), "caption": m.get("topic"), "hashtags": [],
+                "external_link_slot": None, "source_url": m.get("source"),
+                "source_score": m.get("source_score"), "review_status": "approved", "is_seed": False,
+            })
+    items.sort(key=lambda x: (x["date"] or "~", x["posting_time"] or "", x["handle"] or ""))
+    return items
+
+
+@router.post("/carousel/generate-daily", status_code=202)
+def carousel_generate_daily(account_id: int | None = None) -> dict:
+    """Generate 图文 carousels (one per account from its top verified trend) as a background job."""
+    import os
+    import subprocess
+    import sys
+    backend_dir = os.getcwd()
+    logdir = os.path.join(backend_dir, "..", "logs")
+    os.makedirs(logdir, exist_ok=True)
+    logf = open(os.path.join(logdir, "carousel_daily.log"), "a")
+    cmd = [sys.executable, "scripts/gen_carousel_daily.py"]
+    if account_id:
+        cmd += ["--only", str(account_id)]
+    subprocess.Popen(cmd, cwd=backend_dir, stdout=logf, stderr=logf, start_new_session=True)
+    return {"started": True, "account_id": account_id}
+
+
 def _caption_from_plan(db: Session, asset_id: int) -> str | None:
     """Compose a single dispatch caption from the stored publish plan (caption + hashtags)."""
     plan = db.scalar(select(PublishPlan).where(PublishPlan.video_asset_id == asset_id))

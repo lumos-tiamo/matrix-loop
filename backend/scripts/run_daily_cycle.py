@@ -133,6 +133,8 @@ def daily_from_trends(s, rounds, only=None):
             plan.external_link_slot = LINK_SLOT.get(a.platform or "", "bio")
             plan.posting_time = pt.strftime("%Y-%m-%d %H:%M")
             plan.status = "ready"
+            plan.source_url = t.url                 # idea 来源
+            plan.source_score = t.score             # 真实性评估(置信度)
             asset.review_status = "approved"
             s.commit()
             report[a.handle].append({"asset": asset.id, "post_at": plan.posting_time, "media": asset.media_url})

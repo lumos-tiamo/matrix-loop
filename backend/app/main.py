@@ -20,6 +20,11 @@ _media_dir = os.path.abspath(settings.video_output_dir)
 os.makedirs(_media_dir, exist_ok=True)
 app.mount("/media", StaticFiles(directory=_media_dir), name="media")
 
+# 图文 carousels (PNG slide folders) served for the frontend 图文 gallery
+_carousel_dir = os.path.abspath(os.path.join(os.path.dirname(_media_dir), "carousels"))
+os.makedirs(_carousel_dir, exist_ok=True)
+app.mount("/carousels", StaticFiles(directory=_carousel_dir), name="carousels")
+
 
 @app.on_event("startup")
 def _maybe_autostart_scheduler() -> None:
