@@ -11,10 +11,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CAPDIR = os.path.join(HERE, "captures")
 
 BRAND = {
-    "AE": dict(accent="#8B5CFF", accent2="#C6FF3A", bg1="#140a2b", bg2="#050409", name="AIRDROP EDGE", fn="→ Nina"),
-    "CC": dict(accent="#38BDF8", accent2="#22d3ee", bg1="#07192f", bg2="#04070d", name="CLEAR CHARTS", fn="→ Nina"),
-    "QY": dict(accent="#F5B301", accent2="#C6FF3A", bg1="#241905", bg2="#0a0803", name="QUIET YIELD", fn="→ Xaue"),
-    "AU": dict(accent="#C6FF3A", accent2="#8B5CFF", bg1="#16240a", bg2="#070a04", name="AUREA", fn="→ Nina / Xaue"),
+    "AE": dict(accent="#8B5CFF", accent2="#C6FF3A", bg1="#140a2b", bg2="#050409", name="AIRDROP EDGE", fn="→ Nina",
+               cat="空投情报 · 撸毛实操", src="数据来源:官方公告 · 链上快照 · Tokenomist"),
+    "CC": dict(accent="#38BDF8", accent2="#22d3ee", bg1="#07192f", bg2="#04070d", name="CLEAR CHARTS", fn="→ Nina",
+               cat="加密行情 · 估值扫描", src="数据来源:CoinGecko · OKX · 链上指标"),
+    "QY": dict(accent="#F5B301", accent2="#C6FF3A", bg1="#241905", bg2="#0a0803", name="QUIET YIELD", fn="→ Xaue",
+               cat="链上收益 · 稳健生息", src="数据来源:DeFiLlama · CoinGecko · 协议官方"),
+    "AU": dict(accent="#C6FF3A", accent2="#8B5CFF", bg1="#16240a", bg2="#070a04", name="AUREA", fn="→ Nina / Xaue",
+               cat="加密科普 · 繁中", src="資料來源:官方公告 · 鏈上數據 · CoinGecko"),
 }
 SERIF = '"Hoefler Text","Baskerville","Iowan Old Style",Georgia,serif'
 SANS = '"Avenir Next","Helvetica Neue","Segoe UI",sans-serif'
@@ -373,6 +377,19 @@ def _bars(ohlc, i, n, st, du, b):
 CC_FORMS = [_candles, _area, _bars]
 
 
+def _ambient_bars(b):
+    """Faint bottom bar-chart silhouette (ambient data texture, like the reference). Deterministic."""
+    import math
+    n = 32
+    w = 1080 / n
+    bars = []
+    for k in range(n):
+        h = 24 + int(52 * abs(math.sin(k * 1.7)) + 34 * abs(math.sin(k * 0.55 + 1)))
+        bars.append(f'<rect x="{k*w+3:.0f}" y="{170-h}" width="{w-6:.0f}" height="{h}" rx="3" fill="{b["accent"]}"/>')
+    return (f'<svg viewBox="0 0 1080 170" width="1080" height="170" preserveAspectRatio="none">'
+            + "".join(bars) + "</svg>")
+
+
 def build_watchable(pkg, spans, captions, assets):
     pre = pkg["id"].split("-")[0]
     pid = pkg["id"]
@@ -434,8 +451,12 @@ def build_watchable(pkg, spans, captions, assets):
         clips.append(
             f'\n  <section id="s{i}" class="clip scene" data-start="{st}" data-duration="{du}" data-track-index="1" style="background:{scene_bg}">'
             f'{vis_html}'
-            f'<div class="chrome"><span class="chip">{esc(b["name"])}</span><span class="fn">{esc(b["fn"])}</span></div>'
+            f'<div class="bars">{_ambient_bars(b)}</div>'
+            f'<div class="chrome"><div class="brandcol">'
+            f'<div class="brow"><span class="ava">{esc(b["name"][0])}</span><span class="chip">{esc(b["name"])}</span></div>'
+            f'<span class="cat">{esc(b.get("cat",""))}</span></div><span class="fn">{esc(b["fn"])}</span></div>'
             f'<div id="in{i}" class="in {"low" if content_low else "mid"}">{content}</div>{caps_html}'
+            f'<div class="src"><span class="vok">✓ 已核实</span>{esc(b.get("src",""))}</div>'
             f'<div class="foot"><span class="dots">{dots}</span><span class="nfa">NFA</span></div></section>')
         # entrance / exit handoff of the content layer (visual keeps moving underneath)
         # gentle entrance only; NO exit fade (HyperFrames clips are hard-adjacent, so fading the
@@ -463,9 +484,17 @@ html,body{{width:1080px;height:1920px;overflow:hidden;background:#04060c;font-fa
 .bC{{left:28%;top:34%;width:640px;height:640px;background:radial-gradient(circle,{b['accent']}66,transparent 70%)}}
 .grid{{position:absolute;inset:-12% 0;background-image:linear-gradient(#ffffff12 1px,transparent 1px),linear-gradient(90deg,#ffffff12 1px,transparent 1px);background-size:72px 72px;opacity:.55;will-change:transform}}
 .ring{{position:absolute;left:50%;top:40%;width:920px;height:920px;margin:-460px 0 0 -460px;border-radius:50%;background:conic-gradient(from 0deg,{b['accent']}00,{b['accent']}55 12%,{b['accent']}00 32%,{b['accent2']}44 60%,{b['accent']}00 82%);opacity:.42;filter:blur(16px);will-change:transform}}
-.chrome{{position:absolute;top:96px;left:90px;right:90px;display:flex;justify-content:space-between;align-items:center;z-index:6}}
+.chrome{{position:absolute;top:96px;left:90px;right:90px;display:flex;justify-content:space-between;align-items:flex-start;z-index:6}}
+.brandcol{{display:flex;flex-direction:column;gap:14px;align-items:flex-start}}
+.brow{{display:flex;align-items:center;gap:14px}}
+.ava{{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,{b['accent']},{b['accent2']});display:flex;align-items:center;justify-content:center;font-family:{head_font};font-weight:800;font-size:30px;color:#05070d;box-shadow:0 0 22px {b['accent']}77;flex:none}}
 .chip{{font-family:{MONO};font-weight:700;letter-spacing:.14em;font-size:26px;color:{b['accent']};border:2px solid {b['accent']}55;border-radius:999px;padding:9px 22px;backdrop-filter:blur(4px)}}
+.cat{{font-family:{body};font-weight:700;font-size:27px;color:#fff;background:linear-gradient(90deg,{b['accent']}3a,{b['accent']}14);border:1px solid {b['accent']}66;border-radius:12px;padding:8px 20px;text-shadow:0 2px 10px rgba(0,0,0,.6)}}
 .fn{{font-family:{MONO};font-size:24px;color:#ffffffcc}}
+.bars{{position:absolute;left:0;right:0;bottom:0;height:220px;opacity:.15;z-index:1}}
+.bars svg{{width:100%;height:100%}}
+.src{{position:absolute;left:80px;right:80px;bottom:150px;text-align:center;font-family:{body};font-weight:600;font-size:26px;color:{b['accent']}dd;letter-spacing:.02em;z-index:6;text-shadow:0 2px 10px rgba(0,0,0,.8)}}
+.vok{{color:#2fe07f;border:1px solid #2fe07f88;border-radius:999px;padding:4px 14px;margin-right:14px;font-size:24px;font-weight:700}}
 .in{{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:4}}
 .in.low{{justify-content:flex-end;padding:150px 88px 400px}}
 .in.mid{{justify-content:center;padding:210px 82px 300px}}
@@ -473,8 +502,8 @@ html,body{{width:1080px;height:1920px;overflow:hidden;background:#04060c;font-fa
 .head{{font-family:{head_font};color:#fff;font-weight:800;line-height:1.06;letter-spacing:-0.01em;text-shadow:0 4px 34px rgba(0,0,0,.9)}}
 .rule{{width:110px;height:7px;border-radius:7px;margin-top:28px;background:linear-gradient(90deg,{b['accent']},{b['accent']}11)}}
 .statnum{{font-family:{MONO};font-weight:800;font-variant-numeric:tabular-nums slashed-zero;color:#fff;line-height:.9;letter-spacing:-0.02em;text-shadow:0 6px 40px rgba(0,0,0,.9)}}
-.statbar{{height:20px;border-radius:11px;background:#ffffff1c;overflow:hidden;margin-top:34px;max-width:840px}}
-.statbar>i{{display:block;height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:linear-gradient(90deg,{b['accent']},{b['accent2']});border-radius:11px}}
+.statbar{{height:26px;border-radius:14px;background:#ffffff14;border:1px solid #ffffff22;overflow:hidden;margin-top:34px;max-width:860px}}
+.statbar>i{{display:block;height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:linear-gradient(90deg,{b['accent']},{b['accent2']});border-radius:14px;box-shadow:0 0 26px {b['accent']}aa,0 0 10px {b['accent2']}88}}
 .statlab{{font-family:{body};font-weight:600;color:#eef1f7;font-size:40px;margin-top:26px;max-width:860px;line-height:1.28;text-shadow:0 3px 20px rgba(0,0,0,.85)}}
 .caps{{position:absolute;left:60px;right:60px;bottom:196px;height:170px;display:flex;align-items:center;justify-content:center;z-index:7}}
 .cap{{position:absolute;left:0;right:0;text-align:center;opacity:0;padding:0 44px}}
