@@ -79,11 +79,9 @@ def _ohlc_by_coin(coin):
     return G._fetch_ohlc(coin, p) or []
 
 
-def _stat_block(hn, accent):
+def _hero_num(hn):
     pre, val, suf, dec = hn
-    num = f"{pre}{val:.1f}{suf}" if dec else f"{pre}{int(val):,}{suf}"
-    return (f'<div style="font-family:{SERIF};font-size:220px;font-weight:800;line-height:.9;letter-spacing:-3px">{num}</div>'
-            f'<div style="height:14px;margin-top:26px;border-radius:8px;background:linear-gradient(90deg,{accent},{accent}22)"></div>')
+    return f"{pre}{val:.1f}{suf}" if dec else f"{pre}{int(val):,}{suf}"
 
 
 def build_slides(pkg, coin=None):
@@ -91,57 +89,88 @@ def build_slides(pkg, coin=None):
     b = BRAND.get(pre, BRAND["AE"])
     is_cjk = (pkg.get("language", "") or "").startswith(("繁", "zh"))
     hf = CJK_SANS if is_cjk else SERIF
+    acc, acc2 = b["accent"], b["accent2"]
     scenes = [s for s in (pkg.get("scenes") or []) if drop_placeholders(s.get("onScreenCaption", "") or s.get("narration", ""))]
     scenes = scenes[:5]
     coin = coin or {"CC": "bitcoin"}.get(pre)
 
-    def frame(inner, n, total):
-        return f"""<!doctype html><html><head><meta charset="utf-8"><style>
-*{{margin:0;box-sizing:border-box}} html,body{{width:{W}px;height:{H}px}}
-body{{background:radial-gradient(120% 90% at 20% 0%,{b['bg1']},{b['bg2']});color:#fff;
-font-family:{SANS};padding:64px 60px;display:flex;flex-direction:column;overflow:hidden}}
-.hd{{display:flex;align-items:center;justify-content:space-between;font-family:'SF Mono',monospace;font-size:22px;letter-spacing:2px}}
-.pill{{border:1.5px solid {b['accent']};color:{b['accent']};border-radius:999px;padding:5px 16px}}
-.ey{{font-family:'SF Mono',monospace;font-size:22px;letter-spacing:6px;color:{b['accent']};margin-bottom:14px}}
-.hl{{font-family:{hf};font-weight:800;font-size:{ '60px' if is_cjk else '66px'};line-height:1.12;letter-spacing:-1px}}
-.cap{{font-size:34px;line-height:1.45;color:#d7dbe6;margin-top:auto}}
-.ft{{display:flex;justify-content:space-between;font-family:'SF Mono',monospace;font-size:20px;color:#8892a6;margin-top:30px}}
-.viz{{margin:38px 0}}
-</style></head><body>
-<div class="hd"><span class="pill">{b['name']}</span><span>{b['fn']}</span></div>
-{inner}
-<div class="ft"><span>{'●'*n}{'○'*(total-n)}</span><span>NFA · 数据可核</span></div>
-</body></html>"""
+    css = f"""*{{margin:0;box-sizing:border-box}} html,body{{width:{W}px;height:{H}px}}
+body{{position:relative;background:{b['bg2']};color:#fff;font-family:{SANS};padding:60px 56px;
+display:flex;flex-direction:column;overflow:hidden}}
+.glow{{position:absolute;width:900px;height:900px;border-radius:50%;filter:blur(120px);opacity:.30;
+background:radial-gradient(circle,{acc},transparent 68%);top:-260px;right:-240px;z-index:0}}
+.glow2{{position:absolute;width:760px;height:760px;border-radius:50%;filter:blur(120px);opacity:.20;
+background:radial-gradient(circle,{acc2},transparent 68%);bottom:-260px;left:-220px;z-index:0}}
+.grid{{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:70px 70px;z-index:0}}
+.z{{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}}
+.top{{display:flex;align-items:center;gap:14px;font-family:'SF Mono',monospace;font-size:22px}}
+.chip{{background:{acc};color:#05070d;font-weight:800;border-radius:8px;padding:6px 14px;letter-spacing:1px}}
+.hand{{color:#aeb6c8}} .cnt{{margin-left:auto;color:{acc};font-weight:700}}
+.ey{{font-family:'SF Mono',monospace;font-size:24px;letter-spacing:5px;color:{acc};margin:34px 0 12px}}
+.hl{{font-family:{hf};font-weight:800;font-size:{'62px' if is_cjk else '66px'};line-height:1.1;letter-spacing:-1px}}
+.panel{{position:relative;flex:1;margin:30px 0;border:2px solid {acc}55;border-radius:28px;
+background:linear-gradient(160deg,{acc}1f,{acc}08);padding:44px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}}
+.stat{{font-family:{SERIF};font-weight:800;font-size:168px;line-height:.86;letter-spacing:-4px}}
+.lab{{font-size:32px;color:#cfd6e6;margin-top:18px;line-height:1.3}}
+.bar{{height:16px;margin-top:26px;border-radius:10px;background:linear-gradient(90deg,{acc},{acc2})}}
+.exp{{font-size:32px;line-height:1.45;color:#d7dbe6}}
+.ft{{display:flex;align-items:center;gap:14px;font-family:'SF Mono',monospace;font-size:20px;color:#8892a6;margin-top:26px}}
+.dots b{{color:{acc}}} .swipe{{margin-left:auto;color:{acc};font-weight:700}}
+.big{{font-family:{hf};font-weight:800;line-height:1.05;letter-spacing:-2px}}"""
 
-    slides = []
-    total = len(scenes) + 2
+    def frame(inner):
+        return (f'<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head>'
+                f'<body><div class="glow"></div><div class="glow2"></div><div class="grid"></div>'
+                f'<div class="z">{inner}</div></body></html>')
+
+    def top(n, total):
+        dots = "".join("<b>●</b>" if i < n else "○" for i in range(total))
+        return (f'<div class="top"><span class="chip">{b["name"]}</span><span class="hand">{b["fn"]}</span>'
+                f'<span class="cnt">{n:02d}/{total:02d}</span></div>')
+
+    def foot(n, total):
+        dots = "".join("<b>●</b>" if i < n else "○" for i in range(total))
+        return f'<div class="ft"><span class="dots">{dots}</span><span>NFA · 数据可核</span><span class="swipe">左滑 →</span></div>'
+
+    slides, total = [], len(scenes) + 2
     hook = clean_text(drop_placeholders(scenes[0].get("onScreenCaption", "") if scenes else "")) or pkg.get("id")
-    # cover
+    # cover — big, filled
     slides.append(frame(
-        f'<div style="margin:auto 0"><div class="ey">{b["name"]}</div>'
-        f'<div class="hl" style="font-size:{ "72px" if is_cjk else "80px"}">{hook}</div>'
-        f'<div style="margin-top:34px"><span class="pill" style="font-size:26px">{total} 图讲清 · 存下</span></div></div>',
-        1, total))
-    # content
+        top(1, total)
+        + '<div style="flex:1;display:flex;flex-direction:column;justify-content:center">'
+        + f'<div class="ey">{b["name"]} · 干货</div>'
+        + f'<div class="big" style="font-size:{"92px" if is_cjk else "104px"}">{hook}</div>'
+        + f'<div style="margin-top:40px;display:inline-flex;align-self:flex-start;background:{acc};color:#05070d;'
+          f'font-weight:800;font-size:30px;border-radius:14px;padding:16px 30px">{total} 张讲清 · 存下 →</div></div>'
+        + foot(1, total)))
+    # content — hero panel fills the frame
     for idx, s in enumerate(scenes):
         head = clean_text(drop_placeholders(s.get("onScreenCaption", "") or ""))
-        cap = clean_text(drop_placeholders(s.get("narration", "") or ""))[:110]
+        cap = clean_text(drop_placeholders(s.get("narration", "") or ""))[:120]
         hn = hero_number(s.get("onScreenCaption", "")) or hero_number(s.get("narration", ""))
         if coin and idx == min(1, len(scenes) - 1):
-            viz = f'<div class="viz">{_static_candles(coin, b["accent"])}</div>'
+            panel = f'<div class="panel">{_static_candles(coin, acc)}</div>'
         elif hn:
-            viz = f'<div class="viz">{_stat_block(hn, b["accent"])}</div>'
+            lab = re.sub(r"^[^:：]*[:：]\s*", "", head) or head
+            panel = (f'<div class="panel"><div class="stat">{_hero_num(hn)}</div>'
+                     f'<div class="bar"></div><div class="lab">{lab}</div></div>')
         else:
-            viz = '<div class="viz" style="height:8px;width:120px;background:%s;border-radius:6px"></div>' % b["accent"]
-        slides.append(frame(f'<div class="ey">{idx+1:02d}</div><div class="hl">{head}</div>{viz}'
-                            f'<div class="cap">{cap}</div>', idx + 2, total))
-    # cta
+            panel = f'<div class="panel"><div class="big" style="font-size:{"56px" if is_cjk else "60px"}">{head}</div></div>'
+        slides.append(frame(
+            top(idx + 2, total)
+            + f'<div class="ey">{idx+1:02d} / {total-2:02d}</div>'
+            + (f'<div class="hl">{head}</div>' if hn or (coin and idx == min(1, len(scenes) - 1)) else "")
+            + panel + f'<div class="exp">{cap}</div>' + foot(idx + 2, total)))
+    # cta — accent-filled
     fn = "Xaue" if pre == "QY" else ("Nina / Xaue" if pre == "AU" else "Nina")
     slides.append(frame(
-        f'<div style="margin:auto 0"><div class="ey">存下 · 转给朋友</div>'
-        f'<div class="hl">想一句话搞懂?<br>让 {fn} 帮你查。</div>'
-        f'<div class="cap" style="margin-top:40px">{b["fn"]} · 主页链接 · 非投资建议 NFA</div></div>',
-        total, total))
+        top(total, total)
+        + '<div style="flex:1;display:flex;flex-direction:column;justify-content:center">'
+        + f'<div class="ey">存下 · 转给朋友</div>'
+        + f'<div class="big" style="font-size:{"80px" if is_cjk else "84px"}">想一句话搞懂?<br>让 <span style="color:{acc}">{fn}</span> 帮你查。</div>'
+        + f'<div class="exp" style="margin-top:36px">{b["fn"]} · 主页链接 · 非投资建议 NFA</div></div>'
+        + foot(total, total)))
     return slides
 
 
