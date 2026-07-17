@@ -105,6 +105,48 @@ function Row({ k, children }: { k: string; children: React.ReactNode }) {
   );
 }
 
+/* ---- month calendar ---- */
+function Calendar({ counts, sel, onSel }: { counts: Record<string, number>; sel: string; onSel: (d: string) => void }) {
+  const dates = Object.keys(counts).sort();
+  const seed = sel || dates[dates.length - 1] || new Date().toISOString().slice(0, 10);
+  const [ym, setYm] = useState(seed.slice(0, 7));
+  const [y, m] = ym.split("-").map(Number);
+  const first = new Date(y, m - 1, 1);
+  const startDow = (first.getDay() + 6) % 7;   // Monday-first
+  const daysIn = new Date(y, m, 0).getDate();
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let d = 1; d <= daysIn; d++) cells.push(d);
+  const nav = (delta: number) => { const nd = new Date(y, m - 1 + delta, 1); setYm(`${nd.getFullYear()}-${String(nd.getMonth() + 1).padStart(2, "0")}`); };
+  const key = (d: number) => `${ym}-${String(d).padStart(2, "0")}`;
+  return (
+    <div className="rounded-xl border border-line bg-white/[.02] p-3">
+      <div className="mb-2 flex items-center gap-3 font-mono text-xs">
+        <button onClick={() => nav(-1)} className="rounded border border-line px-2 text-muted hover:text-text">‹</button>
+        <span className="font-display text-sm font-bold">{y} 年 {m} 月</span>
+        <button onClick={() => nav(1)} className="rounded border border-line px-2 text-muted hover:text-text">›</button>
+        {sel && <button onClick={() => onSel("")} className="ml-2 text-dim hover:text-lime">显示全部日期 ✕</button>}
+        <span className="flex-1" />
+        <span className="text-dim">有内容的日期高亮 · 点击查看当天</span>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center font-mono text-[11px]">
+        {["一", "二", "三", "四", "五", "六", "日"].map((w) => <div key={w} className="py-1 text-dim">{w}</div>)}
+        {cells.map((d, i) => {
+          if (!d) return <div key={i} />;
+          const k = key(d), c = counts[k] || 0, on = sel === k;
+          return (
+            <button key={i} onClick={() => c && onSel(on ? "" : k)} disabled={!c}
+              className={`aspect-square rounded-lg border p-1 ${on ? "border-lime bg-lime/[.15]" : c ? "border-lime/40 bg-lime/[.06] hover:bg-lime/[.12]" : "border-line/40 text-dim"}`}>
+              <div className={c ? "text-text" : ""}>{d}</div>
+              {c > 0 && <div className="text-[9px] text-lime">{c}</div>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ---- page ---- */
 export function Schedule() {
   const dp = useAsync(() => api.getDayPlan(), [], 15000);
@@ -113,13 +155,20 @@ export function Schedule() {
   const [fType, setFType] = useState<"all" | "video" | "carousel">("all");
   const [fAcc, setFAcc] = useState("all");
   const [q, setQ] = useState("");
+  const [selDate, setSelDate] = useState("");
 
   const all = dp.data ?? [];
   const handles = useMemo(() => [...new Set(all.map((i) => i.handle).filter(Boolean))] as string[], [all]);
+  const counts = useMemo(() => {
+    const c: Record<string, number> = {};
+    for (const i of all) if (i.date) c[i.date] = (c[i.date] || 0) + 1;
+    return c;
+  }, [all]);
   const query = q.trim().toLowerCase();
   const items = all.filter((i) =>
     (fType === "all" || i.type === fType) &&
     (fAcc === "all" || i.handle === fAcc) &&
+    (!selDate || i.date === selDate) &&
     (!query || (i.title || "").toLowerCase().includes(query) || (i.script || "").toLowerCase().includes(query) || (i.handle || "").toLowerCase().includes(query)));
 
   // group: date -> handle -> items
@@ -165,6 +214,7 @@ export function Schedule() {
       </div>
 
       <TrendsPanel />
+      <Calendar counts={counts} sel={selDate} onSel={setSelDate} />
 
       <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔎 搜脚本/标题/账号" className="w-44 rounded border border-line bg-transparent px-2 py-1 text-text placeholder:text-dim" />

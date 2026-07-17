@@ -34,9 +34,9 @@ def build_flow(session: Session) -> dict:
         comps = list(session.scalars(select(AccountSegment).where(AccountSegment.account_id == a.id)).all())
         if not comps:
             continue
-        followers = _latest_followers(session, a.id)
-        if followers <= 0:
-            continue
+        # pre-launch accounts have 0 followers -> show the funnel STRUCTURE at a nominal floor so the
+        # 导流 diagram renders the intended routing; real follower volume takes over once it exists.
+        followers = _latest_followers(session, a.id) or 100
         wsum = sum(c.weight for c in comps) or 1.0
         ep_name = endpoints.get(a.endpoint_id, UNROUTED) if a.endpoint_id else UNROUTED
         acct_node = f"acct:{a.handle}"
