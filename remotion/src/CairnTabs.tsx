@@ -352,7 +352,7 @@ const S4: React.FC = () => {
           {[IT.soContains, IT.soDetect, IT.soJava, IT.soYield].map((it, i) => <TabRow key={i} it={it} dim={0.9} />)}
         </>}
       </Panel>
-      <Cursor x={interpolate(f, [30, 92], [1500, 1585], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} y={interpolate(f, [30, 92], [560, 150], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} clickAt={96} />
+      <Cursor x={interpolate(f, [30, 92], [1600, 1831], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} y={interpolate(f, [30, 92], [540, 188], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} clickAt={96} />
       <Caption text="成组要你点头,绝不自作主张" len={180} />
     </AbsoluteFill>
   );
@@ -393,7 +393,7 @@ const S6: React.FC = () => {
         <TabRow it={{ ...IT.qa, star: f > 50 }} highlight={interpolate(f, [40, 54, 74], [0, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} />
         <TabRow it={{ ...IT.elevate, star: f > 66 }} highlight={interpolate(f, [56, 70, 90], [0, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} />
       </Panel>
-      <Cursor x={interpolate(f, [20, 46], [1400, 1855], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} y={interpolate(f, [20, 46, 62], [500, 300, 348], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} clickAt={50} />
+      <Cursor x={interpolate(f, [20, 46], [1400, 1882], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} y={interpolate(f, [20, 46], [480, 356], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} clickAt={50} />
       <Caption text="重点标签,一键置顶" len={180} />
     </AbsoluteFill>
   );
@@ -411,7 +411,7 @@ const S7: React.FC = () => {
       <Panel tabs="15" tasks="3" search={q ? q : "搜索标签..."}>
         {(q ? hits : all).map((it, i) => <div key={i} style={{ opacity: ease(f, 0, 8, 1, 1) }}><TabRow it={it} highlight={q && i === 0 ? 1 : 0} /></div>)}
       </Panel>
-      <Cursor x={1250} y={196} clickAt={10} />
+      <Cursor x={1480} y={78} clickAt={10} />
       <Caption text="⌘⇧K,秒搜所有标签" len={180} />
     </AbsoluteFill>
   );
@@ -478,7 +478,7 @@ const S9: React.FC = () => {
       <BrowserBg />
       <Panel tabs={archived ? "11" : "15"} tasks={archived ? "2" : "3"}>
         {!archived ? (
-          <div style={{ transform: `translateX(${ease(f, 44, 64, 0, 640)}px)`, opacity: ease(f, 52, 64, 1, 0) }}>
+          <div style={{ transform: `translateX(${ease(f, 48, 66, 0, 640)}px)`, opacity: ease(f, 54, 66, 1, 0) }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 4px" }}>
               <div style={{ width: 4, height: 20, borderRadius: 3, background: C.blue }} />
               <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 17, color: C.ink }}>React Dev</span>
@@ -503,7 +503,7 @@ const S9: React.FC = () => {
         )}
       </Panel>
       {archived && <div style={{ position: "absolute", bottom: 120, left: "50%", transform: "translateX(-50%)", marginRight: 310, background: "rgba(22,28,38,0.9)", color: "#fff", fontFamily: FONT, fontSize: 20, padding: "12px 22px", borderRadius: 12, opacity: ease(f, 66, 80, 0, 1) }}>已归档 · 随时恢复</div>}
-      <Cursor x={interpolate(f, [16, 50], [1400, 1690], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} y={interpolate(f, [16, 50], [400, 120], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} clickAt={54} />
+      <Cursor x={interpolate(f, [12, 40], [1450, 1818], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} y={interpolate(f, [12, 40], [360, 185], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} clickAt={44} />
       <Caption text="整组一键归档,随时恢复" len={180} />
     </AbsoluteFill>
   );
