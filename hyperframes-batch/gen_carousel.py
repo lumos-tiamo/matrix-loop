@@ -67,15 +67,16 @@ def _static_candles(coin, accent):
 
 
 def _ohlc_by_coin(coin):
-    """Load OHLC for an explicit coin (carousel isn't pid-bound)."""
+    """Load OHLC for an explicit coin (carousel isn't pid-bound); self-heal from CoinGecko on miss."""
     import gen_watchable as G
-    p = os.path.join(G.CAPDIR if hasattr(G, "CAPDIR") else os.path.join(HERE, "captures"), f"ohlc_{coin}.json")
+    cap = G.CAPDIR if hasattr(G, "CAPDIR") else os.path.join(HERE, "captures")
+    p = os.path.join(cap, f"ohlc_{coin}.json")
     if os.path.exists(p):
         try:
             return json.load(open(p))
         except Exception:
-            return []
-    return []
+            pass
+    return G._fetch_ohlc(coin, p) or []
 
 
 def _stat_block(hn, accent):
