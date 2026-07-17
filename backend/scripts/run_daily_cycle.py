@@ -46,6 +46,13 @@ SLOTS = {
     8:  [12, 15, 19, 22],   # askaurea      (TikTok, TW)
 }
 LINK_SLOT = {"twitter": "first_reply", "instagram": "link_sticker_bio", "tiktok": "bio"}
+# per-account format rotation: mix data posts with the benchmark's high-conversion formats
+ANGLE_ROTATION = {
+    9:  [None, "fake_checker_warning", None, "personal_result"],   # AE 空投:数据+骗局警告+真实结果
+    10: [None, None, "loss_review", None],                          # CC 行情:分析+晒亏损单复盘
+    11: [None, "myth_bust", None, None],                            # QY 收益:数据+X vs Y 破除迷思
+    8:  [None, None, "ai_reveal", None],                            # AU 科普:讲解+"Nina帮我查"reveal
+}
 
 
 def _opt(flag, default=None):
@@ -99,10 +106,12 @@ def daily_from_trends(s, rounds, only=None):
         s.add(run); s.commit()
         provider = resolver(a) if callable(resolver) else resolver
         slots = SLOTS.get(a.id, [9, 13, 18, 21])
+        rot = ANGLE_ROTATION.get(a.id, [])
         for i, t in enumerate(trends):
             topic = t.distilled_topic or t.title
+            angle = rot[i] if i < len(rot) else None
             try:
-                text = generate_script(topic, brief, llm, trends=trend_block)
+                text = generate_script(topic, brief, llm, trends=trend_block, angle=angle)
             except Exception as e:  # noqa: BLE001
                 print(f"  {a.handle} t{i} script error: {e}"); continue
             draft = Draft(loop_run_id=run.id, kind="script", content=text, review_status="adopted")

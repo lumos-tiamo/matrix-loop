@@ -53,6 +53,33 @@ def build_script_prompt(topic: str, brief, performance: str | None = None, trend
     return "\n".join(lines)
 
 
-def generate_script(topic: str, brief, client, performance: str | None = None, trends: str | None = None) -> str:
-    return client.complete(system=_SYSTEM,
-                           prompt=build_script_prompt(topic, brief, performance, trends)).strip()
+# High-conversion format variants (from the benchmark accounts). Inject to reframe a topic into a
+# format that drives trust/engagement — @zachxbt-style scam warnings, @CryptoDonAlt-style loss posts,
+# personal-result posts, IG myth-busting, TikTok "AI did it for me" reveals.
+ANGLES = {
+    "fake_checker_warning": (
+        "FORMAT = 🚨 scam/safety WARNING (builds trust like @zachxbt): reframe around how a fake "
+        "claim-checker / airdrop page drains wallets when you sign an approval. Explain the exact "
+        "mechanism (sign = approve a drainer, not a transfer), 2-3 red flags to spot it, and what to "
+        "verify before signing. Open with the warning, not the topic."),
+    "personal_result": (
+        "FORMAT = first-person result: 'here's what actually happened when I did this' — a concrete, "
+        "honest outcome with real numbers and ONE repeatable step. Not shilling; show the real math."),
+    "loss_review": (
+        "FORMAT = honest trade post-mortem (builds trust like @CryptoDonAlt): show a REAL setup, the "
+        "invalidation level that hit, the loss (-X% / -$Y), and the one lesson. Credibility over flex."),
+    "myth_bust": (
+        "FORMAT = myth-busting side-by-side (IG style): 'X vs Y' with the real numbers compared "
+        "directly (e.g. on-chain yield vs bank interest), then the honest takeaway."),
+    "ai_reveal": (
+        "FORMAT = 'I asked the AI (Nina) and here's what it found' reveal: frame the topic as something "
+        "Nina checked/explained for you in one line, showing the AI assist naturally."),
+}
+
+
+def generate_script(topic: str, brief, client, performance: str | None = None,
+                    trends: str | None = None, angle: str | None = None) -> str:
+    prompt = build_script_prompt(topic, brief, performance, trends)
+    if angle and angle in ANGLES:
+        prompt += "\n\n" + ANGLES[angle]
+    return client.complete(system=_SYSTEM, prompt=prompt).strip()
