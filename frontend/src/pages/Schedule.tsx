@@ -164,14 +164,34 @@ export function Schedule() {
   const [msg, setMsg] = useState<string | null>(null);
   const [fAccount, setFAccount] = useState("all");
   const [fType, setFType] = useState<"all" | "daily" | "seed">("all");
+  const [fDate, setFDate] = useState("all");
+  const [fStatus, setFStatus] = useState<"all" | "pending" | "approved">("all");
+  const [query, setQuery] = useState("");
   const [genning, setGenning] = useState(false);
 
   const all = sched.data ?? [];
   const handles = useMemo(() => [...new Set(all.map((i) => i.handle))], [all]);
+  const dates = useMemo(() => [...new Set(all.map((i) => i.date).filter(Boolean))].sort().reverse(), [all]);
+  const q = query.trim().toLowerCase();
   const items = all.filter((i) =>
     (fAccount === "all" || i.handle === fAccount) &&
-    (fType === "all" || (fType === "seed" ? i.is_seed : !i.is_seed)));
+    (fType === "all" || (fType === "seed" ? i.is_seed : !i.is_seed)) &&
+    (fDate === "all" || i.date === fDate) &&
+    (fStatus === "all" || i.review_status === fStatus) &&
+    (!q || (i.caption || "").toLowerCase().includes(q) || i.handle.toLowerCase().includes(q)));
   const groups = useMemo(() => groupByDate(items), [items]);
+
+  async function bulkApprove() {
+    const pend = items.filter((i) => i.review_status !== "approved");
+    if (!pend.length) return;
+    setMsg(`批量采纳 ${pend.length} 条…`);
+    for (const i of pend) { try { await api.setVideoReview(i.asset_id, "approved"); } catch { /* skip */ } }
+    await sched.reload(); setMsg(`已采纳 ${pend.length} 条`);
+  }
+  function copyAllCaptions() {
+    const txt = items.map((i) => `【${i.handle} ${i.posting_time?.slice(5) || ""}】\n${i.caption || ""}`).join("\n\n---\n\n");
+    navigator.clipboard?.writeText(txt); setMsg(`已复制 ${items.length} 条文案到剪贴板`);
+  }
 
   async function act(id: number, label: string, fn: () => Promise<unknown>) {
     setBusy((b) => ({ ...b, [id]: label })); setMsg(null);
@@ -214,9 +234,20 @@ export function Schedule() {
       <TrendsPanel />
 
       <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="🔎 搜文案/账号"
+          className="w-40 rounded border border-line bg-transparent px-2 py-1 text-text placeholder:text-dim" />
         <select value={fAccount} onChange={(e) => setFAccount(e.target.value)} className="rounded border border-line bg-transparent px-2 py-1 text-muted">
           <option value="all">全部账号</option>
           {handles.map((h) => <option key={h} value={h}>{h}</option>)}
+        </select>
+        <select value={fDate} onChange={(e) => setFDate(e.target.value)} className="rounded border border-line bg-transparent px-2 py-1 text-muted">
+          <option value="all">全部日期</option>
+          {dates.map((d) => <option key={d} value={d}>{d}</option>)}
+        </select>
+        <select value={fStatus} onChange={(e) => setFStatus(e.target.value as typeof fStatus)} className="rounded border border-line bg-transparent px-2 py-1 text-muted">
+          <option value="all">全部状态</option>
+          <option value="pending">待审</option>
+          <option value="approved">已采纳</option>
         </select>
         {(["all", "daily", "seed"] as const).map((t) => (
           <button key={t} onClick={() => setFType(t)}
@@ -224,7 +255,10 @@ export function Schedule() {
             {t === "all" ? "全部" : t === "daily" ? "日更" : "种子"}
           </button>
         ))}
+        <span className="flex-1" />
         <span className="text-dim">共 {items.length} 条</span>
+        <button onClick={bulkApprove} className="rounded border border-line px-2 py-1 text-muted hover:border-lime hover:text-lime">全部采纳</button>
+        <button onClick={copyAllCaptions} className="rounded border border-line px-2 py-1 text-muted hover:border-lime hover:text-lime">复制全部文案</button>
       </div>
 
       {msg && <div className="rounded-lg border border-lime/40 bg-lime/[.08] px-3 py-2 font-mono text-xs text-lime">{msg}</div>}
