@@ -95,27 +95,27 @@ def build_slides(pkg, coin=None):
     coin = coin or {"CC": "bitcoin"}.get(pre)
 
     css = f"""*{{margin:0;box-sizing:border-box}} html,body{{width:{W}px;height:{H}px}}
-body{{position:relative;background:{b['bg2']};color:#fff;font-family:{SANS};padding:60px 56px;
-display:flex;flex-direction:column;overflow:hidden}}
-.glow{{position:absolute;width:900px;height:900px;border-radius:50%;filter:blur(120px);opacity:.30;
-background:radial-gradient(circle,{acc},transparent 68%);top:-260px;right:-240px;z-index:0}}
-.glow2{{position:absolute;width:760px;height:760px;border-radius:50%;filter:blur(120px);opacity:.20;
-background:radial-gradient(circle,{acc2},transparent 68%);bottom:-260px;left:-220px;z-index:0}}
-.grid{{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
-linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:70px 70px;z-index:0}}
+body{{position:relative;background:radial-gradient(120% 92% at 50% -12%,{b['bg1']},{b['bg2']});color:#fff;font-family:{SANS};padding:58px 54px;display:flex;flex-direction:column;overflow:hidden}}
+.glow{{position:absolute;width:1000px;height:1000px;border-radius:50%;filter:blur(130px);opacity:.34;background:radial-gradient(circle,{acc},transparent 66%);top:-300px;right:-260px;z-index:0}}
+.glow2{{position:absolute;width:820px;height:820px;border-radius:50%;filter:blur(130px);opacity:.22;background:radial-gradient(circle,{acc2},transparent 66%);bottom:-280px;left:-240px;z-index:0}}
+.grid{{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:76px 76px;z-index:0;-webkit-mask-image:linear-gradient(180deg,transparent,#000 38%,#000 72%,transparent)}}
 .z{{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}}
-.top{{display:flex;align-items:center;gap:14px;font-family:'SF Mono',monospace;font-size:22px}}
-.chip{{background:{acc};color:#05070d;font-weight:800;border-radius:8px;padding:6px 14px;letter-spacing:1px}}
+.top{{display:flex;align-items:center;gap:12px;font-family:'SF Mono',monospace;font-size:22px}}
+.ava{{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,{acc},{acc2});display:flex;align-items:center;justify-content:center;font-family:{SERIF};font-weight:800;font-size:28px;color:#05070d;box-shadow:0 0 20px {acc}77}}
+.chip{{background:{acc};color:#05070d;font-weight:800;border-radius:9px;padding:6px 15px;letter-spacing:1px}}
 .hand{{color:#aeb6c8}} .cnt{{margin-left:auto;color:{acc};font-weight:700}}
-.ey{{font-family:'SF Mono',monospace;font-size:24px;letter-spacing:5px;color:{acc};margin:34px 0 12px}}
-.hl{{font-family:{hf};font-weight:800;font-size:{'62px' if is_cjk else '66px'};line-height:1.1;letter-spacing:-1px}}
-.panel{{position:relative;flex:1;margin:30px 0;border:2px solid {acc}55;border-radius:28px;
-background:linear-gradient(160deg,{acc}1f,{acc}08);padding:44px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}}
-.stat{{font-family:{SERIF};font-weight:800;font-size:168px;line-height:.86;letter-spacing:-4px}}
-.lab{{font-size:32px;color:#cfd6e6;margin-top:18px;line-height:1.3}}
-.bar{{height:16px;margin-top:26px;border-radius:10px;background:linear-gradient(90deg,{acc},{acc2})}}
-.exp{{font-size:32px;line-height:1.45;color:#d7dbe6}}
-.ft{{display:flex;align-items:center;gap:14px;font-family:'SF Mono',monospace;font-size:20px;color:#8892a6;margin-top:26px}}
+.ey{{font-family:'SF Mono',monospace;font-size:24px;letter-spacing:5px;color:{acc};margin:30px 0 10px}}
+.hl{{font-family:{hf};font-weight:800;font-size:{'56px' if is_cjk else '60px'};line-height:1.1;letter-spacing:-1px}}
+.panel{{position:relative;flex:1;margin:26px 0;border:2px solid {acc}66;border-radius:30px;background:linear-gradient(158deg,{acc}30,{acc}0c 58%,transparent);padding:50px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 0 {acc}30,0 22px 60px rgba(0,0,0,.42)}}
+.metric{{font-family:'SF Mono',monospace;font-size:23px;letter-spacing:3px;color:{acc};margin-bottom:12px}}
+.stat{{font-family:{SERIF};font-weight:800;font-size:180px;line-height:.82;letter-spacing:-5px;text-shadow:0 0 55px {acc}66}}
+.lab{{font-size:33px;color:#eaeff7;margin-top:20px;line-height:1.3;font-weight:600}}
+.bar{{height:20px;margin-top:30px;border-radius:12px;background:linear-gradient(90deg,{acc},{acc2});box-shadow:0 0 28px {acc}99;max-width:72%}}
+.ghost{{position:absolute;top:-46px;right:6px;font-family:{SERIF};font-weight:800;font-size:320px;line-height:1;color:{acc};opacity:.13}}
+.stmt{{position:relative;font-family:{hf};font-weight:800;font-size:{'72px' if is_cjk else '76px'};line-height:1.12;letter-spacing:-1px}}
+.abar{{width:130px;height:9px;border-radius:9px;margin-top:32px;background:linear-gradient(90deg,{acc},{acc2});box-shadow:0 0 22px {acc}88}}
+.exp{{font-size:31px;line-height:1.45;color:#d7dbe6}}
+.ft{{display:flex;align-items:center;gap:14px;font-family:'SF Mono',monospace;font-size:20px;color:#8892a6;margin-top:22px}}
 .dots b{{color:{acc}}} .swipe{{margin-left:auto;color:{acc};font-weight:700}}
 .big{{font-family:{hf};font-weight:800;line-height:1.05;letter-spacing:-2px}}"""
 
@@ -125,50 +125,51 @@ background:linear-gradient(160deg,{acc}1f,{acc}08);padding:44px;display:flex;fle
                 f'<div class="z">{inner}</div></body></html>')
 
     def top(n, total):
-        dots = "".join("<b>●</b>" if i < n else "○" for i in range(total))
-        return (f'<div class="top"><span class="chip">{b["name"]}</span><span class="hand">{b["fn"]}</span>'
+        return (f'<div class="top"><span class="ava">{b["name"][0]}</span>'
+                f'<span class="chip">{b["name"]}</span><span class="hand">{b["fn"]}</span>'
                 f'<span class="cnt">{n:02d}/{total:02d}</span></div>')
 
     def foot(n, total):
         dots = "".join("<b>●</b>" if i < n else "○" for i in range(total))
-        return f'<div class="ft"><span class="dots">{dots}</span><span>NFA · 数据可核</span><span class="swipe">左滑 →</span></div>'
+        return f'<div class="ft"><span class="dots">{dots}</span><span>✓ 已核实 · NFA</span><span class="swipe">左滑 →</span></div>'
 
     slides, total = [], len(scenes) + 2
     hook = clean_text(drop_placeholders(scenes[0].get("onScreenCaption", "") if scenes else "")) or pkg.get("id")
-    # cover — big, filled
     slides.append(frame(
         top(1, total)
         + '<div style="flex:1;display:flex;flex-direction:column;justify-content:center">'
-        + f'<div class="ey">{b["name"]} · 干货</div>'
-        + f'<div class="big" style="font-size:{"92px" if is_cjk else "104px"}">{hook}</div>'
-        + f'<div style="margin-top:40px;display:inline-flex;align-self:flex-start;background:{acc};color:#05070d;'
+        + f'<div class="ey">{b.get("cat","")}</div>'
+        + f'<div class="big" style="font-size:{"90px" if is_cjk else "100px"}">{hook}</div>'
+        + f'<div style="margin-top:42px;display:inline-flex;align-self:flex-start;background:{acc};color:#05070d;'
           f'font-weight:800;font-size:30px;border-radius:14px;padding:16px 30px">{total} 张讲清 · 存下 →</div></div>'
         + foot(1, total)))
-    # content — hero panel fills the frame
     for idx, s in enumerate(scenes):
         head = clean_text(drop_placeholders(s.get("onScreenCaption", "") or ""))
-        cap = clean_text(drop_placeholders(s.get("narration", "") or ""))[:120]
+        cap = clean_text(drop_placeholders(s.get("narration", "") or ""))[:130]
         hn = hero_number(s.get("onScreenCaption", "")) or hero_number(s.get("narration", ""))
-        if coin and idx == min(1, len(scenes) - 1):
+        has_unit = bool(hn and (hn[0] or hn[2]))   # only $ ~ prefix or %/x/B/M/K suffix — no bare "3"/"22"
+        is_chart = bool(coin and idx == min(1, len(scenes) - 1))
+        if is_chart:
             panel = f'<div class="panel">{_static_candles(coin, acc)}</div>'
-        elif hn:
+            hl = f'<div class="hl">{head}</div>'
+        elif has_unit:
             lab = re.sub(r"^[^:：]*[:：]\s*", "", head) or head
-            panel = (f'<div class="panel"><div class="stat">{_hero_num(hn)}</div>'
-                     f'<div class="bar"></div><div class="lab">{lab}</div></div>')
-        else:
-            panel = f'<div class="panel"><div class="big" style="font-size:{"56px" if is_cjk else "60px"}">{head}</div></div>'
+            panel = (f'<div class="panel"><div class="metric">数据 · 已核实</div>'
+                     f'<div class="stat">{_hero_num(hn)}</div><div class="bar"></div><div class="lab">{lab}</div></div>')
+            hl = f'<div class="hl">{head}</div>'
+        else:   # STATEMENT slide — filled + designed (big serif + ghost index + accent bar)
+            panel = (f'<div class="panel"><div class="ghost">{idx+1:02d}</div>'
+                     f'<div class="stmt">{head}</div><div class="abar"></div></div>')
+            hl = ""
         slides.append(frame(
-            top(idx + 2, total)
-            + f'<div class="ey">{idx+1:02d} / {total-2:02d}</div>'
-            + (f'<div class="hl">{head}</div>' if hn or (coin and idx == min(1, len(scenes) - 1)) else "")
-            + panel + f'<div class="exp">{cap}</div>' + foot(idx + 2, total)))
-    # cta — accent-filled
+            top(idx + 2, total) + f'<div class="ey">{idx+1:02d} / {total-2:02d}</div>'
+            + hl + panel + f'<div class="exp">{cap}</div>' + foot(idx + 2, total)))
     fn = "Xaue" if pre == "QY" else ("Nina / Xaue" if pre == "AU" else "Nina")
     slides.append(frame(
         top(total, total)
         + '<div style="flex:1;display:flex;flex-direction:column;justify-content:center">'
         + f'<div class="ey">存下 · 转给朋友</div>'
-        + f'<div class="big" style="font-size:{"80px" if is_cjk else "84px"}">想一句话搞懂?<br>让 <span style="color:{acc}">{fn}</span> 帮你查。</div>'
+        + f'<div class="big" style="font-size:{"78px" if is_cjk else "82px"}">想一句话搞懂?<br>让 <span style="color:{acc}">{fn}</span> 帮你查。</div>'
         + f'<div class="exp" style="margin-top:36px">{b["fn"]} · 主页链接 · 非投资建议 NFA</div></div>'
         + foot(total, total)))
     return slides
