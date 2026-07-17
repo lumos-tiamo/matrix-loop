@@ -175,6 +175,145 @@ body{{position:relative;background:radial-gradient(120% 92% at 50% -12%,{b['bg1'
     return slides
 
 
+def _viz_compare(items, acc, acc2):
+    """Horizontal comparison bars (X vs Y ...) from real values. items = [[label, value, display], ...]"""
+    vals = [float(v) for _, v, _ in items] or [1]
+    mx = max(vals) or 1
+    rows = []
+    for lab, v, disp in items:
+        w = max(7, round(float(v) / mx * 100))
+        rows.append(
+            f'<div style="margin:26px 0"><div style="display:flex;justify-content:space-between;font-size:31px;margin-bottom:12px">'
+            f'<span style="color:#e2e8f4">{lab}</span><span style="font-family:{SERIF};font-weight:800;color:#fff">{disp}</span></div>'
+            f'<div style="height:38px;border-radius:12px;background:#ffffff10"><div style="height:100%;width:{w}%;border-radius:12px;'
+            f'background:linear-gradient(90deg,{acc},{acc2});box-shadow:0 0 22px {acc}88"></div></div></div>')
+    return "".join(rows)
+
+
+def _viz_donut(pct, label, acc):
+    import math
+    r = 148
+    c = 2 * math.pi * r
+    off = c * (1 - max(0, min(100, pct)) / 100)
+    return (f'<div style="display:flex;align-items:center;gap:44px;height:100%">'
+            f'<svg width="360" height="360" viewBox="0 0 360 360" style="flex:none">'
+            f'<circle cx="180" cy="180" r="{r}" fill="none" stroke="#ffffff12" stroke-width="36"/>'
+            f'<circle cx="180" cy="180" r="{r}" fill="none" stroke="{acc}" stroke-width="36" stroke-linecap="round" '
+            f'stroke-dasharray="{c:.0f}" stroke-dashoffset="{off:.0f}" transform="rotate(-90 180 180)" '
+            f'style="filter:drop-shadow(0 0 16px {acc}aa)"/>'
+            f'<text x="180" y="205" text-anchor="middle" font-family="{SERIF}" font-weight="800" font-size="112" fill="#fff">{pct}%</text></svg>'
+            f'<div style="font-size:40px;color:#eaeff7;font-weight:700;line-height:1.3">{label}</div></div>')
+
+
+def _viz_rank(items, acc, acc2):
+    """Leaderboard: sorted bars with rank numbers. items = [[label, value, display], ...]"""
+    items = sorted(items, key=lambda x: -float(x[1]))
+    mx = max((float(v) for _, v, _ in items), default=1) or 1
+    rows = []
+    for i, (lab, v, disp) in enumerate(items):
+        w = max(9, round(float(v) / mx * 100))
+        rows.append(
+            f'<div style="display:flex;align-items:center;gap:20px;margin:18px 0">'
+            f'<span style="font-family:{SERIF};font-weight:800;font-size:36px;color:{acc};width:46px">{i+1}</span>'
+            f'<div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:28px;margin-bottom:9px">'
+            f'<span style="color:#e2e8f4">{lab}</span><span style="font-weight:800;color:#fff">{disp}</span></div>'
+            f'<div style="height:26px;border-radius:9px;background:#ffffff10"><div style="height:100%;width:{w}%;border-radius:9px;'
+            f'background:linear-gradient(90deg,{acc},{acc2})"></div></div></div></div>')
+    return "".join(rows)
+
+
+def build_spec_slides(spec, pre, is_cjk):
+    """Render a carousel from a STRUCTURED infographic spec (professional data-viz, real numbers).
+    spec = {cover, slides:[{kind, ...}], cta}. kind ∈ stat|compare|donut|rank|chart|statement."""
+    b = BRAND.get(pre, BRAND["AE"])
+    hf = CJK_SANS if is_cjk else SERIF
+    acc, acc2 = b["accent"], b["accent2"]
+    slides_spec = (spec.get("slides") or [])[:5]
+    total = len(slides_spec) + 2
+    css = f"""*{{margin:0;box-sizing:border-box}} html,body{{width:{W}px;height:{H}px}}
+body{{position:relative;background:radial-gradient(120% 92% at 50% -12%,{b['bg1']},{b['bg2']});color:#fff;font-family:{SANS};padding:58px 54px;display:flex;flex-direction:column;overflow:hidden}}
+.glow{{position:absolute;width:1000px;height:1000px;border-radius:50%;filter:blur(130px);opacity:.32;background:radial-gradient(circle,{acc},transparent 66%);top:-300px;right:-260px;z-index:0}}
+.glow2{{position:absolute;width:820px;height:820px;border-radius:50%;filter:blur(130px);opacity:.20;background:radial-gradient(circle,{acc2},transparent 66%);bottom:-280px;left:-240px;z-index:0}}
+.grid{{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:76px 76px;z-index:0;-webkit-mask-image:linear-gradient(180deg,transparent,#000 38%,#000 72%,transparent)}}
+.z{{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}}
+.top{{display:flex;align-items:center;gap:12px;font-family:'SF Mono',monospace;font-size:22px}}
+.ava{{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,{acc},{acc2});display:flex;align-items:center;justify-content:center;font-family:{SERIF};font-weight:800;font-size:28px;color:#05070d;box-shadow:0 0 20px {acc}77}}
+.chip{{background:{acc};color:#05070d;font-weight:800;border-radius:9px;padding:6px 15px;letter-spacing:1px}}
+.hand{{color:#aeb6c8}} .cnt{{margin-left:auto;color:{acc};font-weight:700}}
+.ey{{font-family:'SF Mono',monospace;font-size:24px;letter-spacing:5px;color:{acc};margin:30px 0 10px}}
+.hl{{font-family:{hf};font-weight:800;font-size:{'54px' if is_cjk else '58px'};line-height:1.1;letter-spacing:-1px}}
+.panel{{position:relative;flex:1;margin:24px 0;border:2px solid {acc}66;border-radius:30px;background:linear-gradient(158deg,{acc}2b,{acc}0a 58%,transparent);padding:46px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 0 {acc}30,0 22px 60px rgba(0,0,0,.42)}}
+.metric{{font-family:'SF Mono',monospace;font-size:23px;letter-spacing:3px;color:{acc};margin-bottom:12px}}
+.stat{{font-family:{SERIF};font-weight:800;font-size:170px;line-height:.82;letter-spacing:-5px;text-shadow:0 0 55px {acc}66}}
+.delta{{display:inline-block;margin-top:20px;font-size:28px;font-weight:700;color:#05070d;background:{acc};border-radius:10px;padding:8px 18px}}
+.pt{{font-family:{hf};font-weight:800;font-size:34px;margin-bottom:6px}}
+.exp{{font-size:31px;line-height:1.45;color:#d7dbe6}}
+.ft{{display:flex;align-items:center;gap:14px;font-family:'SF Mono',monospace;font-size:20px;color:#8892a6;margin-top:22px}}
+.dots b{{color:{acc}}} .swipe{{margin-left:auto;color:{acc};font-weight:700}}
+.big{{font-family:{hf};font-weight:800;line-height:1.05;letter-spacing:-2px}}
+.ghost{{position:absolute;top:-46px;right:6px;font-family:{SERIF};font-weight:800;font-size:300px;line-height:1;color:{acc};opacity:.13}}
+.stmt{{position:relative;font-family:{hf};font-weight:800;font-size:{'66px' if is_cjk else '70px'};line-height:1.12}}"""
+
+    def frame(inner):
+        return (f'<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head>'
+                f'<body><div class="glow"></div><div class="glow2"></div><div class="grid"></div>'
+                f'<div class="z">{inner}</div></body></html>')
+
+    def top(n):
+        return (f'<div class="top"><span class="ava">{b["name"][0]}</span><span class="chip">{b["name"]}</span>'
+                f'<span class="hand">{b["fn"]}</span><span class="cnt">{n:02d}/{total:02d}</span></div>')
+
+    def foot(n):
+        dots = "".join("<b>●</b>" if i < n else "○" for i in range(total))
+        return f'<div class="ft"><span class="dots">{dots}</span><span>✓ 已核实 · NFA</span><span class="swipe">左滑 →</span></div>'
+
+    out = []
+    hook = spec.get("cover") or b["name"]
+    out.append(frame(top(1) + '<div style="flex:1;display:flex;flex-direction:column;justify-content:center">'
+                     + f'<div class="ey">{b.get("cat","")}</div>'
+                     + f'<div class="big" style="font-size:{"88px" if is_cjk else "98px"}">{hook}</div>'
+                     + f'<div style="margin-top:42px;display:inline-flex;align-self:flex-start;background:{acc};color:#05070d;font-weight:800;font-size:30px;border-radius:14px;padding:16px 30px">{total} 张讲清 · 存下 →</div></div>'
+                     + foot(1)))
+    for i, sl in enumerate(slides_spec):
+        kind = sl.get("kind", "statement")
+        cap = (sl.get("caption") or "")[:130]
+        title = sl.get("title") or sl.get("label") or ""
+        if kind == "stat":
+            inner = (f'<div class="metric">数据 · 已核实</div><div class="stat">{sl.get("big","")}</div>'
+                     + (f'<div class="delta">{sl.get("delta","")}</div>' if sl.get("delta") else "")
+                     + f'<div class="exp" style="margin-top:22px;color:#eaeff7;font-weight:600">{sl.get("label","")}</div>')
+            body = f'<div class="hl">{title}</div>' if title and title != sl.get("label") else ""
+        elif kind == "compare":
+            inner = (f'<div class="pt">{title}</div>' if title else "") + _viz_compare(sl.get("items", []), acc, acc2)
+            body = ""
+        elif kind == "donut":
+            inner = _viz_donut(int(sl.get("pct", 0)), sl.get("label", ""), acc)
+            body = f'<div class="hl">{title}</div>' if title and title != sl.get("label") else ""
+        elif kind == "rank":
+            inner = (f'<div class="pt">{title}</div>' if title else "") + _viz_rank(sl.get("items", []), acc, acc2)
+            body = ""
+        elif kind == "chart":
+            inner = _static_candles(sl.get("coin", "bitcoin"), acc)
+            body = f'<div class="hl">{title}</div>' if title else ""
+        else:  # statement
+            inner = f'<div class="ghost">{i+1:02d}</div><div class="stmt">{title or sl.get("label","")}</div>'
+            body = ""
+        out.append(frame(top(i + 2) + f'<div class="ey">{i+1:02d} / {total-2:02d}</div>' + body
+                         + f'<div class="panel">{inner}</div><div class="exp">{cap}</div>' + foot(i + 2)))
+    fn = "Xaue" if pre == "QY" else ("Nina / Xaue" if pre == "AU" else "Nina")
+    out.append(frame(top(total) + '<div style="flex:1;display:flex;flex-direction:column;justify-content:center">'
+                     + '<div class="ey">存下 · 转给朋友</div>'
+                     + f'<div class="big" style="font-size:{"76px" if is_cjk else "80px"}">{spec.get("cta") or "想一句话搞懂?"}<br>让 <span style="color:{acc}">{fn}</span> 帮你查。</div>'
+                     + f'<div class="exp" style="margin-top:36px">{b["fn"]} · 主页链接 · 非投资建议 NFA</div></div>' + foot(total)))
+    return out
+
+
+def render_spec(spec, pre, is_cjk, out_dir):
+    pngs = _shoot(build_spec_slides(spec, pre, is_cjk), out_dir)
+    print(f"✓ carousel[spec] {pre}: {len(pngs)} slides -> {out_dir}")
+    return pngs
+
+
 def _shoot(slides, out_dir):
     os.makedirs(out_dir, exist_ok=True)
     # clear stale slides so a shorter regen doesn't leave orphans
@@ -187,9 +326,9 @@ def _shoot(slides, out_dir):
         pp = os.path.join(out_dir, f"slide{i+1}.png")
         open(hp, "w").write(html)
         subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--no-sandbox", "--hide-scrollbars",
-                        "--force-device-scale-factor=1", f"--window-size={W},{H}",
-                        "--virtual-time-budget=1500", f"--screenshot={pp}", f"file://{hp}"],
-                       capture_output=True, timeout=60)
+                        "--force-device-scale-factor=2", f"--window-size={W},{H}",  # 2x retina — crisp IG quality
+                        "--virtual-time-budget=1800", f"--screenshot={pp}", f"file://{hp}"],
+                       capture_output=True, timeout=90)
         if os.path.exists(pp):
             pngs.append(pp)
     return pngs
