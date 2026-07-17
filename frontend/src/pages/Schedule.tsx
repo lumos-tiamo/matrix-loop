@@ -15,7 +15,7 @@ function TrendsPanel() {
   const trends = useAsync<TrendItem[]>(() => api.getTrends(), []);
   const list = trends.data ?? [];
   return (
-    <div className="rounded-xl border border-line bg-white/[.02]">
+    <div className="glass">
       <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-2 px-4 py-2.5 text-left font-mono text-xs">
         <span className="text-lime">🔥 B层已核实热点</span><span className="text-dim">{list.length} 条 · 喂 A 脑(含来源)</span>
         <span className="flex-1" /><span className="text-dim">{open ? "▲" : "▼"}</span>
@@ -45,7 +45,7 @@ function Card({ it, onAct }: { it: DayItem; onAct: (label: string, fn: () => Pro
   const isVideo = it.type === "video";
   const badge = isVideo ? "🎬" : "🖼";
   return (
-    <div className="rounded-lg border border-line bg-white/[.02]">
+    <div className="glass">
       <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-2 px-3 py-2 text-left">
         <span>{badge}</span>
         <span className="font-mono text-[11px] text-dim">{(it.posting_time || "").slice(11) || "图文"}</span>
@@ -120,7 +120,7 @@ function Calendar({ counts, sel, onSel }: { counts: Record<string, number>; sel:
   const nav = (delta: number) => { const nd = new Date(y, m - 1 + delta, 1); setYm(`${nd.getFullYear()}-${String(nd.getMonth() + 1).padStart(2, "0")}`); };
   const key = (d: number) => `${ym}-${String(d).padStart(2, "0")}`;
   return (
-    <div className="rounded-xl border border-line bg-white/[.02] p-3">
+    <div className="glass p-3">
       <div className="mb-2 flex items-center gap-3 font-mono text-xs">
         <button onClick={() => nav(-1)} className="rounded border border-line px-2 text-muted hover:text-text">‹</button>
         <span className="font-display text-sm font-bold">{y} 年 {m} 月</span>
@@ -241,7 +241,7 @@ export function Schedule() {
           </div>
           <div className="grid gap-3 lg:grid-cols-2">
             {[...hm.entries()].map(([handle, list]) => (
-              <div key={handle} className="rounded-xl border border-line/60 p-2.5">
+              <div key={handle} className="glass glass-hover p-3">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="rounded px-1.5 py-0.5 font-mono text-[10px] font-bold text-black" style={{ background: bc(handle) }}>{handle}</span>
                   <span className="font-mono text-[10px] text-dim">{list[0]?.platform} · {list.length} 条</span>

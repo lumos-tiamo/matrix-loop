@@ -51,7 +51,7 @@ export function Carousels() {
 
       <div className="space-y-6">
         {items.map((c) => (
-          <section key={c.folder} className="rounded-xl border border-line bg-white/[.02] p-3">
+          <section key={c.folder} className="glass p-3">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <span className="rounded px-1.5 py-0.5 font-mono text-[10px] font-bold text-black"
                 style={{ background: BRAND[c.brand ?? ""] ?? "#8B5CFF" }}>{c.handle || c.brand}</span>
@@ -65,7 +65,7 @@ export function Carousels() {
               {c.slide_urls.map((u, i) => (
                 <a key={i} href={mediaSrc(u) || u} target="_blank" rel="noreferrer" className="shrink-0">
                   <img src={mediaSrc(u) || u} alt={`slide ${i + 1}`} loading="lazy"
-                    className="h-72 w-auto rounded-lg border border-line/60" />
+                    className="h-72 w-auto thumb-card" />
                 </a>
               ))}
             </div>
