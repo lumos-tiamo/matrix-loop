@@ -79,6 +79,35 @@ def _ohlc_by_coin(coin):
     return G._fetch_ohlc(coin, p) or []
 
 
+def _coin_logo(coin_id):
+    """Real coin/token logo as a data-URI (CoinGecko markets API, no browser). Cached. '' on miss —
+    so a carousel's imagery is tied to ITS asset (BTC->BTC mark, gold->PAXG, etc)."""
+    if not coin_id:
+        return ""
+    import base64
+    import urllib.request
+    cache = os.path.join(HERE, "captures", "logos", f"{coin_id}.txt")
+    if os.path.exists(cache):
+        try:
+            return open(cache).read()
+        except Exception:
+            pass
+    try:
+        u = f"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids={coin_id}"
+        data = json.load(urllib.request.urlopen(
+            urllib.request.Request(u, headers={"User-Agent": "matrix-loop/1.0", "accept": "application/json"}), timeout=20))
+        img = data[0]["image"] if data else None
+        if not img:
+            return ""
+        raw = urllib.request.urlopen(urllib.request.Request(img, headers={"User-Agent": "matrix-loop/1.0"}), timeout=20).read()
+        uri = "data:image/png;base64," + base64.b64encode(raw).decode()
+        os.makedirs(os.path.dirname(cache), exist_ok=True)
+        open(cache, "w").write(uri)
+        return uri
+    except Exception:
+        return ""
+
+
 def _hero_num(hn):
     pre, val, suf, dec = hn
     return f"{pre}{val:.1f}{suf}" if dec else f"{pre}{int(val):,}{suf}"
@@ -175,16 +204,45 @@ body{{position:relative;background:radial-gradient(120% 92% at 50% -12%,{b['bg1'
     return slides
 
 
+MONO = "'SF Mono',ui-monospace,'JetBrains Mono',monospace"
+
+
+def _ilogo(coin_id, size=44):
+    """Small real coin logo before an item label (content-specific imagery). '' if it doesn't resolve."""
+    uri = _coin_logo(coin_id) if coin_id else ""
+    if not uri:
+        return ""
+    return (f'<img src="{uri}" alt="" style="width:{size}px;height:{size}px;border-radius:50%;'
+            f'object-fit:cover;background:#ffffff14;flex:none;box-shadow:0 0 12px #0007"/>')
+
+
+def _row_items(items):
+    """Normalize items -> (label, value, display, coin_id). Accepts 3- or 4-tuples."""
+    out = []
+    for it in items:
+        if not it:
+            continue
+        lab = it[0] if len(it) > 0 else ""
+        val = it[1] if len(it) > 1 else 0
+        disp = it[2] if len(it) > 2 else str(val)
+        coin = it[3] if len(it) > 3 else ""
+        out.append((lab, val, disp, coin))
+    return out
+
+
 def _viz_compare(items, acc, acc2):
-    """Horizontal comparison bars (X vs Y ...) from real values. items = [[label, value, display], ...]"""
-    vals = [float(v) for _, v, _ in items] or [1]
+    """Horizontal comparison bars (X vs Y ...) from real values. items = [[label, value, display, coin?], ...]"""
+    items = _row_items(items)
+    vals = [float(v) for _, v, _, _ in items] or [1]
     mx = max(vals) or 1
     rows = []
-    for lab, v, disp in items:
+    for lab, v, disp, coin in items:
         w = max(7, round(float(v) / mx * 100))
+        lg = _ilogo(coin, 46)
         rows.append(
-            f'<div style="margin:26px 0"><div style="display:flex;justify-content:space-between;font-size:31px;margin-bottom:12px">'
-            f'<span style="color:#e2e8f4">{lab}</span><span style="font-family:{SERIF};font-weight:800;color:#fff">{disp}</span></div>'
+            f'<div style="margin:24px 0"><div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">'
+            f'{lg}<span style="font-size:31px;color:#e2e8f4">{lab}</span>'
+            f'<span style="margin-left:auto;font-family:{SERIF};font-weight:800;color:#fff">{disp}</span></div>'
             f'<div style="height:38px;border-radius:12px;background:#ffffff10"><div style="height:100%;width:{w}%;border-radius:12px;'
             f'background:linear-gradient(90deg,{acc},{acc2});box-shadow:0 0 22px {acc}88"></div></div></div>')
     return "".join(rows)
@@ -206,57 +264,136 @@ def _viz_donut(pct, label, acc):
 
 
 def _viz_rank(items, acc, acc2):
-    """Leaderboard: sorted bars with rank numbers. items = [[label, value, display], ...]"""
-    items = sorted(items, key=lambda x: -float(x[1]))
-    mx = max((float(v) for _, v, _ in items), default=1) or 1
+    """Leaderboard: sorted bars with rank numbers. items = [[label, value, display, coin?], ...]"""
+    items = sorted(_row_items(items), key=lambda x: -float(x[1]))
+    mx = max((float(v) for _, v, _, _ in items), default=1) or 1
     rows = []
-    for i, (lab, v, disp) in enumerate(items):
+    for i, (lab, v, disp, coin) in enumerate(items):
         w = max(9, round(float(v) / mx * 100))
+        lg = _ilogo(coin, 40)
         rows.append(
-            f'<div style="display:flex;align-items:center;gap:20px;margin:18px 0">'
-            f'<span style="font-family:{SERIF};font-weight:800;font-size:36px;color:{acc};width:46px">{i+1}</span>'
-            f'<div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:28px;margin-bottom:9px">'
+            f'<div style="display:flex;align-items:center;gap:18px;margin:18px 0">'
+            f'<span style="font-family:{SERIF};font-weight:800;font-size:36px;color:{acc};width:40px">{i+1}</span>'
+            + (lg or "")
+            + f'<div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:28px;margin-bottom:9px">'
             f'<span style="color:#e2e8f4">{lab}</span><span style="font-weight:800;color:#fff">{disp}</span></div>'
             f'<div style="height:26px;border-radius:9px;background:#ffffff10"><div style="height:100%;width:{w}%;border-radius:9px;'
             f'background:linear-gradient(90deg,{acc},{acc2})"></div></div></div></div>')
     return "".join(rows)
 
 
+# Each account gets a genuinely DIFFERENT visual language (not one template recolored):
+#   AE = 撸毛终端 (mono/terminal) · CC = 交易台图表 (chart-grid) · QY = 杂志编辑体 (serif/hairline) · AU = 繁中卡片 (rounded cards)
+ARCH = {"AE": "terminal", "CC": "trading", "QY": "editorial", "AU": "card"}
+
+
+def _skin(arch, b, acc, acc2, hf, is_cjk):
+    base = (
+        f"*{{margin:0;box-sizing:border-box}} html,body{{width:{W}px;height:{H}px}}"
+        f"body{{position:relative;color:#fff;font-family:{SANS};padding:56px 52px;display:flex;flex-direction:column;overflow:hidden}}"
+        f".z{{position:relative;z-index:2;display:flex;flex-direction:column;height:100%}}"
+        f".top{{display:flex;align-items:center;gap:12px;font-family:{MONO};font-size:22px}}"
+        f".hand{{color:#aeb6c8}} .cnt{{margin-left:auto;color:{acc};font-weight:700}}"
+        f".ft{{display:flex;align-items:center;gap:14px;font-family:{MONO};font-size:20px;color:#8892a6;margin-top:20px}}"
+        f".dots b{{color:{acc}}} .swipe{{margin-left:auto;color:{acc};font-weight:700}}"
+        f".exp{{font-size:31px;line-height:1.45;color:#d7dbe6}}"
+        f".big{{font-family:{hf};font-weight:800;line-height:1.06;letter-spacing:-2px}}"
+        f".herologo{{width:170px;height:170px;border-radius:50%;object-fit:cover;background:#ffffff10;box-shadow:0 0 46px {acc}77,0 10px 40px #0009;border:3px solid {acc}66;margin-bottom:10px}}"
+        f".statwrap{{display:flex;align-items:center;gap:26px}}"
+        f".statlogo{{width:104px;height:104px;border-radius:50%;object-fit:cover;background:#ffffff10;box-shadow:0 0 30px {acc}77;flex:none}}"
+    )
+    hlfs = ("52px" if is_cjk else "56px")
+    skins = {
+        "terminal": (
+            f"body{{background:radial-gradient(130% 100% at 15% -10%,{b['bg1']},{b['bg2']} 62%),#050409;text-align:left}}"
+            f".glow{{position:absolute;width:820px;height:820px;border-radius:50%;filter:blur(150px);opacity:.20;background:radial-gradient(circle,{acc},transparent 66%);top:-320px;left:-220px;z-index:0}}"
+            f".glow2{{display:none}}"
+            f".grid{{position:absolute;inset:0;background-image:linear-gradient({acc}12 1px,transparent 1px),linear-gradient(90deg,{acc}12 1px,transparent 1px);background-size:54px 54px;z-index:0}}"
+            f".motif{{position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.022) 3px 4px);z-index:1;pointer-events:none}}"
+            f".ava{{width:52px;height:52px;border-radius:11px;background:{acc};display:flex;align-items:center;justify-content:center;font-family:{MONO};font-weight:800;font-size:26px;color:#05070d}}"
+            f".chip{{border:1.5px solid {acc};color:{acc};font-weight:800;border-radius:8px;padding:5px 14px;letter-spacing:1px;background:{acc}14}}"
+            f".ey{{font-family:{MONO};font-size:24px;letter-spacing:4px;color:{acc};margin:28px 0 12px}} .ey::before{{content:'> '}}"
+            f".hl{{font-family:{hf};font-weight:800;font-size:{hlfs};line-height:1.12;letter-spacing:-1px}}"
+            f".panel{{position:relative;flex:1;margin:22px 0;border:1.6px dashed {acc}99;border-radius:14px;background:#ffffff07;padding:44px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}}"
+            f".metric{{font-family:{MONO};font-size:22px;letter-spacing:2px;color:{acc};margin-bottom:14px}} .metric::before{{content:'// '}}"
+            f".stat{{font-family:{MONO};font-weight:800;font-size:150px;line-height:.9;letter-spacing:-4px;color:#fff;text-shadow:0 0 40px {acc}66}}"
+            f".delta{{display:inline-block;margin-top:20px;font-family:{MONO};font-size:26px;font-weight:700;color:{acc};border:1.5px solid {acc}88;border-radius:8px;padding:7px 16px}}"
+            f".pt{{font-family:{MONO};font-weight:800;font-size:32px;margin-bottom:14px;color:{acc};letter-spacing:1px}}"
+            f".stmt{{position:relative;font-family:{hf};font-weight:800;font-size:{'60px' if is_cjk else '64px'};line-height:1.14}}"
+            f".ghost{{position:absolute;top:-40px;right:8px;font-family:{MONO};font-weight:800;font-size:250px;line-height:1;color:{acc};opacity:.10}}"
+        ),
+        "trading": (
+            f"body{{background:radial-gradient(120% 92% at 50% -12%,{b['bg1']},{b['bg2']} 66%),#04070d}}"
+            f".glow{{position:absolute;width:900px;height:900px;border-radius:50%;filter:blur(140px);opacity:.26;background:radial-gradient(circle,{acc},transparent 66%);top:-300px;right:-240px;z-index:0}}"
+            f".glow2{{position:absolute;width:760px;height:760px;border-radius:50%;filter:blur(140px);opacity:.15;background:radial-gradient(circle,{acc2},transparent 66%);bottom:-260px;left:-220px;z-index:0}}"
+            f".grid{{position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent 0 46px,{acc}12 46px 47px);z-index:0;-webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 84%,transparent)}}"
+            f".motif{{position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,transparent 0 88px,{acc}09 88px 89px);z-index:0}}"
+            f".ava{{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,{acc},{acc2});display:flex;align-items:center;justify-content:center;font-family:{SERIF};font-weight:800;font-size:28px;color:#05070d;box-shadow:0 0 20px {acc}77}}"
+            f".chip{{background:{acc};color:#05070d;font-weight:800;border-radius:9px;padding:6px 15px;letter-spacing:1px}}"
+            f".ey{{font-family:{MONO};font-size:24px;letter-spacing:5px;color:{acc};margin:28px 0 10px}}"
+            f".hl{{font-family:{hf};font-weight:800;font-size:{'54px' if is_cjk else '58px'};line-height:1.1;letter-spacing:-1px}}"
+            f".panel{{position:relative;flex:1;margin:22px 0;border:2px solid {acc}55;border-radius:26px;background:linear-gradient(158deg,{acc}22,{acc}08 60%,transparent),repeating-linear-gradient(0deg,transparent 0 40px,{acc}0b 40px 41px);padding:44px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 0 {acc}30,0 22px 60px rgba(0,0,0,.42)}}"
+            f".metric{{font-family:{MONO};font-size:23px;letter-spacing:3px;color:{acc};margin-bottom:12px}}"
+            f".stat{{font-family:{MONO};font-weight:800;font-size:156px;line-height:.85;letter-spacing:-4px;color:#fff;text-shadow:0 0 55px {acc}66}}"
+            f".delta{{display:inline-block;margin-top:20px;font-family:{MONO};font-size:28px;font-weight:700;color:#05070d;background:{acc};border-radius:10px;padding:8px 18px}}"
+            f".pt{{font-family:{hf};font-weight:800;font-size:34px;margin-bottom:6px}}"
+            f".stmt{{position:relative;font-family:{hf};font-weight:800;font-size:{'64px' if is_cjk else '68px'};line-height:1.12}}"
+            f".ghost{{position:absolute;top:-46px;right:6px;font-family:{SERIF};font-weight:800;font-size:300px;line-height:1;color:{acc};opacity:.12}}"
+        ),
+        "editorial": (
+            f"body{{background:linear-gradient(180deg,{b['bg2']},{b['bg1']} 120%),#0a0803;padding:64px 58px}}"
+            f".glow{{position:absolute;width:700px;height:700px;border-radius:50%;filter:blur(160px);opacity:.15;background:radial-gradient(circle,{acc},transparent 66%);top:-260px;right:-180px;z-index:0}}"
+            f".glow2{{display:none}} .grid{{display:none}} .motif{{display:none}}"
+            f".ava{{width:50px;height:50px;border-radius:50%;background:transparent;border:1.5px solid {acc};display:flex;align-items:center;justify-content:center;font-family:{SERIF};font-weight:800;font-size:26px;color:{acc}}}"
+            f".chip{{background:transparent;color:{acc};font-weight:700;border-radius:0;padding:4px 0 4px 12px;letter-spacing:3px;border-left:2px solid {acc};font-family:{MONO};font-size:19px}}"
+            f".ey{{font-family:{MONO};font-size:22px;letter-spacing:6px;color:{acc};margin:34px 0 14px}}"
+            f".hl{{font-family:{SERIF};font-weight:800;font-size:{'56px' if is_cjk else '62px'};line-height:1.1;letter-spacing:-1px}}"
+            f".panel{{position:relative;flex:1;margin:26px 0;border:none;border-top:1.5px solid {acc}66;border-bottom:1.5px solid {acc}66;border-radius:0;background:transparent;padding:44px 6px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}}"
+            f".metric{{font-family:{MONO};font-size:22px;letter-spacing:3px;color:{acc};margin-bottom:16px}}"
+            f".stat{{font-family:{SERIF};font-weight:800;font-size:176px;line-height:.82;letter-spacing:-5px;color:#fff}}"
+            f".delta{{display:inline-block;margin-top:22px;font-family:{MONO};font-size:26px;font-weight:700;color:{acc};border-bottom:2px solid {acc}}}"
+            f".pt{{font-family:{SERIF};font-weight:800;font-size:38px;margin-bottom:12px;color:#fff}}"
+            f".stmt{{position:relative;font-family:{SERIF};font-weight:800;font-size:{'60px' if is_cjk else '72px'};line-height:1.16}}"
+            f".ghost{{position:absolute;top:-60px;right:0;font-family:{SERIF};font-weight:400;font-style:italic;font-size:280px;line-height:1;color:{acc};opacity:.10}}"
+        ),
+        "card": (
+            f"body{{background:radial-gradient(120% 96% at 50% -8%,{b['bg1']},{b['bg2']} 64%),#070a04}}"
+            f".glow{{position:absolute;width:860px;height:860px;border-radius:50%;filter:blur(150px);opacity:.24;background:radial-gradient(circle,{acc},transparent 66%);top:-300px;right:-220px;z-index:0}}"
+            f".glow2{{position:absolute;width:720px;height:720px;border-radius:50%;filter:blur(150px);opacity:.17;background:radial-gradient(circle,{acc2},transparent 66%);bottom:-260px;left:-200px;z-index:0}}"
+            f".grid{{display:none}}"
+            f".motif{{position:absolute;inset:0;background-image:radial-gradient({acc}12 2px,transparent 2px);background-size:58px 58px;z-index:0;-webkit-mask-image:linear-gradient(180deg,transparent,#000 40%,#000 76%,transparent)}}"
+            f".ava{{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,{acc},{acc2});display:flex;align-items:center;justify-content:center;font-family:{hf};font-weight:800;font-size:28px;color:#05070d;box-shadow:0 0 22px {acc}88}}"
+            f".chip{{background:{acc};color:#05070d;font-weight:800;border-radius:999px;padding:7px 18px;letter-spacing:.5px}}"
+            f".ey{{font-family:{MONO};font-size:23px;letter-spacing:3px;color:{acc};margin:30px 0 12px}}"
+            f".hl{{font-family:{hf};font-weight:800;font-size:{'56px' if is_cjk else '58px'};line-height:1.16;letter-spacing:-1px}}"
+            f".panel{{position:relative;flex:1;margin:24px 0;border:none;border-radius:40px;background:linear-gradient(158deg,{acc}22,{acc}0d 60%,#ffffff08);padding:50px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4),inset 0 1px 0 #ffffff22}}"
+            f".metric{{font-family:{MONO};font-size:22px;letter-spacing:2px;color:{acc};margin-bottom:14px}}"
+            f".stat{{font-family:{hf};font-weight:800;font-size:156px;line-height:.86;letter-spacing:-4px;color:#fff;text-shadow:0 0 50px {acc}55}}"
+            f".delta{{display:inline-block;margin-top:20px;font-size:28px;font-weight:800;color:#05070d;background:{acc};border-radius:999px;padding:8px 22px}}"
+            f".pt{{font-family:{hf};font-weight:800;font-size:36px;margin-bottom:8px}}"
+            f".stmt{{position:relative;font-family:{hf};font-weight:800;font-size:{'64px' if is_cjk else '62px'};line-height:1.2}}"
+            f".ghost{{position:absolute;top:-30px;right:10px;font-family:{hf};font-weight:800;font-size:240px;line-height:1;color:{acc};opacity:.12}}"
+        ),
+    }
+    return base + skins.get(arch, skins["trading"])
+
+
 def build_spec_slides(spec, pre, is_cjk):
     """Render a carousel from a STRUCTURED infographic spec (professional data-viz, real numbers).
-    spec = {cover, slides:[{kind, ...}], cta}. kind ∈ stat|compare|donut|rank|chart|statement."""
+    spec = {cover, cover_coin, slides:[{kind, ...}], cta}. kind ∈ stat|compare|donut|rank|chart|statement.
+    Per-account archetype skin + content-specific real coin logos/charts -> every piece looks different."""
     b = BRAND.get(pre, BRAND["AE"])
     hf = CJK_SANS if is_cjk else SERIF
     acc, acc2 = b["accent"], b["accent2"]
+    arch = ARCH.get(pre, "trading")
     slides_spec = (spec.get("slides") or [])[:5]
     total = len(slides_spec) + 2
-    css = f"""*{{margin:0;box-sizing:border-box}} html,body{{width:{W}px;height:{H}px}}
-body{{position:relative;background:radial-gradient(120% 92% at 50% -12%,{b['bg1']},{b['bg2']});color:#fff;font-family:{SANS};padding:58px 54px;display:flex;flex-direction:column;overflow:hidden}}
-.glow{{position:absolute;width:1000px;height:1000px;border-radius:50%;filter:blur(130px);opacity:.32;background:radial-gradient(circle,{acc},transparent 66%);top:-300px;right:-260px;z-index:0}}
-.glow2{{position:absolute;width:820px;height:820px;border-radius:50%;filter:blur(130px);opacity:.20;background:radial-gradient(circle,{acc2},transparent 66%);bottom:-280px;left:-240px;z-index:0}}
-.grid{{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:76px 76px;z-index:0;-webkit-mask-image:linear-gradient(180deg,transparent,#000 38%,#000 72%,transparent)}}
-.z{{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}}
-.top{{display:flex;align-items:center;gap:12px;font-family:'SF Mono',monospace;font-size:22px}}
-.ava{{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,{acc},{acc2});display:flex;align-items:center;justify-content:center;font-family:{SERIF};font-weight:800;font-size:28px;color:#05070d;box-shadow:0 0 20px {acc}77}}
-.chip{{background:{acc};color:#05070d;font-weight:800;border-radius:9px;padding:6px 15px;letter-spacing:1px}}
-.hand{{color:#aeb6c8}} .cnt{{margin-left:auto;color:{acc};font-weight:700}}
-.ey{{font-family:'SF Mono',monospace;font-size:24px;letter-spacing:5px;color:{acc};margin:30px 0 10px}}
-.hl{{font-family:{hf};font-weight:800;font-size:{'54px' if is_cjk else '58px'};line-height:1.1;letter-spacing:-1px}}
-.panel{{position:relative;flex:1;margin:24px 0;border:2px solid {acc}66;border-radius:30px;background:linear-gradient(158deg,{acc}2b,{acc}0a 58%,transparent);padding:46px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 0 {acc}30,0 22px 60px rgba(0,0,0,.42)}}
-.metric{{font-family:'SF Mono',monospace;font-size:23px;letter-spacing:3px;color:{acc};margin-bottom:12px}}
-.stat{{font-family:{SERIF};font-weight:800;font-size:170px;line-height:.82;letter-spacing:-5px;text-shadow:0 0 55px {acc}66}}
-.delta{{display:inline-block;margin-top:20px;font-size:28px;font-weight:700;color:#05070d;background:{acc};border-radius:10px;padding:8px 18px}}
-.pt{{font-family:{hf};font-weight:800;font-size:34px;margin-bottom:6px}}
-.exp{{font-size:31px;line-height:1.45;color:#d7dbe6}}
-.ft{{display:flex;align-items:center;gap:14px;font-family:'SF Mono',monospace;font-size:20px;color:#8892a6;margin-top:22px}}
-.dots b{{color:{acc}}} .swipe{{margin-left:auto;color:{acc};font-weight:700}}
-.big{{font-family:{hf};font-weight:800;line-height:1.05;letter-spacing:-2px}}
-.ghost{{position:absolute;top:-46px;right:6px;font-family:{SERIF};font-weight:800;font-size:300px;line-height:1;color:{acc};opacity:.13}}
-.stmt{{position:relative;font-family:{hf};font-weight:800;font-size:{'66px' if is_cjk else '70px'};line-height:1.12}}"""
+    css = _skin(arch, b, acc, acc2, hf, is_cjk)
+    cover_logo = _coin_logo(spec.get("cover_coin", "")) if spec.get("cover_coin") else ""
 
     def frame(inner):
         return (f'<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head>'
-                f'<body><div class="glow"></div><div class="glow2"></div><div class="grid"></div>'
+                f'<body><div class="glow"></div><div class="glow2"></div><div class="grid"></div><div class="motif"></div>'
                 f'<div class="z">{inner}</div></body></html>')
 
     def top(n):
@@ -269,7 +406,9 @@ body{{position:relative;background:radial-gradient(120% 92% at 50% -12%,{b['bg1'
 
     out = []
     hook = spec.get("cover") or b["name"]
+    hero = f'<img class="herologo" src="{cover_logo}" alt="">' if cover_logo else ""
     out.append(frame(top(1) + '<div style="flex:1;display:flex;flex-direction:column;justify-content:center">'
+                     + hero
                      + f'<div class="ey">{b.get("cat","")}</div>'
                      + f'<div class="big" style="font-size:{"88px" if is_cjk else "98px"}">{hook}</div>'
                      + f'<div style="margin-top:42px;display:inline-flex;align-self:flex-start;background:{acc};color:#05070d;font-weight:800;font-size:30px;border-radius:14px;padding:16px 30px">{total} 张讲清 · 存下 →</div></div>'
@@ -279,7 +418,12 @@ body{{position:relative;background:radial-gradient(120% 92% at 50% -12%,{b['bg1'
         cap = (sl.get("caption") or "")[:130]
         title = sl.get("title") or sl.get("label") or ""
         if kind == "stat":
-            inner = (f'<div class="metric">数据 · 已核实</div><div class="stat">{sl.get("big","")}</div>'
+            slogo = _coin_logo(sl.get("coin", "")) if sl.get("coin") else ""
+            statblock = f'<div class="stat">{sl.get("big","")}</div>'
+            if slogo:
+                statblock = (f'<div class="statwrap"><img class="statlogo" src="{slogo}" alt="">'
+                             f'<div class="stat">{sl.get("big","")}</div></div>')
+            inner = (f'<div class="metric">数据 · 已核实</div>{statblock}'
                      + (f'<div class="delta">{sl.get("delta","")}</div>' if sl.get("delta") else "")
                      + f'<div class="exp" style="margin-top:22px;color:#eaeff7;font-weight:600">{sl.get("label","")}</div>')
             body = f'<div class="hl">{title}</div>' if title and title != sl.get("label") else ""
