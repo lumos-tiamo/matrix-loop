@@ -152,6 +152,9 @@ export const api = {
   generateDaily: (rounds = 4) =>
     req<{ started: boolean; rounds: number; from_trends: boolean }>(
       `/schedule/generate-daily?rounds=${rounds}`, { method: "POST" }),
+  runFullDaily: (rounds = 4) =>
+    req<{ started: boolean; rounds: number; steps: string[] }>(
+      `/schedule/run-full-daily?rounds=${rounds}`, { method: "POST" }),
   getTrends: (niche?: string) =>
     req<TrendItem[]>(`/trends${niche ? `?niche=${encodeURIComponent(niche)}` : ""}`),
 

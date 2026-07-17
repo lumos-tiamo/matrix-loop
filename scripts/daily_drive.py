@@ -91,10 +91,11 @@ def daily_16():
     produced today's set, skip (don't double-generate)."""
     already = _todays_daily_count()
     if already >= 8:
-        log(f"   today already has {already} daily videos (B-layer cron ran) -> skip generation")
+        log(f"   today already has {already} daily videos (already ran) -> skip")
         return
-    r = subprocess.run([PY, "scripts/run_daily_cycle.py", "--from-trends", "--rounds", "4"],
-                       cwd=BACKEND, capture_output=True, text=True, timeout=5400)
+    # full autonomous pipeline: web research -> ingest -> generate --from-trends -> Obsidian
+    r = subprocess.run([PY, "scripts/run_full_daily.py", "--rounds", "4"],
+                       cwd=BACKEND, capture_output=True, text=True, timeout=7200)
     for ln in r.stdout.strip().splitlines()[-6:]:
         log(f"   {ln}")
     if "DAILY_BATCH" not in r.stdout:

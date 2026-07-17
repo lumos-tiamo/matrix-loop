@@ -211,6 +211,15 @@ export function Schedule() {
     finally { setTimeout(() => setGenning(false), 3000); }
   }
 
+  async function genFull() {
+    setGenning(true); setMsg(null);
+    try {
+      await api.runFullDaily(4);
+      setMsg("🤖 已启动全自动一天:后端自己全网研究热点→核实→清昨日→出片→写Obsidian(约30–45分钟,无需我)。视频会陆续出现。");
+    } catch (e) { setMsg(String(e)); }
+    finally { setTimeout(() => setGenning(false), 3000); }
+  }
+
   const daily = all.filter((i) => !i.is_seed);
   const approved = daily.filter((i) => i.review_status === "approved").length;
   const next = [...daily].filter((i) => i.posting_time).sort((a, b) => (a.posting_time < b.posting_time ? -1 : 1))[0];
@@ -224,9 +233,15 @@ export function Schedule() {
           {next && ` · 下一条 ${next.handle} @ ${next.posting_time?.slice(5)}`}
         </span>
         <div className="flex-1" />
+        <button onClick={genFull} disabled={genning}
+          className="rounded-lg border border-lime bg-lime/[.12] px-3 py-[6px] font-mono text-xs font-bold text-lime hover:bg-lime/[.2] disabled:opacity-50"
+          title="后端自己全网研究热点→核实→出片→排期→Obsidian,全程无需 Claude">
+          {genning ? "已启动…" : "🤖 全自动跑一天"}
+        </button>
         <button onClick={genDaily} disabled={genning}
-          className="rounded-lg border border-lime bg-lime/[.08] px-3 py-[6px] font-mono text-xs text-lime hover:bg-lime/[.16] disabled:opacity-50">
-          {genning ? "已启动…" : "⚡ 生成今日16条"}
+          className="rounded-lg border border-line px-3 py-[6px] font-mono text-xs text-muted hover:text-text disabled:opacity-50"
+          title="用已有的已核实热点直接出16条(不重新研究)">
+          {genning ? "…" : "⚡ 仅出片16条"}
         </button>
         <button onClick={() => sched.reload()} className="rounded-lg border border-line px-3 py-[6px] font-mono text-xs text-muted hover:text-text">刷新</button>
       </div>

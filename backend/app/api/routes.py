@@ -670,6 +670,23 @@ def generate_daily(rounds: int = Query(default=4, ge=1, le=8),
     return {"started": True, "rounds": rounds, "from_trends": from_trends}
 
 
+@router.post("/schedule/run-full-daily", status_code=202)
+def run_full_daily(rounds: int = Query(default=4, ge=1, le=8)) -> dict:
+    """FULLY autonomous daily (no Claude): web-research verified hot topics -> ingest -> clear
+    yesterday's daily -> generate --from-trends -> Obsidian. Detached background job. This is what
+    lets matrix-loop reproduce the whole data-rich daily set on its own."""
+    import os
+    import subprocess
+    import sys
+    backend_dir = os.getcwd()
+    logdir = os.path.join(backend_dir, "..", "logs")
+    os.makedirs(logdir, exist_ok=True)
+    logf = open(os.path.join(logdir, "run_full_daily.log"), "a")
+    subprocess.Popen([sys.executable, "scripts/run_full_daily.py", "--rounds", str(rounds)],
+                     cwd=backend_dir, stdout=logf, stderr=logf, start_new_session=True)
+    return {"started": True, "rounds": rounds, "steps": ["research", "generate", "obsidian"]}
+
+
 def _caption_from_plan(db: Session, asset_id: int) -> str | None:
     """Compose a single dispatch caption from the stored publish plan (caption + hashtags)."""
     plan = db.scalar(select(PublishPlan).where(PublishPlan.video_asset_id == asset_id))
