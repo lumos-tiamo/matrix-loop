@@ -143,7 +143,7 @@ export function OpsBar({
           onClick={() => busy === null && setShowImport(false)}
         >
           <div
-            className="w-full max-w-[560px] rounded-2xl border border-line bg-gradient-to-b from-panel2 to-panel p-5"
+            className="w-full max-w-[560px] glass p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-2 flex items-center justify-between">

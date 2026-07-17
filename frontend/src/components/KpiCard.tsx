@@ -62,7 +62,7 @@ export function KpiCard({
     deltaTone === "up" ? "text-good" : deltaTone === "down" ? "text-alert" : "text-muted";
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-line bg-gradient-to-b from-panel2 to-panel p-4 rise ${
+      className={`relative overflow-hidden glass p-4 rise ${
         glow ? "shadow-[inset_0_0_0_1px_rgba(182,255,60,0.18)]" : ""
       }`}
       style={style}

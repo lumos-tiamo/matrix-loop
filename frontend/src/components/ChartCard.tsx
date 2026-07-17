@@ -18,7 +18,7 @@ export function ChartCard({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-line bg-gradient-to-b from-panel2 to-panel p-4 md:p-[18px] ${
+      className={`relative overflow-hidden glass p-4 md:p-[18px] ${
         glow ? "shadow-[inset_0_0_0_1px_rgba(182,255,60,0.18)]" : ""
       } ${className}`}
       style={style}

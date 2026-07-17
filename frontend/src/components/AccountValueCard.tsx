@@ -81,7 +81,7 @@ export function AccountValueCard({ account, style, onRan }: { account: AccountLi
   return (
     <Link
       to={`/accounts/${account.id}`}
-      className="block rounded-2xl border bg-gradient-to-b from-panel2 to-panel p-4 rise transition-colors hover:border-line/80"
+      className="block glass glass-hover p-4 rise"
       style={{ borderColor: attention ? "rgba(255,176,32,.4)" : undefined, ...style }}
     >
       <div className="flex items-center gap-3">

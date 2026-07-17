@@ -173,7 +173,7 @@ export function AccountDetail() {
 function Kpi({ label, value, tone, delay }: { label: string; value: string; tone: string; delay: number }) {
   return (
     <div
-      className="rounded-2xl border border-line bg-gradient-to-b from-panel2 to-panel px-4 py-3 rise"
+      className="glass px-4 py-3 rise"
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="font-mono text-[11px] uppercase tracking-wider text-muted">{label}</div>
