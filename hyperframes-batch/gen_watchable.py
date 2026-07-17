@@ -266,12 +266,33 @@ def _candles(ohlc, i, n, st, du, b):
         parts.append(f'<line class="cd cd{i}" x1="{x}" y1="{yy(h)}" x2="{x}" y2="{yy(l)}" stroke="{col}" stroke-width="2.2"/>')
         parts.append(f'<rect class="cd cd{i}" x="{round(x - bw / 2, 1)}" y="{bt}" width="{round(bw, 1)}" height="{round(max(3, bb - bt), 1)}" rx="1.5" fill="{col}"/>')
     last = yy(seg[-1][4])
+    # trader annotations (点位/失效位): recent swing resistance + invalidation, drawn from the data
+    tail = seg[-12:] if len(seg) >= 12 else seg
+    r_hi = max(c[2] for c in tail); r_lo = min(c[3] for c in tail)
+
+    def _fmt(p):
+        if p >= 1e6:
+            return f"${p/1e6:.2f}M"
+        if p >= 1000:
+            return f"${p/1000:.1f}K"
+        return f"${p:,.2f}"
+    WARN = "#F5B301"
+    yhi, ylo = yy(r_hi), yy(r_lo)
+    ann = (
+        f'<line class="an{i}" x1="0" y1="{yhi}" x2="{VW}" y2="{yhi}" stroke="{WARN}" stroke-width="2" opacity="0.85"/>'
+        f'<text class="an{i}" x="{VW-18}" y="{max(28,yhi-10)}" fill="{WARN}" font-size="27" font-weight="700" '
+        f'font-family=\'{SANS}\' text-anchor="end">阻力 {_fmt(r_hi)}</text>'
+        f'<line class="an{i}" x1="0" y1="{ylo}" x2="{VW}" y2="{ylo}" stroke="{DN}" stroke-width="2" stroke-dasharray="11 8" opacity="0.85"/>'
+        f'<text class="an{i}" x="{VW-18}" y="{min(VH-14,ylo+34)}" fill="{DN}" font-size="27" font-weight="700" '
+        f'font-family=\'{SANS}\' text-anchor="end">失效位 {_fmt(r_lo)}</text>'
+    )
     svg = (f'<svg viewBox="0 0 {VW} {VH}" preserveAspectRatio="xMidYMid slice" style="width:112%;height:100%">'
            f'<line class="pl{i}" x1="0" y1="{last}" x2="{VW}" y2="{last}" stroke="{b["accent"]}" stroke-width="2.5" stroke-dasharray="9 11" opacity="0.55"/>'
-           + "".join(parts) + "</svg>")
+           + "".join(parts) + ann + "</svg>")
     tw = [
         f'tl.fromTo(".cd{i}",{{opacity:0,y:26}},{{opacity:1,y:0,duration:0.9,ease:"power2.out",stagger:{round(0.7 / len(seg), 4)}}},{round(st + 0.2, 2)});',
         f'gsap.set(".pl{i}",{{transformOrigin:"0% 50%"}});tl.fromTo(".pl{i}",{{scaleX:0}},{{scaleX:1,duration:0.9,ease:"power2.out"}},{round(st + 0.7, 2)});',
+        f'tl.fromTo(".an{i}",{{opacity:0}},{{opacity:1,duration:0.5,ease:"power1.out"}},{round(st + 1.1, 2)});',
         f'tl.fromTo("#ch{i}",{{x:-46}},{{x:30,duration:{du},ease:"none"}},{st});',
     ]
     return f'<div class="chart" id="ch{i}">{svg}</div>', tw
