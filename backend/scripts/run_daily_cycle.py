@@ -16,7 +16,18 @@ from __future__ import annotations
 import json
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+
+# 正式发布首日:20号前生成的都排到 20 号;20 号起按当天排期。
+LAUNCH_DATE = date(2026, 7, 20)
+
+
+def _base_day() -> datetime:
+    """Scheduling base = max(today, launch day). Content made before launch queues for launch day."""
+    now = datetime.now()
+    if now.date() < LAUNCH_DATE:
+        return datetime(LAUNCH_DATE.year, LAUNCH_DATE.month, LAUNCH_DATE.day)
+    return now
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -69,7 +80,7 @@ def daily_from_trends(s, rounds, only=None):
     from app.video.governor import generate_video
     llm = resolve_llm_client()
     resolver = make_account_provider_resolver()
-    today = datetime.now()
+    today = _base_day()   # base = max(local today, launch day 07-20)
     accounts = s.query(Account).order_by(Account.id).all()
     if only:
         accounts = [a for a in accounts if str(a.id) == str(only)]
@@ -132,7 +143,7 @@ def main() -> int:
             return daily_from_trends(s, rounds, only)
         llm = resolve_llm_client()
         resolver = make_account_provider_resolver()   # avatar_handles empty -> hyperframes per brand
-        today = datetime.now()   # LOCAL time — posting slots are the user's local calendar
+        today = _base_day()   # base = max(local today, launch day 07-20)
         accounts = s.query(Account).order_by(Account.id).all()
         if only:
             accounts = [a for a in accounts if str(a.id) == str(only)]

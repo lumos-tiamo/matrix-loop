@@ -109,9 +109,11 @@ def rebuild_seed():
 
 
 def obsidian():
-    r = subprocess.run(["python3", "scripts/gen_obsidian_publish.py"],
-                       cwd=ROOT, capture_output=True, text=True, timeout=300)
-    log(f"   {r.stdout.strip().splitlines()[-1] if r.stdout.strip() else '(no output)'}")
+    # daily (DB-driven, the important one) + seed set
+    rd = subprocess.run([PY, "scripts/gen_obsidian_daily.py"], cwd=ROOT, capture_output=True, text=True, timeout=300)
+    log(f"   daily: {rd.stdout.strip().splitlines()[-1] if rd.stdout.strip() else rd.stderr[-160:]}")
+    rs = subprocess.run(["python3", "scripts/gen_obsidian_publish.py"], cwd=ROOT, capture_output=True, text=True, timeout=300)
+    log(f"   seed: {rs.stdout.strip().splitlines()[-1] if rs.stdout.strip() else '(no output)'}")
 
 
 def main():
