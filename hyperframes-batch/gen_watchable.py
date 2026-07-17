@@ -46,6 +46,7 @@ _TIMEUNIT = re.compile(r"^[\s\-]*(month|mo|day|week|wk|year|yr|hour|hr|min|minut
 
 def hero_number(text):
     text = text or ""
+    cands = []
     for m in HERO_RE.finditer(text):
         num = m.group(2).replace(",", "").strip(".")   # drop sentence-end dot ("2026." -> "2026")
         if not num or num == ".":
@@ -65,7 +66,15 @@ def hero_number(text):
         # skip bare recent years ("Feb 2026", "of 2025") rendered as a giant meaningless count-up
         if not suf and not pre and "." not in num and len(num) == 4 and 2018 <= val <= 2035:
             continue
-        return (pre, val, suf, 1 if "." in num else 0)
+        cands.append((pre, val, suf, 1 if "." in num else 0))
+    if not cands:
+        return None
+    # PREFER a real metric (has $/~ prefix or %/x/B/M/K suffix) over a bare incidental integer
+    # (kills the giant stray "4" when a "$90.7B"/"70.4%" is present in the same line).
+    for c in cands:
+        if c[0] or c[2]:
+            return c
+    return cands[0]
     return None
 
 
